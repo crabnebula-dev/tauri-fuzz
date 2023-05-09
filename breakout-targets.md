@@ -20,6 +20,8 @@ Current state is interconnected due to:
 
 ## API
 
+`core/tauri/src/api`
+
 - Very thin layer around rust standard library, some system components (native dialogs) and very little logic implemented
 - Simple to write a fuzzer for but hard to effectively gather feedback and interesting events, as most logic happens
 inside the rust standard library or the system component and not in the code logic of the API function
@@ -29,6 +31,8 @@ inside the rust standard library or the system component and not in the code log
 
 ## Endpoints
 
+`core/tauri/src/endpoints`
+
 - Complexity with feature flags, scopes and additional interaction with the system components
 - Not exposed as `pub` and therefore **inaccessible for fuzzing**
 - Possibly good candidate for figuring out the mock runtime
@@ -37,9 +41,10 @@ inside the rust standard library or the system component and not in the code log
 
 ## Commands
 
+`core/tauri/src/command.rs`
+
 - Most complex and upper level layer, which gets invoked via the `tauri-runtime`
-- The `tauri-runtime` is handling the IPC with the webview and passes already deserialized
-data types to the commands
+- The `tauri-runtime` is handling the IPC with the webview and passes already deserialized data types to the commands
 - Can be implemented by application developers and are the main target from an auditor perspective
 - Creating simple fuzzer boilerplate code for these would provide the most benefit for app devs and auditors
 - most likely requires full mock runtime
@@ -144,3 +149,52 @@ Additionally, some native system calls need to be mocked if the libraries or sys
 [^source-command-native]: [https://github.com/mmpneo/curses/](https://github.com/mmpneo/curses/blob/db372290984ab9d1367f862af041a1f6441f4006/src-tauri/src/services/keyboard/mod.rs#LL122C1-L150C1)
 
 [^source-command-tauri]: [https://github.com/mmpneo/curses/](https://github.com/mmpneo/curses/blob/db372290984ab9d1367f862af041a1f6441f4006/src-tauri/src/main.rs#LL42C1-L52C2)
+
+### Observer[^observer]
+
+> An Observer is an entity that provides an information observed during the execution of the program under test to the fuzzer.
+> Another Observer can be the time spent executing a run, the program output, or more advanced observation, like maximum stack depth at runtime. This information is not preserved across runs, and it is an observation of a dynamic property of the program.
+
+Tauri commands have individual behavior but each command has some unique `interesting` observations.
+For example the `fs` command should be observed for changes in the filesystem, which are not allowed
+(in the allow list) or unexpected. This is also `interesting` for all filesystem related command
+implementations but not relevant for commands not touching the filesystem at all.
+
+### Feedback[^feedback]
+
+> The Feedback is an entity that classifies the outcome of an execution of the program under test as interesting or not. Typically, if an execution is interesting, the corresponding input used to feed the target program is added to a corpus.
+
+This would be the customized decision maker to decide if the test run was interesting
+or no new behavior was observed. Closesy ties with the set of observers in use.
+For the `fs` example it could check if the touched file is defined in the `scope`
+and if it is either disallowed or not mentioned in the `scope` it would deem the
+observation interesting.
+
+### Executor[^executor]
+
+> In our model, an Executor is the entity that defines not only how to execute the target, but all the volatile operations that are related to just a single run of the target.
+> In our model, it can also hold a set of Observers connected with each execution.
+
+The executor in our case could be the hypervisor running multiple operating systems,
+providing a pre-defined snapshot for each execute.
+One LibAFL example is the [`CommandExecutor`](https://docs.rs/libafl/0.10.0/libafl/executors/command/struct.CommandExecutor.html),
+which runs a binary with the input, observers and checks the return code of the execution for a crash or timeout.
+We could facilitate this for the first tests before switching to the hypervisor, as we want to
+compare behavioral differences between the operating systems.
+
+### Input[^input]
+
+> Formally, the input of a program is the data taken from external sources that affect the program behavior.
+> In our model of an abstract fuzzer, we define the Input as the internal representation of the program input (or a part of it).
+> In the Rust code, an Input is a trait that can be implemented only by structures that are serializable and have only owned data as fields.
+
+The input for the commands would need to be a valid serialized data type, which is defined
+in the command signature.
+
+[^feedback]: [libafl-book/Feedback](https://aflplus.plus/libafl-book/core_concepts/feedback.html)
+
+[^observer]: [libafl-book/Observer](https://aflplus.plus/libafl-book/core_concepts/observer.html)
+
+[^executor]: [libafl-book/Executor](https://aflplus.plus/libafl-book/core_concepts/executor.html)
+
+[^input]: [libafl-book/Executor](https://aflplus.plus/libafl-book/core_concepts/input.html)
