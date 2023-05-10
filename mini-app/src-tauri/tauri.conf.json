@@ -33,7 +33,7 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "com.tauri.dev",
+      "identifier": "com.mini-app.dev",
       "longDescription": "",
       "macOS": {
         "entitlements": null,
