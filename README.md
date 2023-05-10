@@ -52,3 +52,4 @@ Framework to build fuzzers on the fly specialized for Tauri projects
 - [LibAFL](https://github.com/AFLplusplus/LibAFL)
 - [Fuzzers Like Lego (CCC Talk)](https://aflplus.plus/rC3_talk_2020.pdf)
 - [Tauri Commands Documentation](https://docs.rs/tauri/latest/tauri/command/index.html)
+- [LibAFL paper from 2022](https://www.s3.eurecom.fr/docs/ccs22_fioraldi.pdf)
