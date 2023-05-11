@@ -25,6 +25,17 @@ Session to start integrating fuzzy testing for Tauri projects
 
 ## Tauri Fuzzing
 
+The `Dockerfile` is meant to run the fuzzer. The idea is to use Vscode DevContainers for
+the fuzzer, as libAFL has some issues on some distros.
+
+`docker build . -t test-fuzz`
+
+`docker run -it --privileged test-fuzz`
+
+`cd fuzzer`
+
+`cargo build --release`
+
 ### End Goal
 
 Framework to build fuzzers on the fly specialized for Tauri projects
