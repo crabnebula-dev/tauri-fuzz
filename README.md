@@ -58,6 +58,16 @@ Framework to build fuzzers on the fly specialized for Tauri projects
 - Define interesting metrics for security
   - crashing, time, ...
 
+### Open Questions
+
+- How can we find the correct function symbols (mangling/no_mangling)?
+- How can we observe filesystem changes?
+- How can we observe network requests?
+
+### TODO
+
+- [ ] Sample mini app crash fuzz
+
 ## Resources and References
 
 - [LibAFL](https://github.com/AFLplusplus/LibAFL)
