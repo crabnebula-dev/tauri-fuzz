@@ -146,6 +146,25 @@ fn app_close(app_handle: tauri::AppHandle) {
 To effectivly fuzz both methods a mock runtime is needed, where behavior should be changed based on the command expectation.
 Additionally, some native system calls need to be mocked if the libraries or systems are not in scope.
 
+To prepare a Tauri application we need to add the `#[no_mangle]`[^no-mangle] attribute to the command function.
+This will allow us to find the function pointer in the binary. To simplify the stack/argument layout the `C` style
+function header should be used if possible.
+
+```rust
+#[no_mangle]
+pub extern "C" fn call_from_c() {
+    println!("Just called a Rust function from C!");
+}
+```
+
+Alternatively it is possible to de-mangle the function names, find the correct function, mangle the function again and search for the
+mangled symbol. This seems not completely reproducible as the current mangling implementation differs based on the platform[^mangling-rfc] and is
+not unified.
+
+[^no-mangle]: [https://doc.rust-lang.org/book/ch19-01-unsafe-rust.html#calling-rust-functions-from-other-languages](https://doc.rust-lang.org/book/ch19-01-unsafe-rust.html#calling-rust-functions-from-other-languages)
+
+[^mangling-rfc]: [Tracking issue for RFC 2603, "Rust Symbol Mangling (v0)"](https://github.com/rust-lang/rust/issues/60705)
+
 [^source-command-native]: [https://github.com/mmpneo/curses/](https://github.com/mmpneo/curses/blob/db372290984ab9d1367f862af041a1f6441f4006/src-tauri/src/services/keyboard/mod.rs#LL122C1-L150C1)
 
 [^source-command-tauri]: [https://github.com/mmpneo/curses/](https://github.com/mmpneo/curses/blob/db372290984ab9d1367f862af041a1f6441f4006/src-tauri/src/main.rs#LL42C1-L52C2)
