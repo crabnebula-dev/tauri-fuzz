@@ -43,7 +43,7 @@ use libafl_qemu::{
 pub const MAX_INPUT_SIZE: usize = 1048576; // 1MB
 
 // Path to the Tauri sample app binary
-pub const MINI_APP: &str = "../../mini-app/src-tauri/target/release/mini-app";
+pub const MINI_APP: &str = "../mini-app/src-tauri/target/release/mini-app";
 
 pub fn fuzz() {
     // Hardcoded parameters
@@ -55,11 +55,10 @@ pub fn fuzz() {
 
     // Initialize QEMU
     env::remove_var("LD_LIBRARY_PATH");
-    // let args: Vec<String> = env::args().collect();
-    let args: Vec<String> = vec![String::from(MINI_APP)];
+    let mut args: Vec<String> = env::args().collect();
+    args.push(String::from(MINI_APP));
     let env: Vec<(String, String)> = env::vars().collect();
     let emu = Emulator::new(&args, &env).unwrap();
-    println!("{:?}", emu);
 
     // let mut elf_buffer = Vec::new();
     // let elf = EasyElf::from_file(emu.binary_path(), &mut elf_buffer).unwrap();
