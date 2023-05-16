@@ -36,6 +36,10 @@ the fuzzer, as libAFL has some issues on some distros.
 
 `cargo build --release`
 
+OR
+
+Use the devcontainer feature from vscode and it magically works.
+
 ### End Goal
 
 Framework to build fuzzers on the fly specialized for Tauri projects
