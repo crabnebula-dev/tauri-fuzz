@@ -40,6 +40,7 @@ RUN cargo chef cook --release --recipe-path mini-app/src-tauri/recipe.json
 # Build mini app
 WORKDIR /hackathon/mini-app
 RUN cargo tauri build
+RUN cargo tauri build --dev
 
 # Build fuzzer
 # WORKDIR /hackathon/fuzzer

@@ -4,7 +4,8 @@
 )]
 
 #[tauri::command]
-fn dangerous_func(input: &str) -> String {
+#[no_mangle]
+fn tauri_cmd_1(input: &str) -> String {
     let mut bytes = input.bytes();
     if bytes.next() == Some(b'a') {
         if bytes.next() == Some(b'b') {
@@ -16,9 +17,19 @@ fn dangerous_func(input: &str) -> String {
     format!("Hello, you wrote {}!", input)
 }
 
+#[tauri::command]
+#[no_mangle]
+fn tauri_cmd_2(input: u32) -> String {
+    if input == 100 {
+        panic!("Crashing! =)");
+    }
+    format!("Hello, you wrote {}!", input)
+}
+
+
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![dangerous_func])
+        .invoke_handler(tauri::generate_handler![tauri_cmd_1, tauri_cmd_2])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

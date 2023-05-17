@@ -1,5 +1,9 @@
 //! A libfuzzer-like fuzzer using qemu for binary-only coverage
 //!
+
+#![allow(unused_imports)]
+#![allow(dead_code)]
+
 use core::{ptr::addr_of_mut, time::Duration};
 use std::{env, path::PathBuf, process};
 
@@ -20,7 +24,7 @@ use libafl::{
     feedbacks::{CrashFeedback, MaxMapFeedback, TimeFeedback, TimeoutFeedback},
     fuzzer::{Fuzzer, StdFuzzer},
     inputs::{BytesInput, HasTargetBytes},
-    monitors::MultiMonitor,
+    monitors::{MultiMonitor, SimpleMonitor},
     mutators::scheduled::{havoc_mutations, StdScheduledMutator},
     observers::{HitcountsMapObserver, TimeObserver, VariableMapObserver},
     schedulers::{IndexesLenTimeMinimizerScheduler, QueueScheduler},
@@ -43,7 +47,13 @@ use libafl_qemu::{
 pub const MAX_INPUT_SIZE: usize = 1048576; // 1MB
 
 // Path to the Tauri sample app binary
-pub const MINI_APP: &str = "../mini-app/src-tauri/target/release/mini-app";
+// pub const MINI_APP: &str = "../mini-app/src-tauri/target/release/mini-app";
+// TODO mangle works with debug build
+const MINI_APP: &str = "../mini-app/src-tauri/target/debug/mini-app";
+const TAURI_CMD_1: &str = "tauri_cmd_1";
+const TAURI_CMD_2: &str = "tauri_cmd_2";
+const CRASH_INPUT_1: &str = "abc";
+const CRASH_INPUT_2: u32 = 100;
 
 pub fn fuzz() {
     // Hardcoded parameters
@@ -60,53 +70,80 @@ pub fn fuzz() {
     let env: Vec<(String, String)> = env::vars().collect();
     let emu = Emulator::new(&args, &env).unwrap();
 
-    // let mut elf_buffer = Vec::new();
-    // let elf = EasyElf::from_file(emu.binary_path(), &mut elf_buffer).unwrap();
+    let mut elf_buffer = Vec::new();
+    let elf = EasyElf::from_file(emu.binary_path(), &mut elf_buffer).unwrap();
 
-    // let test_one_input_ptr = elf
-    //     .resolve_symbol("LLVMFuzzerTestOneInput", emu.load_addr())
-    //     .expect("Symbol LLVMFuzzerTestOneInput not found");
-    // println!("LLVMFuzzerTestOneInput @ {test_one_input_ptr:#x}");
-    //
-    // emu.set_breakpoint(test_one_input_ptr); // LLVMFuzzerTestOneInput
-    // unsafe { emu.run() };
-    //
-    // println!("Break at {:#x}", emu.read_reg::<_, u64>(Regs::Rip).unwrap());
-    //
-    // // Get the return address
-    // let stack_ptr: u64 = emu.read_reg(Regs::Rsp).unwrap();
-    // let mut ret_addr = [0; 8];
-    // unsafe { emu.read_mem(stack_ptr, &mut ret_addr) };
-    // let ret_addr = u64::from_le_bytes(ret_addr);
-    //
-    // println!("Stack pointer = {stack_ptr:#x}");
-    // println!("Return address = {ret_addr:#x}");
-    //
-    // emu.remove_breakpoint(test_one_input_ptr); // LLVMFuzzerTestOneInput
-    // emu.set_breakpoint(ret_addr); // LLVMFuzzerTestOneInput ret addr
-    //
-    // let input_addr = emu
-    //     .map_private(0, MAX_INPUT_SIZE, MmapPerms::ReadWrite)
-    //     .unwrap();
-    // println!("Placing input at {input_addr:#x}");
+    let fuzzed_func_addr = elf
+        .resolve_symbol(TAURI_CMD_2, emu.load_addr())
+        .unwrap_or_else(|| panic!("Symbol \"{}\" not found", TAURI_CMD_2));
+    println!("{} @ {fuzzed_func_addr:#x}", TAURI_CMD_2);
+
+    let main_func_addr = elf
+        .resolve_symbol("main", emu.load_addr())
+        .unwrap_or_else(|| panic!("Symbol \"{}\" not found", "main"));
+    println!("{} @ {main_func_addr:#x}", "main");
+
+    // We run the program until we reach the fuzzed function
+    emu.set_breakpoint(fuzzed_func_addr);
+    emu.set_breakpoint(main_func_addr);
+    unsafe { 
+        // TODO Lousy hack
+        // Break at main then jump directly to the fuzzed func, but with incorrect state
+        emu.run();
+        println!("Break at {:#x}", emu.read_reg::<_, u64>(Regs::Rip).unwrap());
+        emu.write_reg(Regs::Rip, fuzzed_func_addr).unwrap_or_else(|e| panic!("{:?}", e));
+        emu.run();
+    };
+
+    println!("Break at {:#x}", emu.read_reg::<_, u64>(Regs::Rip).unwrap());
+
+    // Get the return address
+    let stack_ptr: u64 = emu.read_reg(Regs::Rsp).unwrap();
+    let mut ret_addr = [0; 8];
+    unsafe { emu.read_mem(stack_ptr, &mut ret_addr) };
+    let ret_addr = u64::from_le_bytes(ret_addr);
+
+    println!("Stack pointer = {stack_ptr:#x}");
+    println!("Return address = {ret_addr:#x}");
+
+    emu.remove_breakpoint(fuzzed_func_addr); // LLVMFuzzerTestOneInput
+    emu.set_breakpoint(ret_addr); // LLVMFuzzerTestOneInput ret addr
+
+    let input_addr = emu
+        .map_private(0, MAX_INPUT_SIZE, MmapPerms::ReadWrite)
+        .unwrap();
+    println!("Placing input at {input_addr:#x}");
 
     // The wrapped harness function, calling out to the LLVM-style harness
+    let mut count = 0;
     let mut harness = |input: &BytesInput| {
-        // let target = input.target_bytes();
-        // let mut buf = target.as_slice();
-        // let mut len = buf.len();
-        // if len > MAX_INPUT_SIZE {
-        //     buf = &buf[0..MAX_INPUT_SIZE];
-        //     len = MAX_INPUT_SIZE;
-        // }
-        //
+        println!("toto");
+        count = count + 1;
+        let target;
+        let bytes_input;
+        if count == 3 {
+            target = input.target_bytes();
+        } else {
+            //Make the app crash with dangerous input
+            let u32_as_bytes: [u8; 4] = CRASH_INPUT_2.to_be_bytes();
+            bytes_input = BytesInput::from(&u32_as_bytes[..]);
+            target = bytes_input.target_bytes();
+        }
+
+        let mut buf = target.as_slice();
+        let mut len = buf.len();
+        if len > MAX_INPUT_SIZE {
+            buf = &buf[0..MAX_INPUT_SIZE];
+            len = MAX_INPUT_SIZE;
+        }
+
         unsafe {
-            // emu.write_mem(input_addr, buf);
-            //
-            // emu.write_reg(Regs::Rdi, input_addr).unwrap();
-            // emu.write_reg(Regs::Rsi, len).unwrap();
-            // emu.write_reg(Regs::Rip, test_one_input_ptr).unwrap();
-            // emu.write_reg(Regs::Rsp, stack_ptr).unwrap();
+            emu.write_mem(input_addr, buf);
+
+            emu.write_reg(Regs::Rdi, input_addr).unwrap();
+            emu.write_reg(Regs::Rsi, len).unwrap();
+            emu.write_reg(Regs::Rip, fuzzed_func_addr).unwrap();
+            emu.write_reg(Regs::Rsp, stack_ptr).unwrap();
             emu.run();
         }
 
@@ -115,28 +152,31 @@ pub fn fuzz() {
 
     let mut run_client = |state: Option<_>, mut mgr, _core_id| {
         // Create an observation channel using the coverage map
-        let edges_observer = unsafe {
-            HitcountsMapObserver::new(VariableMapObserver::from_mut_slice(
-                "edges",
-                edges_map_mut_slice(),
-                addr_of_mut!(MAX_EDGES_NUM),
-            ))
-        };
+        // let edges_observer = unsafe {
+        //     HitcountsMapObserver::new(VariableMapObserver::from_mut_slice(
+        //         "edges",
+        //         edges_map_mut_slice(),
+        //         addr_of_mut!(MAX_EDGES_NUM),
+        //     ))
+        // };
 
         // Create an observation channel to keep track of the execution time
-        let time_observer = TimeObserver::new("time");
+        // let time_observer = TimeObserver::new("time");
 
         // Feedback to rate the interestingness of an input
         // This one is composed by two Feedbacks in OR
-        let mut feedback = feedback_or!(
-            // New maximization map feedback linked to the edges observer and the feedback state
-            MaxMapFeedback::tracking(&edges_observer, true, false),
-            // Time feedback, this one does not need a feedback state
-            TimeFeedback::with_observer(&time_observer)
-        );
+        // let mut feedback = feedback_or!(
+        //     // New maximization map feedback linked to the edges observer and the feedback state
+        //     MaxMapFeedback::tracking(&edges_observer, true, false),
+        //     // Time feedback, this one does not need a feedback state
+        //     TimeFeedback::with_observer(&time_observer)
+        // );
+        let mut feedback = ();
 
         // A feedback to choose if an input is a solution or not
-        let mut objective = feedback_or_fast!(CrashFeedback::new(), TimeoutFeedback::new());
+        // let mut objective = feedback_or_fast!(CrashFeedback::new(), TimeoutFeedback::new());
+        let mut objective = CrashFeedback::new();
+
 
         // If not restarting, create a State from scratch
         let mut state = state.unwrap_or_else(|| {
@@ -158,18 +198,22 @@ pub fn fuzz() {
         });
 
         // A minimization+queue policy to get testcasess from the corpus
-        let scheduler = IndexesLenTimeMinimizerScheduler::new(QueueScheduler::new());
+        // let scheduler = IndexesLenTimeMinimizerScheduler::new(QueueScheduler::new());
+        let scheduler = QueueScheduler::new();
+
 
         // A fuzzer with feedbacks and a corpus scheduler
         let mut fuzzer = StdFuzzer::new(scheduler, feedback, objective);
 
-        let mut hooks = QemuHooks::new(&emu, tuple_list!(QemuEdgeCoverageHelper::default()));
+        // let mut hooks = QemuHooks::new(&emu, tuple_list!(QemuEdgeCoverageHelper::default()));
+        let mut hooks = QemuHooks::new(&emu, ());
 
         // Create a QEMU in-process executor
         let executor = QemuExecutor::new(
             &mut hooks,
             &mut harness,
-            tuple_list!(edges_observer, time_observer),
+            // tuple_list!(edges_observer, time_observer),
+            (),
             &mut fuzzer,
             &mut state,
             &mut mgr,
@@ -201,7 +245,9 @@ pub fn fuzz() {
     let shmem_provider = StdShMemProvider::new().expect("Failed to init shared memory");
 
     // The stats reporter for the broker
-    let monitor = MultiMonitor::new(|s| println!("{s}"));
+    // let monitor = MultiMonitor::new(|s| println!("{s}"));
+    let monitor = SimpleMonitor::new(|s| println!("{s}"));
+
 
     // Build and run a Launcher
     match Launcher::builder()
