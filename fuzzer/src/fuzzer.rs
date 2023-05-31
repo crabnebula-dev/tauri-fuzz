@@ -23,7 +23,7 @@ use libafl::{
     feedback_or, feedback_or_fast,
     feedbacks::{CrashFeedback, MaxMapFeedback, TimeFeedback, TimeoutFeedback},
     fuzzer::{Fuzzer, StdFuzzer},
-    inputs::{BytesInput, HasTargetBytes},
+    inputs::{BytesInput, HasTargetBytes, HasBytesVec},
     monitors::{MultiMonitor, SimpleMonitor},
     mutators::scheduled::{havoc_mutations, StdScheduledMutator},
     observers::{HitcountsMapObserver, TimeObserver, VariableMapObserver},
@@ -42,18 +42,20 @@ use libafl_qemu::{
     QemuExecutor,
     QemuHooks,
     Regs,
+    GuestAddr
 };
 
 pub const MAX_INPUT_SIZE: usize = 1048576; // 1MB
 
 // Path to the Tauri sample app binary
+// TODO #[no_mangle] does not work with release build
 // pub const MINI_APP: &str = "../mini-app/src-tauri/target/release/mini-app";
-// TODO mangle works with debug build
-const MINI_APP: &str = "../mini-app/src-tauri/target/debug/mini-app";
-const TAURI_CMD_1: &str = "tauri_cmd_1";
+const MINI_APP: &str = "/hackathon/mini-app/src-tauri/target/debug/mini-app";
+const TAURI_CMD_1: &str = "tauri_cmd_1"; 
 const TAURI_CMD_2: &str = "tauri_cmd_2";
 const CRASH_INPUT_1: &str = "abc";
 const CRASH_INPUT_2: u32 = 100;
+
 
 pub fn fuzz() {
     // Hardcoded parameters
@@ -73,22 +75,25 @@ pub fn fuzz() {
     let mut elf_buffer = Vec::new();
     let elf = EasyElf::from_file(emu.binary_path(), &mut elf_buffer).unwrap();
 
+    // Get the address of the function `tauri_cmd_2`
     let fuzzed_func_addr = elf
         .resolve_symbol(TAURI_CMD_2, emu.load_addr())
         .unwrap_or_else(|| panic!("Symbol \"{}\" not found", TAURI_CMD_2));
     println!("{} @ {fuzzed_func_addr:#x}", TAURI_CMD_2);
 
+    // Get the address of the `main` function 
     let main_func_addr = elf
         .resolve_symbol("main", emu.load_addr())
         .unwrap_or_else(|| panic!("Symbol \"{}\" not found", "main"));
     println!("{} @ {main_func_addr:#x}", "main");
 
-    // We run the program until we reach the fuzzed function
-    emu.set_breakpoint(fuzzed_func_addr);
+    // We run the program until we reach main
     emu.set_breakpoint(main_func_addr);
+    emu.set_breakpoint(fuzzed_func_addr);
     unsafe { 
-        // TODO Lousy hack
-        // Break at main then jump directly to the fuzzed func, but with incorrect state
+        // TODO 
+        // Break at main then jump directly to the fuzzed func
+        // Tauri did not have time to initialize
         emu.run();
         println!("Break at {:#x}", emu.read_reg::<_, u64>(Regs::Rip).unwrap());
         emu.write_reg(Regs::Rip, fuzzed_func_addr).unwrap_or_else(|e| panic!("{:?}", e));
@@ -106,49 +111,22 @@ pub fn fuzz() {
     println!("Stack pointer = {stack_ptr:#x}");
     println!("Return address = {ret_addr:#x}");
 
-    emu.remove_breakpoint(fuzzed_func_addr); // LLVMFuzzerTestOneInput
-    emu.set_breakpoint(ret_addr); // LLVMFuzzerTestOneInput ret addr
+    emu.remove_breakpoint(fuzzed_func_addr); 
+    emu.set_breakpoint(ret_addr); 
 
-    let input_addr = emu
-        .map_private(0, MAX_INPUT_SIZE, MmapPerms::ReadWrite)
-        .unwrap();
-    println!("Placing input at {input_addr:#x}");
+    // // Reserve some memory in the emulator for dynamic sized data 
+    // let input_addr = emu
+    //     .map_private(0, MAX_INPUT_SIZE, MmapPerms::ReadWrite)
+    //     .unwrap();
+    // println!("Placing input at {input_addr:#x}");
 
-    // The wrapped harness function, calling out to the LLVM-style harness
-    let mut count = 0;
+    // To test the harness function before the fuzzing loop
+    test_tauri_cmd_2_harness(&emu, fuzzed_func_addr, stack_ptr);
+
     let mut harness = |input: &BytesInput| {
-        println!("toto");
-        count = count + 1;
-        let target;
-        let bytes_input;
-        if count == 3 {
-            target = input.target_bytes();
-        } else {
-            //Make the app crash with dangerous input
-            let u32_as_bytes: [u8; 4] = CRASH_INPUT_2.to_be_bytes();
-            bytes_input = BytesInput::from(&u32_as_bytes[..]);
-            target = bytes_input.target_bytes();
-        }
-
-        let mut buf = target.as_slice();
-        let mut len = buf.len();
-        if len > MAX_INPUT_SIZE {
-            buf = &buf[0..MAX_INPUT_SIZE];
-            len = MAX_INPUT_SIZE;
-        }
-
-        unsafe {
-            emu.write_mem(input_addr, buf);
-
-            emu.write_reg(Regs::Rdi, input_addr).unwrap();
-            emu.write_reg(Regs::Rsi, len).unwrap();
-            emu.write_reg(Regs::Rip, fuzzed_func_addr).unwrap();
-            emu.write_reg(Regs::Rsp, stack_ptr).unwrap();
-            emu.run();
-        }
-
-        ExitKind::Ok
+        tauri_cmd_2_harness(&emu, input, fuzzed_func_addr, stack_ptr)
     };
+
 
     let mut run_client = |state: Option<_>, mut mgr, _core_id| {
         // Create an observation channel using the coverage map
@@ -200,7 +178,6 @@ pub fn fuzz() {
         // A minimization+queue policy to get testcasess from the corpus
         // let scheduler = IndexesLenTimeMinimizerScheduler::new(QueueScheduler::new());
         let scheduler = QueueScheduler::new();
-
 
         // A fuzzer with feedbacks and a corpus scheduler
         let mut fuzzer = StdFuzzer::new(scheduler, feedback, objective);
@@ -265,4 +242,47 @@ pub fn fuzz() {
         Err(Error::ShuttingDown) => println!("Fuzzing stopped by user. Good bye."),
         Err(err) => panic!("Failed to run launcher: {err:?}"),
     }
+}
+
+fn test_tauri_cmd_2_harness(emu: &Emulator, fuzzed_func_addr: GuestAddr, stack_ptr: GuestAddr) {
+    let mut count: u32 = 0;
+    while count < 5 {
+        count = count + 1;
+        let input: BytesInput;
+        if count != 3 {
+            // Just give it a random byte
+            input = BytesInput::from(vec![0, 0, 0, 5]);
+        } else {
+            //Make the app crash with dangerous input
+            let u32_as_bytes: [u8; 4] = CRASH_INPUT_2.to_be_bytes();
+            input = BytesInput::from(&u32_as_bytes[..]);
+        }
+        tauri_cmd_2_harness(&emu, &input, fuzzed_func_addr, stack_ptr);
+    }
+}
+
+
+fn tauri_cmd_2_harness(emu: &Emulator, bytes_input: &BytesInput, fuzzed_func_addr: GuestAddr, stack_ptr: GuestAddr) -> ExitKind {
+    let mut array_input = [0u8; 4];
+    array_input.copy_from_slice(bytes_input.bytes());
+    let input = u32::from_be_bytes(array_input);
+    
+    let input_addr = emu
+        .map_private(0, MAX_INPUT_SIZE, MmapPerms::ReadWrite)
+        .unwrap();
+
+    // NOTE: argument have to be placed at Rsi register rather than usual Rdi
+    unsafe {
+        // emu.write_mem(input_addr, buf);
+        emu.write_reg(Regs::Rdi, input_addr).unwrap();
+        // emu.write_reg(Regs::Rdi, target).unwrap();
+        emu.write_reg(Regs::Rsi, input).unwrap();
+        emu.write_reg(Regs::Rip, fuzzed_func_addr).unwrap();
+        emu.write_reg(Regs::Rsp, stack_ptr).unwrap();
+        // emu.add_gdb_cmd()
+        emu.run();
+
+    }
+
+    ExitKind::Ok
 }

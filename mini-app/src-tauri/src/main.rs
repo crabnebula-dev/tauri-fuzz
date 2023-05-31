@@ -6,6 +6,7 @@
 #[tauri::command]
 #[no_mangle]
 fn tauri_cmd_1(input: &str) -> String {
+    println!("Entering tauri_cmd_1 with input:\n{}", input);
     let mut bytes = input.bytes();
     if bytes.next() == Some(b'a') {
         if bytes.next() == Some(b'b') {
@@ -20,6 +21,7 @@ fn tauri_cmd_1(input: &str) -> String {
 #[tauri::command]
 #[no_mangle]
 fn tauri_cmd_2(input: u32) -> String {
+    println!("Entering tauri_cmd_2 with input:\n{}", input);
     if input == 100 {
         panic!("Crashing! =)");
     }

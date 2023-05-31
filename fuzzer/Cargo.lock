@@ -598,6 +598,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "mini-app-fuzzer"
+version = "0.10.0"
+dependencies = [
+ "libafl",
+ "libafl_qemu",
+]
+
+[[package]]
 name = "minimal-lexical"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -831,14 +839,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2b63bdb0cd06f1f4dedf69b254734f9b45af66e4a031e42a7480257d9898b435"
 dependencies = [
  "unicode-ident",
-]
-
-[[package]]
-name = "qemu_launcher"
-version = "0.10.0"
-dependencies = [
- "libafl",
- "libafl_qemu",
 ]
 
 [[package]]
