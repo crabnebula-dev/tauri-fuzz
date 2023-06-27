@@ -3,9 +3,12 @@ const { invoke } = window.__TAURI__.tauri;
 let greetInputEl;
 let greetMsgEl;
 
+async function tauri1(v) {
+  greetMsgEl.textContent = await invoke("tauri_cmd_1", { input: v });
+}
+
 async function greet() {
-  // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-  greetMsgEl.textContent = await invoke("dangerous_func", { input: greetInputEl.value });
+  await tauri1(greetInputEl.value);
 }
 
 window.addEventListener("DOMContentLoaded", () => {
