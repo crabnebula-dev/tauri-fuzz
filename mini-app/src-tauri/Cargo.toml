@@ -16,8 +16,7 @@ tauri-build = { version = "1.4", features = [] }
 [dependencies]
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
-# tauri = { path = "../../../../tauri-apps/tauri/core/tauri", features = ["shell-open"] }
-tauri = { path = "../../../../tauri-apps/tauri/core/tauri" }
+tauri = { git = "ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git"  }
 
 [features]
 # by default Tauri runs in production mode
