@@ -49,9 +49,11 @@ fn main() {
 
     // app.run(|_, _| {});
     app.run(|app_handle, _event| {
+        // Get the Tauri Window
         let windows = app_handle.manager().windows_lock();
         let main_window = windows.get("main").unwrap();
 
+        // Create the message that will be sent to the backend
         let arg_name = String::from("input");
         let value = JsonValue::String(String::from("aaa"));
         let mut json_map = serde_json::map::Map::new();
@@ -63,6 +65,8 @@ fn main() {
             error: CallbackFn(3880587747),
             inner: JsonValue::Object(json_map),
         };
+
+        // Trigger a Tauri command by sending our crafted message
         let _ = main_window.clone().on_message(payload);
     });
 }
