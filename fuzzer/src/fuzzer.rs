@@ -23,7 +23,7 @@ use libafl::{
     feedback_or, feedback_or_fast,
     feedbacks::{CrashFeedback, MaxMapFeedback, TimeFeedback, TimeoutFeedback},
     fuzzer::{Fuzzer, StdFuzzer},
-    inputs::{BytesInput, HasTargetBytes, HasBytesVec},
+    inputs::{BytesInput, HasBytesVec, HasTargetBytes},
     monitors::{MultiMonitor, SimpleMonitor},
     mutators::scheduled::{havoc_mutations, StdScheduledMutator},
     observers::{HitcountsMapObserver, TimeObserver, VariableMapObserver},
@@ -37,12 +37,12 @@ use libafl_qemu::{
     edges::{edges_map_mut_slice, QemuEdgeCoverageHelper, MAX_EDGES_NUM},
     elf::EasyElf,
     emu::Emulator,
+    GuestAddr,
     //snapshot::QemuSnapshotHelper,
     MmapPerms,
     QemuExecutor,
     QemuHooks,
     Regs,
-    GuestAddr
 };
 
 pub const MAX_INPUT_SIZE: usize = 1048576; // 1MB
@@ -51,13 +51,15 @@ pub const MAX_INPUT_SIZE: usize = 1048576; // 1MB
 // TODO #[no_mangle] does not work with release build
 // pub const MINI_APP: &str = "../mini-app/src-tauri/target/release/mini-app";
 const MINI_APP: &str = "/hackathon/mini-app/src-tauri/target/debug/mini-app";
-const TAURI_CMD_1: &str = "tauri_cmd_1"; 
+const TAURI_CMD_1: &str = "tauri_cmd_1";
 const TAURI_CMD_2: &str = "tauri_cmd_2";
 const CRASH_INPUT_1: &str = "abc";
 const CRASH_INPUT_2: u32 = 100;
 
-
 pub fn fuzz() {
+    // Get the target file path
+    let mut mini_app = std::env::current_exe().unwrap();
+
     // Hardcoded parameters
     let timeout = Duration::from_secs(1);
     let broker_port = 1337;
@@ -81,7 +83,7 @@ pub fn fuzz() {
         .unwrap_or_else(|| panic!("Symbol \"{}\" not found", TAURI_CMD_2));
     println!("{} @ {fuzzed_func_addr:#x}", TAURI_CMD_2);
 
-    // Get the address of the `main` function 
+    // Get the address of the `main` function
     let main_func_addr = elf
         .resolve_symbol("main", emu.load_addr())
         .unwrap_or_else(|| panic!("Symbol \"{}\" not found", "main"));
@@ -90,13 +92,14 @@ pub fn fuzz() {
     // We run the program until we reach main
     emu.set_breakpoint(main_func_addr);
     emu.set_breakpoint(fuzzed_func_addr);
-    unsafe { 
-        // TODO 
+    unsafe {
+        // TODO
         // Break at main then jump directly to the fuzzed func
         // Tauri did not have time to initialize
         emu.run();
         println!("Break at {:#x}", emu.read_reg::<_, u64>(Regs::Rip).unwrap());
-        emu.write_reg(Regs::Rip, fuzzed_func_addr).unwrap_or_else(|e| panic!("{:?}", e));
+        emu.write_reg(Regs::Rip, fuzzed_func_addr)
+            .unwrap_or_else(|e| panic!("{:?}", e));
         emu.run();
     };
 
@@ -111,10 +114,10 @@ pub fn fuzz() {
     println!("Stack pointer = {stack_ptr:#x}");
     println!("Return address = {ret_addr:#x}");
 
-    emu.remove_breakpoint(fuzzed_func_addr); 
-    emu.set_breakpoint(ret_addr); 
+    emu.remove_breakpoint(fuzzed_func_addr);
+    emu.set_breakpoint(ret_addr);
 
-    // // Reserve some memory in the emulator for dynamic sized data 
+    // // Reserve some memory in the emulator for dynamic sized data
     // let input_addr = emu
     //     .map_private(0, MAX_INPUT_SIZE, MmapPerms::ReadWrite)
     //     .unwrap();
@@ -123,10 +126,8 @@ pub fn fuzz() {
     // To test the harness function before the fuzzing loop
     test_tauri_cmd_2_harness(&emu, fuzzed_func_addr, stack_ptr);
 
-    let mut harness = |input: &BytesInput| {
-        tauri_cmd_2_harness(&emu, input, fuzzed_func_addr, stack_ptr)
-    };
-
+    let mut harness =
+        |input: &BytesInput| tauri_cmd_2_harness(&emu, input, fuzzed_func_addr, stack_ptr);
 
     let mut run_client = |state: Option<_>, mut mgr, _core_id| {
         // Create an observation channel using the coverage map
@@ -154,7 +155,6 @@ pub fn fuzz() {
         // A feedback to choose if an input is a solution or not
         // let mut objective = feedback_or_fast!(CrashFeedback::new(), TimeoutFeedback::new());
         let mut objective = CrashFeedback::new();
-
 
         // If not restarting, create a State from scratch
         let mut state = state.unwrap_or_else(|| {
@@ -225,7 +225,6 @@ pub fn fuzz() {
     // let monitor = MultiMonitor::new(|s| println!("{s}"));
     let monitor = SimpleMonitor::new(|s| println!("{s}"));
 
-
     // Build and run a Launcher
     match Launcher::builder()
         .shmem_provider(shmem_provider)
@@ -261,12 +260,16 @@ fn test_tauri_cmd_2_harness(emu: &Emulator, fuzzed_func_addr: GuestAddr, stack_p
     }
 }
 
-
-fn tauri_cmd_2_harness(emu: &Emulator, bytes_input: &BytesInput, fuzzed_func_addr: GuestAddr, stack_ptr: GuestAddr) -> ExitKind {
+fn tauri_cmd_2_harness(
+    emu: &Emulator,
+    bytes_input: &BytesInput,
+    fuzzed_func_addr: GuestAddr,
+    stack_ptr: GuestAddr,
+) -> ExitKind {
     let mut array_input = [0u8; 4];
     array_input.copy_from_slice(bytes_input.bytes());
     let input = u32::from_be_bytes(array_input);
-    
+
     let input_addr = emu
         .map_private(0, MAX_INPUT_SIZE, MmapPerms::ReadWrite)
         .unwrap();
@@ -281,7 +284,6 @@ fn tauri_cmd_2_harness(emu: &Emulator, bytes_input: &BytesInput, fuzzed_func_add
         emu.write_reg(Regs::Rsp, stack_ptr).unwrap();
         // emu.add_gdb_cmd()
         emu.run();
-
     }
 
     ExitKind::Ok

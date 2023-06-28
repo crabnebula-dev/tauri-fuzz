@@ -22,29 +22,34 @@ RUN apt update
 RUN apt install -y build-essential gdb git wget clang clang-tools libc++-11-dev libc++abi-11-dev llvm ninja-build
 
 # Install Tauri dependencies
-RUN cargo install tauri-cli
+# RUN cargo install tauri-cli
 RUN apt install -y libwebkit2gtk-4.0-dev build-essential curl wget libssl-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev
 
-WORKDIR /hackathon
+WORKDIR /fuzzy-proto
 
 # Copy fuzzers over
 COPY fuzzer fuzzer
 COPY mini-app mini-app
+COPY tauri tauri
 COPY README.md README.md
 
 # Cache skeleton with cargo-chef
-RUN cargo install cargo-chef
-RUN cargo chef cook --release --recipe-path fuzzer/recipe.json
-RUN cargo chef cook --release --recipe-path mini-app/src-tauri/recipe.json
+# RUN cargo install cargo-chef
+# WORKDIR /fuzzy-proto/fuzzer
+# RUN cargo chef cook --release --recipe-path recipe.json
+# WORKDIR /fuzzy-proto/mini-app/src-tauri
+# RUN cargo chef cook --release --recipe-path recipe.json
+# WORKDIR /fuzzy-proto/tauri
+# RUN cargo chef cook --release --recipe-path recipe.json
 
 # Build mini app
-WORKDIR /hackathon/mini-app
-RUN cargo tauri build
+WORKDIR /fuzzy-proto/mini-app/src-tauri
+RUN cargo build --release
 
 # Build fuzzer
 # WORKDIR /hackathon/fuzzer
 # RUN cargo build --release
 
-WORKDIR /hackathon
+WORKDIR /fuzzy-proto
 
 ENTRYPOINT [ "/bin/bash" ]
