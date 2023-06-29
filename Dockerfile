@@ -25,31 +25,34 @@ RUN apt install -y build-essential gdb git wget clang clang-tools libc++-11-dev 
 # RUN cargo install tauri-cli
 RUN apt install -y libwebkit2gtk-4.0-dev build-essential curl wget libssl-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev
 
-WORKDIR /fuzzy-proto
+ARG FUZZ_DIR=fuzzy-proto
+WORKDIR /$FUZZ_DIR
 
 # Copy fuzzers over
 COPY fuzzer fuzzer
 COPY mini-app mini-app
-COPY tauri tauri
 COPY README.md README.md
 
 # Cache skeleton with cargo-chef
 # RUN cargo install cargo-chef
-# WORKDIR /fuzzy-proto/fuzzer
+# WORKDIR /$FUZZ_DIR/fuzzer
 # RUN cargo chef cook --release --recipe-path recipe.json
-# WORKDIR /fuzzy-proto/mini-app/src-tauri
+# WORKDIR /$FUZZ_DIR/mini-app/src-tauri
 # RUN cargo chef cook --release --recipe-path recipe.json
-# WORKDIR /fuzzy-proto/tauri
-# RUN cargo chef cook --release --recipe-path recipe.json
+# WORKDIR /$FUZZ_DIR/tauri RUN cargo chef cook --release --recipe-path recipe.json
 
 # Build mini app
-WORKDIR /fuzzy-proto/mini-app/src-tauri
-RUN cargo build --release
+# WORKDIR /$FUZZ_DIR/mini-app/src-tauri
+# RUN cargo build --release
 
 # Build fuzzer
 # WORKDIR /hackathon/fuzzer
 # RUN cargo build --release
 
-WORKDIR /fuzzy-proto
+# Add missing include path
+RUN echo export C_INCLUDE_PATH=/usr/lib/x86_64-linux-gnu/glib-2.0/include/:/$FUZZ_DIR/fuzzer/target/debug/qemu-libafl-bridge/tcg/i386/ >> /root/.bashrc
+
+
+WORKDIR /$FUZZ_DIR
 
 ENTRYPOINT [ "/bin/bash" ]
