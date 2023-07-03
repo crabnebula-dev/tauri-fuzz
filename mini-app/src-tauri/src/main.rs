@@ -29,7 +29,7 @@ fn tauri_cmd_2(input: u32) -> String {
     format!("Hello, you wrote {}!", input)
 }
 
-use serde_json::Value as JsonValue;
+use serde_json::{Value as JsonValue, Number};
 use tauri::api::ipc::CallbackFn;
 use tauri::hooks::InvokePayload;
 use tauri::sealed::ManagerBase;
@@ -55,11 +55,14 @@ fn main() {
 
         // Create the message that will be sent to the backend
         let arg_name = String::from("input");
-        let value = JsonValue::String(String::from("aaa"));
+
+        // let value = JsonValue::String(String::from("aaa"));
+        let value = JsonValue::Number(Number::from(3u32));
         let mut json_map = serde_json::map::Map::new();
         json_map.insert(arg_name, value);
         let payload = InvokePayload {
-            cmd: String::from("tauri_cmd_1"),
+            // cmd: String::from("tauri_cmd_1"),
+            cmd: String::from("tauri_cmd_2"),
             tauri_module: None,
             callback: CallbackFn(1248299581),
             error: CallbackFn(3880587747),
@@ -68,5 +71,8 @@ fn main() {
 
         // Trigger a Tauri command by sending our crafted message
         let _ = main_window.clone().on_message(payload);
+
+        // Exit after executing our command
+        app_handle.exit(0)
     });
 }
