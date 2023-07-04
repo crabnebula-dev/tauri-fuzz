@@ -19,10 +19,11 @@ use libafl::{
     },
     corpus::{Corpus, InMemoryCorpus, OnDiskCorpus},
     events::EventConfig,
-    executors::{ExitKind, TimeoutExecutor},
+    executors::{ExitKind, TimeoutExecutor, inprocess::InProcessExecutor},
     feedback_or, feedback_or_fast,
     feedbacks::{CrashFeedback, MaxMapFeedback, TimeFeedback, TimeoutFeedback},
     fuzzer::{Fuzzer, StdFuzzer},
+    generators::{RandPrintablesGenerator, RandBytesGenerator},
     inputs::{BytesInput, HasBytesVec, HasTargetBytes},
     monitors::{MultiMonitor, SimpleMonitor},
     mutators::scheduled::{havoc_mutations, StdScheduledMutator},
@@ -45,65 +46,76 @@ use libafl_qemu::{
     Regs,
 };
 
+use crate::harness::*;
+
 pub const MAX_INPUT_SIZE: usize = 1048576; // 1MB
 
 // Path to the Tauri sample app binary
 // TODO #[no_mangle] does not work with release build
 // pub const MINI_APP: &str = "../mini-app/src-tauri/target/release/mini-app";
-const MINI_APP: &str = "/hackathon/mini-app/src-tauri/target/debug/mini-app";
+const MINI_APP: &str = "/f/mini-app/src-tauri/target/debug/mini-app";
 const TAURI_CMD_1: &str = "tauri_cmd_1";
 const TAURI_CMD_2: &str = "tauri_cmd_2";
-const CRASH_INPUT_1: &str = "abc";
-const CRASH_INPUT_2: u32 = 100;
+pub const CRASH_INPUT_1: &str = "abc";
+pub const CRASH_INPUT_2: u32 = 100;
 
 pub fn fuzz() {
     // Get the target file path
-    let mut mini_app = std::env::current_exe().unwrap();
+    let mut mini_app_path = std::env::current_exe().unwrap();
+    mini_app_path.pop();
+    mini_app_path.pop();
+    mini_app_path.pop();
+    mini_app_path.pop();
+    mini_app_path.push(String::from("mini-app"));
+    mini_app_path.push(String::from("src-tauri"));
+    mini_app_path.push(String::from("target"));
+    mini_app_path.push(String::from("debug"));
+    mini_app_path.push(String::from("mini-app"));
 
     // Hardcoded parameters
-    let timeout = Duration::from_secs(1);
+    let _timeout = Duration::from_secs(1);
     let broker_port = 1337;
-    let cores = Cores::from_cmdline("0-11").unwrap();
-    let corpus_dirs = [PathBuf::from("./corpus")];
+    let cores = Cores::from_cmdline("0").unwrap();
+    let _corpus_dirs = [PathBuf::from("./corpus")];
     let objective_dir = PathBuf::from("./crashes");
 
     // Initialize QEMU
     env::remove_var("LD_LIBRARY_PATH");
     let mut args: Vec<String> = env::args().collect();
-    args.push(String::from(MINI_APP));
+    args.push(mini_app_path.into_os_string().into_string().unwrap());
     let env: Vec<(String, String)> = env::vars().collect();
     let emu = Emulator::new(&args, &env).unwrap();
 
     let mut elf_buffer = Vec::new();
     let elf = EasyElf::from_file(emu.binary_path(), &mut elf_buffer).unwrap();
 
+    // Get the address of the function `tauri_cmd_1`
+    // let fuzzed_func_addr = elf
+    //     .resolve_symbol(TAURI_CMD_1, emu.load_addr())
+    //     .unwrap_or_else(|| panic!("Symbol \"{}\" not found", TAURI_CMD_1));
+    // println!("{} @ {fuzzed_func_addr:#x}", TAURI_CMD_1);
+
+
     // Get the address of the function `tauri_cmd_2`
     let fuzzed_func_addr = elf
         .resolve_symbol(TAURI_CMD_2, emu.load_addr())
         .unwrap_or_else(|| panic!("Symbol \"{}\" not found", TAURI_CMD_2));
-    println!("{} @ {fuzzed_func_addr:#x}", TAURI_CMD_2);
-
-    // Get the address of the `main` function
-    let main_func_addr = elf
-        .resolve_symbol("main", emu.load_addr())
-        .unwrap_or_else(|| panic!("Symbol \"{}\" not found", "main"));
-    println!("{} @ {main_func_addr:#x}", "main");
+    println!("[fuzzer] {} @ {fuzzed_func_addr:#x}", TAURI_CMD_2);
 
     // We run the program until we reach main
-    emu.set_breakpoint(main_func_addr);
     emu.set_breakpoint(fuzzed_func_addr);
     unsafe {
         // TODO
         // Break at main then jump directly to the fuzzed func
         // Tauri did not have time to initialize
         emu.run();
-        println!("Break at {:#x}", emu.read_reg::<_, u64>(Regs::Rip).unwrap());
-        emu.write_reg(Regs::Rip, fuzzed_func_addr)
-            .unwrap_or_else(|e| panic!("{:?}", e));
-        emu.run();
+        // println!("Break at {:#x}", emu.read_reg::<_, u64>(Regs::Rip).unwrap());
+        // emu.write_reg(Regs::Rip, fuzzed_func_addr)
+        //     .unwrap_or_else(|e| panic!("{:?}", e));
+        // emu.run();
     };
 
-    println!("Break at {:#x}", emu.read_reg::<_, u64>(Regs::Rip).unwrap());
+    println!("[fuzzer] Break at {:#x}", emu.read_reg::<_, u64>(Regs::Rip).unwrap());
 
     // Get the return address
     let stack_ptr: u64 = emu.read_reg(Regs::Rsp).unwrap();
@@ -111,8 +123,8 @@ pub fn fuzz() {
     unsafe { emu.read_mem(stack_ptr, &mut ret_addr) };
     let ret_addr = u64::from_le_bytes(ret_addr);
 
-    println!("Stack pointer = {stack_ptr:#x}");
-    println!("Return address = {ret_addr:#x}");
+    println!("[fuzzer] Stack pointer = {stack_ptr:#x}");
+    println!("[fuzzer] Return address = {ret_addr:#x}");
 
     emu.remove_breakpoint(fuzzed_func_addr);
     emu.set_breakpoint(ret_addr);
@@ -124,10 +136,10 @@ pub fn fuzz() {
     // println!("Placing input at {input_addr:#x}");
 
     // To test the harness function before the fuzzing loop
-    test_tauri_cmd_2_harness(&emu, fuzzed_func_addr, stack_ptr);
+    // test_tauri_cmd_2_harness(&emu, fuzzed_func_addr, stack_ptr);
 
-    let mut harness =
-        |input: &BytesInput| tauri_cmd_2_harness(&emu, input, fuzzed_func_addr, stack_ptr);
+    // let mut harness = |input: &BytesInput| tauri_cmd_2_harness(&emu, input, fuzzed_func_addr, stack_ptr);
+    let mut harness = |input: &BytesInput| test_harness(input);
 
     let mut run_client = |state: Option<_>, mut mgr, _core_id| {
         // Create an observation channel using the coverage map
@@ -195,20 +207,32 @@ pub fn fuzz() {
             &mut state,
             &mut mgr,
         )
-        .expect("Failed to create QemuExecutor");
+        .expect("[fuzzer] Failed to create QemuExecutor");
+
+
+        // Create the executor for an in-process function
+        let mut executor = InProcessExecutor::new(&mut harness, (), &mut fuzzer, &mut state, &mut mgr)
+            .expect("Failed to create the Executor");
+
+
 
         // Wrap the executor to keep track of the timeout
-        let mut executor = TimeoutExecutor::new(executor, timeout);
+        // let mut executor = TimeoutExecutor::new(executor, timeout);
 
-        if state.must_load_initial_inputs() {
-            state
-                .load_initial_inputs(&mut fuzzer, &mut executor, &mut mgr, &corpus_dirs)
-                .unwrap_or_else(|_| {
-                    println!("Failed to load initial corpus at {:?}", &corpus_dirs);
-                    process::exit(0);
-                });
-            println!("We imported {} inputs from disk.", state.corpus().count());
-        }
+        let mut generator = RandPrintablesGenerator::new(4);
+        let _ = state.generate_initial_inputs_forced(&mut fuzzer, &mut executor, &mut generator, &mut mgr, 8);
+
+
+        // if state.must_load_initial_inputs() {
+        //     println!("[fuzzer] Loading initial inputs");
+        //     state
+        //         .load_initial_inputs(&mut fuzzer, &mut executor, &mut mgr, &corpus_dirs)
+        //         .unwrap_or_else(|_| {
+        //             println!("[fuzzer] Failed to load initial corpus at {:?}", &corpus_dirs);
+        //             process::exit(0);
+        //         });
+        //     println!("[fuzzer] We imported {} inputs from disk.", state.corpus().count());
+        // }
 
         // Setup an havoc mutator with a mutational stage
         let mutator = StdScheduledMutator::new(havoc_mutations());
@@ -223,7 +247,7 @@ pub fn fuzz() {
 
     // The stats reporter for the broker
     // let monitor = MultiMonitor::new(|s| println!("{s}"));
-    let monitor = SimpleMonitor::new(|s| println!("{s}"));
+    let monitor = SimpleMonitor::new(|s| println!("[fuzzer] {s}"));
 
     // Build and run a Launcher
     match Launcher::builder()
@@ -233,7 +257,8 @@ pub fn fuzz() {
         .monitor(monitor)
         .run_client(&mut run_client)
         .cores(&cores)
-        .stdout_file(Some("/dev/null"))
+        .stdout_file(Some("stdout"))
+        // .stdout_file(Some("/dev/null"))
         .build()
         .launch()
     {
@@ -243,48 +268,4 @@ pub fn fuzz() {
     }
 }
 
-fn test_tauri_cmd_2_harness(emu: &Emulator, fuzzed_func_addr: GuestAddr, stack_ptr: GuestAddr) {
-    let mut count: u32 = 0;
-    while count < 5 {
-        count = count + 1;
-        let input: BytesInput;
-        if count != 3 {
-            // Just give it a random byte
-            input = BytesInput::from(vec![0, 0, 0, 5]);
-        } else {
-            //Make the app crash with dangerous input
-            let u32_as_bytes: [u8; 4] = CRASH_INPUT_2.to_be_bytes();
-            input = BytesInput::from(&u32_as_bytes[..]);
-        }
-        tauri_cmd_2_harness(&emu, &input, fuzzed_func_addr, stack_ptr);
-    }
-}
 
-fn tauri_cmd_2_harness(
-    emu: &Emulator,
-    bytes_input: &BytesInput,
-    fuzzed_func_addr: GuestAddr,
-    stack_ptr: GuestAddr,
-) -> ExitKind {
-    let mut array_input = [0u8; 4];
-    array_input.copy_from_slice(bytes_input.bytes());
-    let input = u32::from_be_bytes(array_input);
-
-    let input_addr = emu
-        .map_private(0, MAX_INPUT_SIZE, MmapPerms::ReadWrite)
-        .unwrap();
-
-    // NOTE: argument have to be placed at Rsi register rather than usual Rdi
-    unsafe {
-        // emu.write_mem(input_addr, buf);
-        emu.write_reg(Regs::Rdi, input_addr).unwrap();
-        // emu.write_reg(Regs::Rdi, target).unwrap();
-        emu.write_reg(Regs::Rsi, input).unwrap();
-        emu.write_reg(Regs::Rip, fuzzed_func_addr).unwrap();
-        emu.write_reg(Regs::Rsp, stack_ptr).unwrap();
-        // emu.add_gdb_cmd()
-        emu.run();
-    }
-
-    ExitKind::Ok
-}

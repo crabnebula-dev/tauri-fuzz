@@ -15,5 +15,5 @@ opt-level = 3
 debug = true
 
 [dependencies]
-libafl = "0.10"
-libafl_qemu = "0.10"
+libafl = "0.10.1"
+libafl_qemu = "0.10.1"

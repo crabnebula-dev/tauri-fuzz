@@ -7,12 +7,12 @@
 #[tauri::command]
 #[no_mangle]
 fn tauri_cmd_1(input: &str) -> String {
-    println!("Entering tauri_cmd_1 with input:\n{}", input);
+    println!("[mini-app] Entering tauri_cmd_1 with input:\n{}", input);
     let mut bytes = input.bytes();
     if bytes.next() == Some(b'a') {
         if bytes.next() == Some(b'b') {
             if bytes.next() == Some(b'c') {
-                panic!("Crashing! =)");
+                panic!("[mini-app] Crashing! =)");
             }
         }
     }
@@ -22,9 +22,9 @@ fn tauri_cmd_1(input: &str) -> String {
 #[tauri::command]
 #[no_mangle]
 fn tauri_cmd_2(input: u32) -> String {
-    println!("Entering tauri_cmd_2 with input:\n{}", input);
+    println!("[mini-app] Entering tauri_cmd_2 with input:\n{}", input);
     if input == 100 {
-        panic!("Crashing! =)");
+        panic!("[mini-app] Crashing! =)");
     }
     format!("Hello, you wrote {}!", input)
 }
@@ -40,12 +40,12 @@ fn main() {
     type R = MockRuntime;
     // type R = Wry;
 
-    println!("Starting");
+    println!("[mini-app] Starting");
     let app = tauri::Builder::<R>::new()
         .invoke_handler(tauri::generate_handler![tauri_cmd_1, tauri_cmd_2])
         .build(tauri::generate_context!())
         .unwrap();
-    println!("Tauri app is built");
+    println!("[mini-app] Tauri app is built");
 
     // app.run(|_, _| {});
     app.run(|app_handle, _event| {

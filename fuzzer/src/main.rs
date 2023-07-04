@@ -1,6 +1,8 @@
 //! A libfuzzer-like fuzzer using qemu for binary-only coverage
 #[cfg(target_os = "linux")]
 mod fuzzer;
+mod utils;
+mod harness;
 
 #[cfg(target_os = "linux")]
 pub fn main() {
