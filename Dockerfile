@@ -19,7 +19,9 @@ RUN rustup component add rustfmt clippy
 
 # Install clang 11, common build tools
 RUN apt update 
-RUN apt install -y build-essential gdb git wget clang clang-tools libc++-11-dev libc++abi-11-dev llvm ninja-build
+RUN apt install -y build-essential gdb git wget clang clang-tools libc++-11-dev libc++abi-11-dev llvm 
+# Missing package
+RUN apt install -y ninja-build libglib2.0-dev python3-venv
 
 # Install Tauri dependencies
 # RUN cargo install tauri-cli
@@ -46,12 +48,11 @@ COPY README.md README.md
 # RUN cargo build --release
 
 # Build fuzzer
-# WORKDIR /hackathon/fuzzer
-# RUN cargo build --release
+WORKDIR /$FUZZ_DIR/fuzzer
+RUN cargo build --release
 
 # Add missing include path
 RUN echo export C_INCLUDE_PATH=/usr/lib/x86_64-linux-gnu/glib-2.0/include/:/$FUZZ_DIR/fuzzer/target/debug/qemu-libafl-bridge/tcg/i386/ >> /root/.bashrc
-
 
 WORKDIR /$FUZZ_DIR
 
