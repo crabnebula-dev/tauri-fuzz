@@ -1,13 +1,9 @@
 use libafl_qemu::{
     //asan::QemuAsanHelper,
-    edges::{edges_map_mut_slice, QemuEdgeCoverageHelper, MAX_EDGES_NUM},
-    elf::EasyElf,
     emu::Emulator,
     GuestAddr,
     //snapshot::QemuSnapshotHelper,
     MmapPerms,
-    QemuExecutor,
-    QemuHooks,
     Regs,
 };
 
@@ -15,6 +11,7 @@ use libafl::prelude::{BytesInput, ExitKind};
 use crate::fuzzer::{MAX_INPUT_SIZE, CRASH_INPUT_2, CRASH_INPUT_1};
 use crate::utils::bytes_input_to_u32;
 
+#[allow(dead_code)]
 pub(crate) fn test_harness(bytes_input: &BytesInput) -> ExitKind {
     let input: u32 = bytes_input_to_u32(bytes_input);
     

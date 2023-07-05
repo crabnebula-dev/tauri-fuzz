@@ -135,11 +135,11 @@ pub fn fuzz() {
     //     .unwrap();
     // println!("Placing input at {input_addr:#x}");
 
-    // To test the harness function before the fuzzing loop
+    // // To test the harness function before the fuzzing loop
     // test_tauri_cmd_2_harness(&emu, fuzzed_func_addr, stack_ptr);
 
-    // let mut harness = |input: &BytesInput| tauri_cmd_2_harness(&emu, input, fuzzed_func_addr, stack_ptr);
-    let mut harness = |input: &BytesInput| test_harness(input);
+    let mut harness = |input: &BytesInput| tauri_cmd_2_harness(&emu, input, fuzzed_func_addr, stack_ptr);
+    // let mut harness = |input: &BytesInput| test_harness(input);
 
     let mut run_client = |state: Option<_>, mut mgr, _core_id| {
         // Create an observation channel using the coverage map
@@ -198,7 +198,7 @@ pub fn fuzz() {
         let mut hooks = QemuHooks::new(&emu, ());
 
         // Create a QEMU in-process executor
-        let executor = QemuExecutor::new(
+        let mut executor = QemuExecutor::new(
             &mut hooks,
             &mut harness,
             // tuple_list!(edges_observer, time_observer),
@@ -210,29 +210,18 @@ pub fn fuzz() {
         .expect("[fuzzer] Failed to create QemuExecutor");
 
 
-        // Create the executor for an in-process function
-        let mut executor = InProcessExecutor::new(&mut harness, (), &mut fuzzer, &mut state, &mut mgr)
-            .expect("Failed to create the Executor");
+        // // Create the executor for an in-process function
+        // let mut executor = InProcessExecutor::new(&mut harness, (), &mut fuzzer, &mut state, &mut mgr)
+        //     .expect("Failed to create the Executor");
 
 
 
-        // Wrap the executor to keep track of the timeout
+        // // Wrap the executor to keep track of the timeout
         // let mut executor = TimeoutExecutor::new(executor, timeout);
 
         let mut generator = RandPrintablesGenerator::new(4);
         let _ = state.generate_initial_inputs_forced(&mut fuzzer, &mut executor, &mut generator, &mut mgr, 8);
 
-
-        // if state.must_load_initial_inputs() {
-        //     println!("[fuzzer] Loading initial inputs");
-        //     state
-        //         .load_initial_inputs(&mut fuzzer, &mut executor, &mut mgr, &corpus_dirs)
-        //         .unwrap_or_else(|_| {
-        //             println!("[fuzzer] Failed to load initial corpus at {:?}", &corpus_dirs);
-        //             process::exit(0);
-        //         });
-        //     println!("[fuzzer] We imported {} inputs from disk.", state.corpus().count());
-        // }
 
         // Setup an havoc mutator with a mutational stage
         let mutator = StdScheduledMutator::new(havoc_mutations());
@@ -257,8 +246,7 @@ pub fn fuzz() {
         .monitor(monitor)
         .run_client(&mut run_client)
         .cores(&cores)
-        .stdout_file(Some("stdout"))
-        // .stdout_file(Some("/dev/null"))
+        .stdout_file(Some("/dev/stdout"))
         .build()
         .launch()
     {
