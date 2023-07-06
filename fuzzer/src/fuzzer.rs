@@ -34,43 +34,27 @@ use libafl::{
     Error,
 };
 use libafl_qemu::{
-    //asan::QemuAsanHelper,
     edges::{edges_map_mut_slice, QemuEdgeCoverageHelper, MAX_EDGES_NUM},
     elf::EasyElf,
     emu::Emulator,
     GuestAddr,
-    //snapshot::QemuSnapshotHelper,
     MmapPerms,
     QemuExecutor,
     QemuHooks,
     Regs,
 };
 
-use crate::harness::*;
+use crate::qemu::*;
+use crate::utils::*;
 
 pub const MAX_INPUT_SIZE: usize = 1048576; // 1MB
 
-// Path to the Tauri sample app binary
-// TODO #[no_mangle] does not work with release build
-// pub const MINI_APP: &str = "../mini-app/src-tauri/target/release/mini-app";
-const MINI_APP: &str = "/f/mini-app/src-tauri/target/debug/mini-app";
-const TAURI_CMD_1: &str = "tauri_cmd_1";
-const TAURI_CMD_2: &str = "tauri_cmd_2";
-pub const CRASH_INPUT_1: &str = "abc";
-pub const CRASH_INPUT_2: u32 = 100;
-
 pub fn fuzz() {
-    // Get the target file path
-    let mut mini_app_path = std::env::current_exe().unwrap();
-    mini_app_path.pop();
-    mini_app_path.pop();
-    mini_app_path.pop();
-    mini_app_path.pop();
-    mini_app_path.push(String::from("mini-app"));
-    mini_app_path.push(String::from("src-tauri"));
-    mini_app_path.push(String::from("target"));
-    mini_app_path.push(String::from("debug"));
-    mini_app_path.push(String::from("mini-app"));
+    // Fuzzed function parameters
+    let fuzzed_bynary_path = mini_app_path();
+    let fuzzed_func = TAURI_CMD_2;
+    let qemu_harness: &QemuHarness = &tauri_cmd_2_harness;
+
 
     // Hardcoded parameters
     let _timeout = Duration::from_secs(1);
@@ -79,67 +63,9 @@ pub fn fuzz() {
     let _corpus_dirs = [PathBuf::from("./corpus")];
     let objective_dir = PathBuf::from("./crashes");
 
-    // Initialize QEMU
-    env::remove_var("LD_LIBRARY_PATH");
-    let mut args: Vec<String> = env::args().collect();
-    args.push(mini_app_path.into_os_string().into_string().unwrap());
-    let env: Vec<(String, String)> = env::vars().collect();
-    let emu = Emulator::new(&args, &env).unwrap();
+    let (emu, fuzzed_func_addr, fuzzed_func_stack_ptr, heap_mem) = setup_qemu_emulator(fuzzed_bynary_path, fuzzed_func);
 
-    let mut elf_buffer = Vec::new();
-    let elf = EasyElf::from_file(emu.binary_path(), &mut elf_buffer).unwrap();
-
-    // Get the address of the function `tauri_cmd_1`
-    // let fuzzed_func_addr = elf
-    //     .resolve_symbol(TAURI_CMD_1, emu.load_addr())
-    //     .unwrap_or_else(|| panic!("Symbol \"{}\" not found", TAURI_CMD_1));
-    // println!("{} @ {fuzzed_func_addr:#x}", TAURI_CMD_1);
-
-
-    // Get the address of the function `tauri_cmd_2`
-    let fuzzed_func_addr = elf
-        .resolve_symbol(TAURI_CMD_2, emu.load_addr())
-        .unwrap_or_else(|| panic!("Symbol \"{}\" not found", TAURI_CMD_2));
-    println!("[fuzzer] {} @ {fuzzed_func_addr:#x}", TAURI_CMD_2);
-
-    // We run the program until we reach main
-    emu.set_breakpoint(fuzzed_func_addr);
-    unsafe {
-        // TODO
-        // Break at main then jump directly to the fuzzed func
-        // Tauri did not have time to initialize
-        emu.run();
-        // println!("Break at {:#x}", emu.read_reg::<_, u64>(Regs::Rip).unwrap());
-        // emu.write_reg(Regs::Rip, fuzzed_func_addr)
-        //     .unwrap_or_else(|e| panic!("{:?}", e));
-        // emu.run();
-    };
-
-    println!("[fuzzer] Break at {:#x}", emu.read_reg::<_, u64>(Regs::Rip).unwrap());
-
-    // Get the return address
-    let stack_ptr: u64 = emu.read_reg(Regs::Rsp).unwrap();
-    let mut ret_addr = [0; 8];
-    unsafe { emu.read_mem(stack_ptr, &mut ret_addr) };
-    let ret_addr = u64::from_le_bytes(ret_addr);
-
-    println!("[fuzzer] Stack pointer = {stack_ptr:#x}");
-    println!("[fuzzer] Return address = {ret_addr:#x}");
-
-    emu.remove_breakpoint(fuzzed_func_addr);
-    emu.set_breakpoint(ret_addr);
-
-    // // Reserve some memory in the emulator for dynamic sized data
-    // let input_addr = emu
-    //     .map_private(0, MAX_INPUT_SIZE, MmapPerms::ReadWrite)
-    //     .unwrap();
-    // println!("Placing input at {input_addr:#x}");
-
-    // // To test the harness function before the fuzzing loop
-    // test_tauri_cmd_2_harness(&emu, fuzzed_func_addr, stack_ptr);
-
-    let mut harness = |input: &BytesInput| tauri_cmd_2_harness(&emu, input, fuzzed_func_addr, stack_ptr);
-    // let mut harness = |input: &BytesInput| test_harness(input);
+    let mut harness = |input: &BytesInput| qemu_harness(&emu, input, fuzzed_func_addr, fuzzed_func_stack_ptr, heap_mem);
 
     let mut run_client = |state: Option<_>, mut mgr, _core_id| {
         // Create an observation channel using the coverage map
@@ -215,11 +141,10 @@ pub fn fuzz() {
         //     .expect("Failed to create the Executor");
 
 
-
         // // Wrap the executor to keep track of the timeout
         // let mut executor = TimeoutExecutor::new(executor, timeout);
 
-        let mut generator = RandPrintablesGenerator::new(4);
+        let mut generator = RandPrintablesGenerator::new(32);
         let _ = state.generate_initial_inputs_forced(&mut fuzzer, &mut executor, &mut generator, &mut mgr, 8);
 
 
@@ -253,6 +178,24 @@ pub fn fuzz() {
         Ok(()) => (),
         Err(Error::ShuttingDown) => println!("Fuzzing stopped by user. Good bye."),
         Err(err) => panic!("Failed to run launcher: {err:?}"),
+    }
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // Harness to test the fuzzing environment
+    fn test_harness(bytes_input: &BytesInput) -> ExitKind {
+        let input: u32 = bytes_input_to_u32(bytes_input);
+
+        if input == 4096 {
+            println!("[harness] input: {}, bytes_input: {:?}", input, bytes_input);
+            ExitKind::Crash
+        } else {
+            ExitKind::Ok
+        }
     }
 }
 

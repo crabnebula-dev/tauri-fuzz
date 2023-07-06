@@ -2,7 +2,7 @@
 #[cfg(target_os = "linux")]
 mod fuzzer;
 mod utils;
-mod harness;
+mod qemu;
 
 #[cfg(target_os = "linux")]
 pub fn main() {
