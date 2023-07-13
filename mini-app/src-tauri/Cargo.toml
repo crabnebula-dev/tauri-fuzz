@@ -8,16 +8,22 @@ repository = ""
 edition = "2021"
 rust-version = "1.57"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [build-dependencies]
 tauri-build = { version = "1.4", features = [] }
 
 [dependencies]
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
-# tauri = { path = "../../tauri/core/tauri/", features = [] }
-tauri = { git = "ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git" }
+
+[dependencies.tauri]
+# path = "../../../../tauri-apps/tauri/core/tauri/"
+git = "ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git"
+default-features = false
+features = ["fuzz"]
+
+[dependencies.tauri-runtime]
+# path = "../../../../tauri-apps/tauri/core/tauri-runtime"
+git = "ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git"
 
 [features]
 # by default Tauri runs in production mode

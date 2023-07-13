@@ -1487,6 +1487,7 @@ dependencies = [
  "serde_json",
  "tauri",
  "tauri-build",
+ "tauri-runtime",
 ]
 
 [[package]]
@@ -2524,7 +2525,7 @@ checksum = "1b1c7f239eb94671427157bd93b3694320f3668d4e1eff08c7285366fd777fac"
 [[package]]
 name = "tauri"
 version = "1.4.1"
-source = "git+ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git#042f3bc2b4b519965a8152445bf179a7aca1e310"
+source = "git+ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git#62ea9e05cb5286100d60d058678e92cb15d1de3e"
 dependencies = [
  "anyhow",
  "cocoa",
@@ -2585,7 +2586,7 @@ dependencies = [
 [[package]]
 name = "tauri-codegen"
 version = "1.4.0"
-source = "git+ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git#042f3bc2b4b519965a8152445bf179a7aca1e310"
+source = "git+ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git#62ea9e05cb5286100d60d058678e92cb15d1de3e"
 dependencies = [
  "base64 0.21.2",
  "brotli",
@@ -2609,7 +2610,7 @@ dependencies = [
 [[package]]
 name = "tauri-macros"
 version = "1.4.0"
-source = "git+ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git#042f3bc2b4b519965a8152445bf179a7aca1e310"
+source = "git+ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git#62ea9e05cb5286100d60d058678e92cb15d1de3e"
 dependencies = [
  "heck 0.4.1",
  "proc-macro2",
@@ -2622,7 +2623,7 @@ dependencies = [
 [[package]]
 name = "tauri-runtime"
 version = "0.14.0"
-source = "git+ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git#042f3bc2b4b519965a8152445bf179a7aca1e310"
+source = "git+ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git#62ea9e05cb5286100d60d058678e92cb15d1de3e"
 dependencies = [
  "gtk",
  "http",
@@ -2642,7 +2643,7 @@ dependencies = [
 [[package]]
 name = "tauri-runtime-wry"
 version = "0.14.0"
-source = "git+ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git#042f3bc2b4b519965a8152445bf179a7aca1e310"
+source = "git+ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git#62ea9e05cb5286100d60d058678e92cb15d1de3e"
 dependencies = [
  "cocoa",
  "gtk",
@@ -2689,7 +2690,7 @@ dependencies = [
 [[package]]
 name = "tauri-utils"
 version = "1.4.0"
-source = "git+ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git#042f3bc2b4b519965a8152445bf179a7aca1e310"
+source = "git+ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git#62ea9e05cb5286100d60d058678e92cb15d1de3e"
 dependencies = [
  "brotli",
  "ctor",
