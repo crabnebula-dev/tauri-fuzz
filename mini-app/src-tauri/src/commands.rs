@@ -6,6 +6,7 @@
 
 #[tauri::command]
 #[no_mangle]
+// No mangle is used for fuzzing when using Qemu
 pub fn tauri_cmd_1(input: &str) -> String {
     println!("[mini-app] Entering tauri_cmd_1 with input:\n{}", input);
     let mut bytes = input.bytes();
@@ -22,6 +23,7 @@ pub fn tauri_cmd_1(input: &str) -> String {
 
 #[tauri::command]
 #[no_mangle]
+// No mangle is used for fuzzing when using Qemu
 pub fn tauri_cmd_2(input: u32) -> String {
     println!("[mini-app] Entering tauri_cmd_2 with input:\n{}", input);
     if input == 100 {
