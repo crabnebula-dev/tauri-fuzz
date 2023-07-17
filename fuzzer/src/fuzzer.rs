@@ -34,18 +34,7 @@ use libafl::{
     Error,
 };
 
-use mini_app::*;
-
-#[cfg(qemu)]
-use libafl_qemu::{
-    edges::{edges_map_mut_slice, QemuEdgeCoverageHelper, MAX_EDGES_NUM},
-    elf::EasyElf,
-    emu::Emulator,
-    GuestAddr, MmapPerms, QemuExecutor, QemuHooks, Regs,
-};
-
-#[cfg(qemu)]
-use crate::qemu::*;
+use crate::tauri_fuzz_tools::*;
 use crate::utils::*;
 
 pub const MAX_INPUT_SIZE: usize = 1048576; // 1MB
@@ -61,9 +50,9 @@ pub fn inprocess_fuzz() {
     let objective_dir = PathBuf::from("./crashes");
 
     let mut harness = |bytes: &BytesInput| {
-        let app = mini_app::setup_tauri_mock();
-        let input = bytes_input_to_u32(bytes);
-        mini_app::call_tauri_cmd_2(app, input);
+        let app = setup_tauri_app().expect("Failed to init Tauri app");
+        // let app = call_one_tauri_cmd(app, payload_for_tauri_cmd_1(bytes))
+        call_one_tauri_cmd(app, payload_for_tauri_cmd_2(bytes));
         ExitKind::Ok
     };
 
@@ -181,7 +170,18 @@ pub fn inprocess_fuzz() {
     }
 }
 
-#[cfg(qemu)]
+#[cfg(feature = "qemu")]
+use libafl_qemu::{
+    edges::{edges_map_mut_slice, QemuEdgeCoverageHelper, MAX_EDGES_NUM},
+    elf::EasyElf,
+    emu::Emulator,
+    GuestAddr, MmapPerms, QemuExecutor, QemuHooks, Regs,
+};
+
+#[cfg(feature = "qemu")]
+use crate::qemu::*;
+
+#[cfg(feature = "qemu")]
 pub fn qemu_fuzz() {
     // Fuzzed function parameters
     let fuzzed_bynary_path = mini_app_path();

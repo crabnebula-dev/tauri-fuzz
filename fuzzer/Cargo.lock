@@ -1977,9 +1977,9 @@ version = "0.0.0"
 dependencies = [
  "serde",
  "serde_json",
- "tauri",
+ "tauri 1.4.1",
  "tauri-build",
- "tauri-runtime",
+ "tauri-runtime 0.14.0",
 ]
 
 [[package]]
@@ -1989,6 +1989,10 @@ dependencies = [
  "libafl",
  "libafl_qemu",
  "mini-app",
+ "serde",
+ "serde_json",
+ "tauri 1.4.1 (git+ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git)",
+ "tauri-runtime 0.14.0 (git+ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git)",
 ]
 
 [[package]]
@@ -3287,7 +3291,6 @@ checksum = "df8e77cb757a61f51b947ec4a7e3646efd825b73561db1c232a8ccb639e611a0"
 [[package]]
 name = "tauri"
 version = "1.4.1"
-source = "git+ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git#62ea9e05cb5286100d60d058678e92cb15d1de3e"
 dependencies = [
  "anyhow",
  "cocoa",
@@ -3314,9 +3317,53 @@ dependencies = [
  "serialize-to-javascript",
  "state",
  "tar",
- "tauri-macros",
- "tauri-runtime",
- "tauri-runtime-wry",
+ "tauri-macros 1.4.0",
+ "tauri-runtime 0.14.0",
+ "tauri-runtime-wry 0.14.0",
+ "tauri-utils 1.4.0",
+ "tempfile",
+ "thiserror",
+ "tokio",
+ "url",
+ "uuid",
+ "webkit2gtk",
+ "webview2-com",
+ "windows 0.39.0",
+]
+
+[[package]]
+name = "tauri"
+version = "1.4.1"
+source = "git+ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git#59cc1ecde0977b76e9671ede2390946712b08121"
+dependencies = [
+ "anyhow",
+ "cocoa",
+ "dirs-next",
+ "embed_plist",
+ "encoding_rs",
+ "flate2",
+ "futures-util",
+ "glib",
+ "glob",
+ "gtk",
+ "heck 0.4.1",
+ "http",
+ "ignore",
+ "objc",
+ "once_cell",
+ "percent-encoding",
+ "rand 0.8.5",
+ "raw-window-handle",
+ "semver",
+ "serde",
+ "serde_json",
+ "serde_repr",
+ "serialize-to-javascript",
+ "state",
+ "tar",
+ "tauri-macros 1.4.0 (git+ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git)",
+ "tauri-runtime 0.14.0 (git+ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git)",
+ "tauri-runtime-wry 0.14.0 (git+ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git)",
  "tauri-utils 1.4.0 (git+ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git)",
  "tempfile",
  "thiserror",
@@ -3348,7 +3395,30 @@ dependencies = [
 [[package]]
 name = "tauri-codegen"
 version = "1.4.0"
-source = "git+ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git#62ea9e05cb5286100d60d058678e92cb15d1de3e"
+dependencies = [
+ "base64 0.21.2",
+ "brotli",
+ "ico",
+ "json-patch",
+ "plist",
+ "png",
+ "proc-macro2",
+ "quote",
+ "semver",
+ "serde",
+ "serde_json",
+ "sha2",
+ "tauri-utils 1.4.0",
+ "thiserror",
+ "time",
+ "uuid",
+ "walkdir",
+]
+
+[[package]]
+name = "tauri-codegen"
+version = "1.4.0"
+source = "git+ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git#59cc1ecde0977b76e9671ede2390946712b08121"
 dependencies = [
  "base64 0.21.2",
  "brotli",
@@ -3372,20 +3442,51 @@ dependencies = [
 [[package]]
 name = "tauri-macros"
 version = "1.4.0"
-source = "git+ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git#62ea9e05cb5286100d60d058678e92cb15d1de3e"
 dependencies = [
  "heck 0.4.1",
  "proc-macro2",
  "quote",
  "syn 1.0.109",
- "tauri-codegen",
+ "tauri-codegen 1.4.0",
+ "tauri-utils 1.4.0",
+]
+
+[[package]]
+name = "tauri-macros"
+version = "1.4.0"
+source = "git+ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git#59cc1ecde0977b76e9671ede2390946712b08121"
+dependencies = [
+ "heck 0.4.1",
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
+ "tauri-codegen 1.4.0 (git+ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git)",
  "tauri-utils 1.4.0 (git+ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git)",
 ]
 
 [[package]]
 name = "tauri-runtime"
 version = "0.14.0"
-source = "git+ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git#62ea9e05cb5286100d60d058678e92cb15d1de3e"
+dependencies = [
+ "gtk",
+ "http",
+ "http-range",
+ "rand 0.8.5",
+ "raw-window-handle",
+ "serde",
+ "serde_json",
+ "tauri-utils 1.4.0",
+ "thiserror",
+ "url",
+ "uuid",
+ "webview2-com",
+ "windows 0.39.0",
+]
+
+[[package]]
+name = "tauri-runtime"
+version = "0.14.0"
+source = "git+ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git#59cc1ecde0977b76e9671ede2390946712b08121"
 dependencies = [
  "gtk",
  "http",
@@ -3405,20 +3506,65 @@ dependencies = [
 [[package]]
 name = "tauri-runtime-wry"
 version = "0.14.0"
-source = "git+ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git#62ea9e05cb5286100d60d058678e92cb15d1de3e"
 dependencies = [
  "cocoa",
  "gtk",
  "percent-encoding",
  "rand 0.8.5",
  "raw-window-handle",
- "tauri-runtime",
+ "tauri-runtime 0.14.0",
+ "tauri-utils 1.4.0",
+ "uuid",
+ "webkit2gtk",
+ "webview2-com",
+ "windows 0.39.0",
+ "wry",
+]
+
+[[package]]
+name = "tauri-runtime-wry"
+version = "0.14.0"
+source = "git+ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git#59cc1ecde0977b76e9671ede2390946712b08121"
+dependencies = [
+ "cocoa",
+ "gtk",
+ "percent-encoding",
+ "rand 0.8.5",
+ "raw-window-handle",
+ "tauri-runtime 0.14.0 (git+ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git)",
  "tauri-utils 1.4.0 (git+ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git)",
  "uuid",
  "webkit2gtk",
  "webview2-com",
  "windows 0.39.0",
  "wry",
+]
+
+[[package]]
+name = "tauri-utils"
+version = "1.4.0"
+dependencies = [
+ "brotli",
+ "ctor",
+ "dunce",
+ "glob",
+ "heck 0.4.1",
+ "html5ever",
+ "infer",
+ "json-patch",
+ "kuchiki",
+ "memchr",
+ "phf 0.10.1",
+ "proc-macro2",
+ "quote",
+ "semver",
+ "serde",
+ "serde_json",
+ "serde_with",
+ "thiserror",
+ "url",
+ "walkdir",
+ "windows 0.39.0",
 ]
 
 [[package]]
@@ -3452,7 +3598,7 @@ dependencies = [
 [[package]]
 name = "tauri-utils"
 version = "1.4.0"
-source = "git+ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git#62ea9e05cb5286100d60d058678e92cb15d1de3e"
+source = "git+ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git#59cc1ecde0977b76e9671ede2390946712b08121"
 dependencies = [
  "brotli",
  "ctor",

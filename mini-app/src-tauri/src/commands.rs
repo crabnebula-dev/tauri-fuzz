@@ -6,7 +6,7 @@
 
 #[tauri::command]
 #[no_mangle]
-pub(crate) fn tauri_cmd_1(input: &str) -> String {
+pub fn tauri_cmd_1(input: &str) -> String {
     println!("[mini-app] Entering tauri_cmd_1 with input:\n{}", input);
     let mut bytes = input.bytes();
     if bytes.next() == Some(b'a') {
@@ -22,7 +22,7 @@ pub(crate) fn tauri_cmd_1(input: &str) -> String {
 
 #[tauri::command]
 #[no_mangle]
-pub(crate) fn tauri_cmd_2(input: u32) -> String {
+pub fn tauri_cmd_2(input: u32) -> String {
     println!("[mini-app] Entering tauri_cmd_2 with input:\n{}", input);
     if input == 100 {
         panic!("[mini-app] Crashing! =)");

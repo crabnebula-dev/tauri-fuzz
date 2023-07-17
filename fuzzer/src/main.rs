@@ -1,8 +1,9 @@
 //! A libfuzzer-like fuzzer using qemu for binary-only coverage
 #[cfg(target_os = "linux")]
 mod fuzzer;
-#[cfg(qemu)]
+#[cfg(feature = "qemu")]
 mod qemu;
+mod tauri_fuzz_tools;
 mod utils;
 
 #[cfg(target_os = "linux")]

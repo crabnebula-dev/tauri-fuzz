@@ -1,16 +1,23 @@
-use libafl::inputs::{HasBytesVec, BytesInput};
-#[cfg(qemu)]
-use std::path::PathBuf;
+use libafl::bolts::AsSlice;
+use libafl::inputs::{BytesInput, HasBytesVec, HasTargetBytes};
 #[cfg(qemu)]
 use std::ffi::OsStr;
+#[cfg(qemu)]
+use std::path::PathBuf;
 
-pub(crate) fn bytes_input_to_u32(bytes_input: &BytesInput) -> u32 {
+pub fn bytes_input_to_u32(bytes_input: &BytesInput) -> u32 {
     let mut array_input = [0u8; 4];
     for (dst, src) in array_input.iter_mut().zip(bytes_input.bytes()) {
         *dst = *src
     }
     let res = u32::from_be_bytes(array_input);
     res
+}
+
+pub fn bytes_input_to_string(bytes_input: &BytesInput) -> String {
+    let owned = bytes_input.target_bytes();
+    let input = String::from_utf8_lossy(owned.as_slice());
+    input.to_string()
 }
 
 // TODO it's really bad
@@ -32,4 +39,3 @@ pub(crate) fn mini_app_path() -> PathBuf {
     mini_app_path.push(String::from("mini-app"));
     mini_app_path
 }
-
