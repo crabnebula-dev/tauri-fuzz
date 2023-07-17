@@ -52,12 +52,12 @@ use commands::*;
 #[no_mangle]
 pub fn call_tauri_cmd_2(app: TauriApp<MockRuntime>, input: u32) {
     app.run(move |app_handle, event| {
+        println!("[mini-app::lib] Received runtime event: {:?}", event);
         match event {
             // We have received a message that all windows were closed
             RunEvent::ExitRequested { .. } => {}
             RunEvent::Exit => {}
             _ => {
-                println!("[mini-app] Received runtime event: {:?}", event);
                 // Get the Tauri Window
                 let windows = app_handle.manager().windows_lock();
                 let main_window = windows.get("main").unwrap();
