@@ -22,7 +22,19 @@ Fuzzer prototype to use for Tauri applications
   - corpus scheduling
   - energy assignment
 
-## Tauri Fuzzing
+## Test the fuzzer 
+
+To fuzz the `mini-app` in the repo on the command `tauri_cmd_2`.
+This command is supposed to crash when given the input `100u32`.
+
+### Run the fuzz
+
+#### Locally
+
+In the `fuzzer` directory type:
+> `cargo run`
+
+#### With Docker
 
 The `Dockerfile` is meant to run the fuzzer. The idea is to use Vscode DevContainers for
 the fuzzer, as libAFL has some issues on some distros.
@@ -39,6 +51,23 @@ OR
 
 Use the devcontainer feature from vscode and it magically works.
 
+### Check the fuzzing results
+
+Outputs from the fuzzer are stored in files in the `fuzzer/crash/` directory.
+Each file represents an input on which the tested command has crashed.
+
+View the input value using:
+> `hexdump -C crashes/file_in_the_dir`
+
+The result should contain this:
+> 00000000  00 00 00 64 35 ff ff ff
+
+The 4 first bytes represent the `u32` that was given to the tested command.
+In hex `0x64 = 100` which is the input on which the tested command crash.
+
+
+## Tauri Fuzzing
+
 ### End Goal
 
 Framework to build fuzzers on the fly specialized for Tauri projects
@@ -48,57 +77,26 @@ Framework to build fuzzers on the fly specialized for Tauri projects
   - more customization for Tauri
   - long-term taint tracking analysis
 
-### Sub-goals
-
-- Automatized search for Tauri app entrypoints to the backend
-  - Tauri API
-  - custom commands
-
-- Coverage guided fuzzing for Tauri
-  - instrument Tauri application binaries to be suitable for coverage fuzzing
-  - either during compilation
-  - either during link-time optimization
-
-- Fuzz the sample Tauri app using Qemu and snapshots
-
-- Intercept IPC between Tauri and the webview 
-  - directly call Tauri commands without using the webview
-
-- Define interesting metrics for security
-  - crashing, time, ...
-
-- Improve performance of the fuzzing by having a mock runtime for Tauri
-  - Mock runtime will enable us to fuzz a Tauri app without spawning a webview
-
 ### Open Questions
 
 - How can we find the correct function symbols (mangling/no_mangling)?
 - How can we observe filesystem changes?
 - How can we observe network requests?
 
-### Why do we use QEMU? 
-
-We choose to fuzz the Tauri App in a VM using QEMU for 
-- Tauri can safely interact with the OS 
-- Using QEMU allow us to use snapshots
-    - We can fuzz from a snapshot where Tauri has already been initialized 
-    - We can fuzz the Tauri app from states that were deemed interesting
-
-#### Disadvantages 
-
-Fuzzing using QEMU will surely degrade performance.
-
-#### Alternatives
-
-- bare-metal with a Tauri mock runtime
-
-### TODO
-
-- [ ] Sample mini app crash fuzz
-
 ## Step to fuzz the commands of a Tauri app
+
 - Turn the Tauri app into a lib
-  - Move the tauri init process in a `lib.rs` file and call this function from `main.rs`
+  - Add a `src-tauri/src/lib.rs` file in the Tauri app 
+  - Turn Tauri commands visibility to `pub`
+  - Allow public re-export of Tauri commands by adding in the `lib.rs` file
+    - `pub mod file_where_commands_are`
+    - `pub use file_where_commands_are::*`
+- Import the Tauri application as a crate in your Cargo file
+- Code `InvokePayload` creation specific to each Tauri command
+  - examples are `crate::tauri_fuzz_tools::payload_for_tauri_cmd_2` and
+    `fuzzer::tauri_fuzz_tools::payload_for_tauri_cmd_1`
+- Change the harness in `crate::fuzzer::in_process()` function
+  - use your payload creation function you just wrote
 
 ## Resources and References
 

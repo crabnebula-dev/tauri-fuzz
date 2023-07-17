@@ -92,7 +92,7 @@ mod tests {
 
     #[test]
     fn test_tauri_app() {
-        let app = setup_tauri_mock();
+        let app = setup_tauri_app();
         assert!(app.is_ok());
         let input = BytesInput::from(&50u32.to_be_bytes()[..]);
         call_one_tauri_cmd(app.unwrap(), payload_for_tauri_cmd_2(&input));
