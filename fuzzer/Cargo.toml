@@ -5,8 +5,8 @@ authors = []
 edition = "2021"
 
 [features]
-default = ["std"]
-std = []
+default = []
+qemu = ["dep:libafl_qemu"]
 
 [profile.release]
 lto = true
@@ -16,4 +16,6 @@ debug = true
 
 [dependencies]
 libafl = "0.10.1"
-libafl_qemu = "0.10.1"
+libafl_qemu = { version = "0.10.1", optional = true }
+mini-app = { path = "../mini-app/src-tauri/" }
+

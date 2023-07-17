@@ -1,5 +1,7 @@
 use libafl::inputs::{HasBytesVec, BytesInput};
+#[cfg(qemu)]
 use std::path::PathBuf;
+#[cfg(qemu)]
 use std::ffi::OsStr;
 
 pub(crate) fn bytes_input_to_u32(bytes_input: &BytesInput) -> u32 {
@@ -7,10 +9,12 @@ pub(crate) fn bytes_input_to_u32(bytes_input: &BytesInput) -> u32 {
     for (dst, src) in array_input.iter_mut().zip(bytes_input.bytes()) {
         *dst = *src
     }
-    u32::from_be_bytes(array_input)
+    let res = u32::from_be_bytes(array_input);
+    res
 }
 
 // TODO it's really bad
+#[cfg(qemu)]
 pub(crate) fn mini_app_path() -> PathBuf {
     // Get the target file path
     let mut mini_app_path = std::env::current_exe().unwrap();

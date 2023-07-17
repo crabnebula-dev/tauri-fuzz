@@ -96,6 +96,10 @@ Fuzzing using QEMU will surely degrade performance.
 
 - [ ] Sample mini app crash fuzz
 
+## Step to fuzz the commands of a Tauri app
+- Turn the Tauri app into a lib
+  - Move the tauri init process in a `lib.rs` file and call this function from `main.rs`
+
 ## Resources and References
 
 - [LibAFL](https://github.com/AFLplusplus/LibAFL)
