@@ -141,6 +141,13 @@ Playing with the Tauri mock runtime
     - by sending a message `Message::CloseWindow`
     - then sending another message which is __not__ `ExitRequestedEventAction::Prevent`
 
+## 11 
+- Move code that setup and calls tauri commands to the fuzzer 
+    - now the application can add an almost empty `lib.rs` file to 
+      to be fuzzed
+- Refactor and clean code
+- Bibliography
+    - tinyinst
 
 ### Ideas to explore
 - custom wry proxy

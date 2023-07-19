@@ -6,6 +6,7 @@ Fuzzer prototype to use for Tauri applications
 
 - `mini-app` a minimal Tauri application which is the fuzz target
 - `fuzzer` directory containing the custom fuzzer
+- `notes` contains information about bibliography and advancement of project
 
 ## State of the Art Fuzzing
 
@@ -70,12 +71,18 @@ In hex `0x64 = 100` which is the input on which the tested command crash.
 
 ### End Goal
 
-Framework to build fuzzers on the fly specialized for Tauri projects
+- Framework to build fuzzers for Tauri apps 
+- Fuzzer for Tauri itself 
+    - custom protocol
+    - backend/frontend communication 
+    - configuration
+
 
 - Specialized / White Box / Mutation based?
 - LibAFL choice of tools
   - more customization for Tauri
   - long-term taint tracking analysis
+
 
 ### Open Questions
 
@@ -98,10 +105,6 @@ Framework to build fuzzers on the fly specialized for Tauri projects
 - Change the harness in `crate::fuzzer::in_process()` function
   - use your payload creation function you just wrote
 
-## Resources and References
 
-- [LibAFL](https://github.com/AFLplusplus/LibAFL)
-- [Fuzzers Like Lego (CCC Talk)](https://aflplus.plus/rC3_talk_2020.pdf)
-- [Tauri Commands Documentation](https://docs.rs/tauri/latest/tauri/command/index.html)
-- [LibAFL paper from 2022](https://www.s3.eurecom.fr/docs/ccs22_fioraldi.pdf)
-- [Fuzzy 101](https://epi052.gitlab.io/notes-to-self/blog/2021-11-01-fuzzing-101-with-libafl/)
+
+
