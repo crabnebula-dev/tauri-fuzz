@@ -2,11 +2,11 @@
 
 Fuzzer prototype to use for Tauri applications
 
-## Architecure
+## Architecture
 
 - `mini-app` a minimal Tauri application which is the fuzz target
 - `fuzzer` directory containing the custom fuzzer
-- `notes` contains information about bibliography and advancement of project
+- `docs` contains information about bibliography and advancement of project
 
 ## State of the Art Fuzzing
 
@@ -77,32 +77,24 @@ In hex `0x64 = 100` which is the input on which the tested command crash.
     - backend/frontend communication 
     - configuration
 
-
-- Specialized / White Box / Mutation based?
+- Specialized / Grey Box / Mutation based
 - LibAFL choice of tools
   - more customization for Tauri
   - long-term taint tracking analysis
 
-
-### Open Questions
-
-- How can we find the correct function symbols (mangling/no_mangling)?
-- How can we observe filesystem changes?
-- How can we observe network requests?
-
 ## Step to fuzz the commands of a Tauri app
 
-- Turn the Tauri app into a lib
+1. Turn the Tauri app into a lib
   - Add a `src-tauri/src/lib.rs` file in the Tauri app 
   - Turn Tauri commands visibility to `pub`
   - Allow public re-export of Tauri commands by adding in the `lib.rs` file
     - `pub mod file_where_commands_are`
     - `pub use file_where_commands_are::*`
-- Import the Tauri application as a crate in your Cargo file
-- Code `InvokePayload` creation specific to each Tauri command
+2. Import the Tauri application as a crate in your Cargo file
+3. Code `InvokePayload` creation specific to each Tauri command
   - examples are `crate::tauri_fuzz_tools::payload_for_tauri_cmd_2` and
     `fuzzer::tauri_fuzz_tools::payload_for_tauri_cmd_1`
-- Change the harness in `crate::fuzzer::in_process()` function
+4. Change the harness in `crate::fuzzer::in_process()` function
   - use your payload creation function you just wrote
 
 

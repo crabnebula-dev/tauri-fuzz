@@ -149,6 +149,11 @@ Playing with the Tauri mock runtime
 - Bibliography
     - tinyinst
 
+## 12
+- Bibliography
+- Mdbook
+- Plan for the future with Github issues
+
 ### Ideas to explore
 - custom wry proxy
     - https://webkitgtk.org/reference/webkit2gtk/2.28.2/WebKitNetworkProxySettings.html
@@ -158,5 +163,3 @@ Playing with the Tauri mock runtime
     - nix/frida/qemu
 
 
-
-# Q
