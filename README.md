@@ -23,7 +23,7 @@ Fuzzer prototype to use for Tauri applications
   - corpus scheduling
   - energy assignment
 
-## Test the fuzzer 
+## Test the fuzzer
 
 To fuzz the `mini-app` in the repo on the command `tauri_cmd_2`.
 This command is supposed to crash when given the input `100u32`.
@@ -71,10 +71,10 @@ In hex `0x64 = 100` which is the input on which the tested command crash.
 
 ### End Goal
 
-- Framework to build fuzzers for Tauri apps 
-- Fuzzer for Tauri itself 
+- Framework to build fuzzers for Tauri apps
+- Fuzzer for Tauri itself
     - custom protocol
-    - backend/frontend communication 
+    - backend/frontend communication
     - configuration
 
 - Specialized / Grey Box / Mutation based
@@ -85,7 +85,7 @@ In hex `0x64 = 100` which is the input on which the tested command crash.
 ## Step to fuzz the commands of a Tauri app
 
 1. Turn the Tauri app into a lib
-  - Add a `src-tauri/src/lib.rs` file in the Tauri app 
+  - Add a `src-tauri/src/lib.rs` file in the Tauri app
   - Turn Tauri commands visibility to `pub`
   - Allow public re-export of Tauri commands by adding in the `lib.rs` file
     - `pub mod file_where_commands_are`
@@ -97,6 +97,14 @@ In hex `0x64 = 100` which is the input on which the tested command crash.
 4. Change the harness in `crate::fuzzer::in_process()` function
   - use your payload creation function you just wrote
 
+## Documentation
+
+In an `mdbook` format.
+
+Requires `mdbook` and `mdbook-toc`
+
+> cargo install mdbook
+> cargo install mdbook-toc
 
 
 

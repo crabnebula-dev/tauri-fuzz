@@ -1,5 +1,7 @@
 # Web applications fuzzing
 
+<!-- toc -->
+
 ## Challenges
 
 What challenges are specific to web applications?
@@ -39,7 +41,7 @@ Fuzzing in web apps is still young.
         - ++ the fuzzing is the most complete
 - Greybox
     - really few papers of this type but it looks promising
-    - Pros/Cons 
+    - Pros/Cons
         - ++ you don't necessarily need source code
         - ++ extra information makes the fuzzing more efficient
         - ++ scales well
@@ -109,7 +111,7 @@ Greybox fuzzer targeted at PHP web applications __specialized for XSS vulnerabil
 Date: 2023
 Greybox fuzzing
 
-Really good paper. 
+Really good paper.
 - Context and challenges are explained clearly.
 - first paper to fuzz against SQL and code injection
 - bibliography is pleasant to read
@@ -127,7 +129,7 @@ and interpreted web applications
 
 We want to detect when an input makes the webapp transitions into an unsafe state.
 Usually for binary fuzzing we detect segfault and memory corruption.
-_Witcher_ uses fault escalation of syntax errors to detect when a SQL or code injection 
+_Witcher_ uses fault escalation of syntax errors to detect when a SQL or code injection
 has been executed by the fuzzer.
 
 ##### SQL fault escalation
@@ -137,33 +139,33 @@ has been triggered
 - illegal sql injection from the fuzzer has a high change to trigger a syntax error
 - valid sql access shouldn't form ill-formed requests
 
-##### Command injection escalation 
+##### Command injection escalation
 
-- `dash` is instrumented to escalate parsing error to segfault 
-- any code injection that calls `exec()`, `system()` or `passthru()` will be 
+- `dash` is instrumented to escalate parsing error to segfault
+- any code injection that calls `exec()`, `system()` or `passthru()` will be
 passed to `dash`
 - Witcher version of `dash` has 3 lines of code difference from the original
 
-##### Extend fault escalation 
+##### Extend fault escalation
 
-Syntax errors have been used for both SQL and command injection. 
+Syntax errors have been used for both SQL and command injection.
 This can apply also to any type of warning, error or pattern.
 __Ex: detect file system usage by triggering segfault when a non-ascii value has been used__
 
-##### XSS 
+##### XSS
 
-- Not handled 
+- Not handled
 - browsers are really permissive when parsing HTML
-- makes XSS vulnerabilities hard to detect 
+- makes XSS vulnerabilities hard to detect
 
-#### Request Crawler 
+#### Request Crawler
 
 Uses `Reqr`
 - extracts HTTP requests from all types of web application.
-- uses `Puppeteer` to simulate user actions 
-- static analyze the rendered HTML to detect HTML elements that create 
+- uses `Puppeteer` to simulate user actions
+- static analyze the rendered HTML to detect HTML elements that create
 HTTP requests or parameters
-- trigger all HTML elements that trigger user action 
+- trigger all HTML elements that trigger user action
 - randomly fires user event inputs
 
 #### Request Harness
@@ -174,12 +176,12 @@ Witcher’s HTTP harnesses translates fuzzer generated inputs into valid request
 
 #### Translating fuzzer input into a Request
 
-- create seeds to fuzz 
+- create seeds to fuzz
     - field for cookies
-    - query parameters 
+    - query parameters
     - post variables
-    - header values 
-- sets the variables for the webapp to operate correctly (e.g. cookies) 
+    - header values
+- sets the variables for the webapp to operate correctly (e.g. cookies)
 
 ### Augmenting Fuzzing for web injection vulnerabilities
 
@@ -188,71 +190,100 @@ Witcher’s HTTP harnesses translates fuzzer generated inputs into valid request
 It is hard to do code coverage for interpreted languages.
 Instrumentations to the interpreters add unnecessary noises.
 
-- augmented bytecode interpreter for interpreted languages 
+- augmented bytecode interpreter for interpreted languages
     - linenumber, opcode and parameters are collected at runtime
-- CGI binaries 
-    - source code available, uses AFL instrumentation 
+- CGI binaries
+    - source code available, uses AFL instrumentation
     - without source code uses dynamic QEMU instrumentation
 
 #### HTTP-specific Input mutations
 
 Add two HTTP-specific mutations stages to AFL
-- HTTP parameter mutator 
+- HTTP parameter mutator
     - cross-pollinates unique parameter name and values between
-    interesting test cases stored in the corpus 
+    interesting test cases stored in the corpus
     - more likely to trigger new execution rather than random
-    byte mutations 
-- HTTP dictionary mutator 
+    byte mutations
+- HTTP dictionary mutator
     - endpoints usually serve multiple purposes hence an endpoint
     may have several requests that use different HTTP variables
-    - for a given endpoint, `Witcher` places all the HTTP variables 
+    - for a given endpoint, `Witcher` places all the HTTP variables
     discoverd by `Reqr` into the fuzzing dictionary
 
-### Evaluation 
+### Evaluation
 
 - blackbox vs greybox: Outperforms `Blurp` in vulnerabilities found
 - Covers more code than `BlackWidow` and `webFuzz`
-    - they both specialize in XSS so we can't compare 
+    - they both specialize in XSS so we can't compare
 
-### Limitations 
+### Limitations
 
-- there are other web vulnerabilities 
+- there are other web vulnerabilities
     - XSS
     - path traversal
-    - local file inclusion 
-    - remote code evaluation 
+    - local file inclusion
+    - remote code evaluation
 - only detect reflected injection vulnerabilities
-    - when user input flows directly to a sensitive sink 
+    - when user input flows directly to a sensitive sink
     during a HTTP request
     - no detection of second-order vulnerabilities where there
     is a first step to store the injection in the webapp data
         - stored SQL injection
-    - fault escalation would trigger but hard to investigate 
+    - fault escalation would trigger but hard to investigate
     the actual input that stored the malicious injection
 - does not reason about the application state
-    - fuzzes one URL at a time 
+    - fuzzes one URL at a time
     - does not reason about multi-state actions
-   
+  
 ## [BlackWidow](https://www.cse.chalmers.se/~andrei/bw21.pdf)
 
 Date: 2021
 [BlackWidow Github](https://github.com/1N3/BlackWidow)
+
 TODO
 
-## [BackREST](https://arxiv.org/pdf/2108.08455.pdf)
 
-Date: 2021
-Blackbox fuzzing
+## REST API fuzzing
 
-## REST API fuzzing (TODO)
+A bit of context, most cloud services are accessible through REST APIs making them
+increasingly common.
+REST APIs are specified using the _OpenAPI_ specification.
+_Swagger_ tools uses _OpenAPI_ specs to produce docs, testcases, ...
 
 ### Challenges
 
+- modeling the REST API
+    - using captured traffic to derive a model
+    - dynamic crawler to derive a model
 - it's hard to trigger long sequence valid requests to trigger hard-to reach states
 - it's hard to forge high-quality requests that that pass the cloud service checking
 
+### [BackREST](https://arxiv.org/pdf/2108.08455.pdf)
+
+Date: 2021
+Greybox fuzzing
+
+#### Contributions
+
+- fully automated model-based for web applications
+- state-aware crawler to automatically infer REST APis
+- uses both coverage feedback and __taint-analysis__ to guide the fuzzing
+    - taint-analysis to guide the fuzzing
+    - coverage feedback to skip inputs in the corpus (more for performance)
+
+#### Taint-Analysis
+
+- NodeProf.js instrumentation framework that runs on the GraalVM runtime
+- Sensitive sinks are setup manually
+    - if part of an input reach a sink then it alarms the fuzzer
+How does taint-analysis detect SQLi, XSS and command injection? Without too many false positives? TODO
+
+#### Architecture
+
+![BackREST Architecture](../../images/backrest_architecture.png)
+
 ### [Miner](https://www.usenix.org/system/files/sec23fall-prepub-129-lyu.pdf)
- 
+
 TODO
 
 - uses data history to guide fuzzing
@@ -261,7 +292,15 @@ TODO
 
 ### [RESTler](https://patricegodefroid.github.io/public_psfiles/icse2019.pdf)
 
-[RESTler Github](https://github.com/microsoft/restler-fuzzer)
+Date: 2019
+There are more recent papers on [RESTler Github](https://github.com/microsoft/restler-fuzzer)
+
+__Stateful__ REST APIs fuzzing.
+- an input is sequence of HTTP requests
+- dependencies between requests are inferred from the _Swagger_ specification
+- HTTP responses are dynamically analyzed to produce new inputs
+    - ex: avoid a combination of requests that are not allowed
+
+### [Cefuzz](https://www.mdpi.com/2079-9292/11/5/758)
 
 TODO
-

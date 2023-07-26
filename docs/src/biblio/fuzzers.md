@@ -1,5 +1,7 @@
 # Fuzzer
 
+<!-- toc -->
+
 ## Generic Fuzzers
 
 - hongfuzz
