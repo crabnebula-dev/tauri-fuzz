@@ -51,8 +51,6 @@ Multiple possible granularities:
             - this is to prevent 0-value label if basic block jumps on itself
         6. Store the rightshifted value as "previous visited block"
         7. At the end of program exec, print/send/store map coverage feedback
-       
-
 
 ## Tools for runtime instrumentation/tracing
 
@@ -109,4 +107,39 @@ Multiple advantages:
 Tools:
 - CmpLog: logs results of comparison operands
 - afl-gcc-fast/afl-g++-fast: use gcc plugins
+
+### AFL tools
+
+Recommendation from [AFL Guide to Fuzzing in Depth](https://github.com/AFLplusplus/AFLplusplus/blob/stable/docs/fuzzing_in_depth.md)
+- `LTO > LLVM > gcc plugin > gcc mode`
+- __Important__ checking the coverage of the fuzzing
+    - use `afl-showmap`
+    - Section 3.g of
+    [AFL Guide to Fuzzing in Depth](https://github.com/AFLplusplus/AFLplusplus/blob/stable/docs/fuzzing_in_depth.md)
+
+#### [LTO mode](https://github.com/AFLplusplus/AFLplusplus/blob/stable/instrumentation/README.lto.md)
+
+- called `afl-clang-lto/afl-clang-lto++`
+- works with llvm11 or newer
+- __instrumentation at link time__
+- autodictionary feature
+    - while compiling a dictionary is generated
+    - in fuzzing a dictionary are base inputs that will help improve code coverage
+- improve efficiency of the fuzzer by avoiding basic block label collision
+    - classic coverage labels blocks randomly
+    - lto-mode instrument the files and avoid block label collision
+- only con is that is has long compile time
+
+#### LLVM mode
+
+#### [gcc plugin mode](https://github.com/AFLplusplus/AFLplusplus/blob/stable/instrumentation/README.gcc_plugin.md)
+
+Called `afl-gcc-fast/afl-g++-fast`
+Instrument the target with the help of `gcc` plugins.
+
+#### gcc/clang mode
+
+The base version without any special features.
+- `afl-gcc/afl-g++` and `afl-clang/afl-clang++`
+
 

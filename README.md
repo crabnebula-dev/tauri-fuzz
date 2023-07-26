@@ -107,4 +107,22 @@ Requires `mdbook` and `mdbook-toc`
 > cargo install mdbook-toc
 
 
+## Tips
+
+### Avoiding wear and tear of physical disk
+
+When using afl, you can transfer the heavy writing to RAM
+>  docker run -ti --mount type=tmpfs,destination=/ramdisk -e AFL_TMPDIR=/ramdisk aflplusplus/aflplusplus
+
+### Improving fuzzing speed
+
+Section 3.i of
+[AFL Guide to Fuzzing in Depth](https://github.com/AFLplusplus/AFLplusplus/blob/stable/docs/fuzzing_in_depth.md)
+
+- Use persistent mode (x2-x20 speed increase).
+- If you do not use shmem persistent mode, use AFL_TMPDIR to point the input file on a tempfs location, see /docs/env_variables/.
+- Linux: Improve kernel performance: modify /etc/default/grub, set GRUB_CMDLINE_LINUX_DEFAULT="ibpb=off ibrs=off kpti=off l1tf=off mds=off mitigations=off no_stf_barrier noibpb noibrs nopcid nopti nospec_store_bypass_disable nospectre_v1 nospectre_v2 pcid=off pti=off spec_store_bypass_disable=off spectre_v2=off stf_barrier=off"; then update-grub and reboot (warning: makes the system more insecure) - you can also just run sudo afl-persistent-config.
+- Linux: Running on an ext2 filesystem with noatime mount option will be a bit faster than on any other journaling filesystem.
+- Use your cores! See 3c) Using multiple cores.
+- Run sudo afl-system-config before starting the first afl-fuzz instance after a reboot.
 
