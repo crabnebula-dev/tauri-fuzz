@@ -150,9 +150,27 @@ Playing with the Tauri mock runtime
     - tinyinst
 
 ## 12
-- Bibliography
+- Bibliography 
 - Mdbook
 - Plan for the future with Github issues
+
+## 13 
+- Read AFL++ docs for code instrumentation 
+- Redo the dockerfile 
+    - Change to higher version of Debian to have llvm14 - Fail, llvm14 is not new enough to compile rust code
+    - Change to Ubuntu container 23.04
+    - Pin the Rust version to 17.0
+    - Pin compiler version for AFL++ to llvm-16
+- Compile with `afl-clang-lto`
+    - version of rustc llvm and the llvm you want to use need to match
+        - check your rustc llvm with `rustc --version --verbose`
+    - output llvm with `rustc` + vanilla compilation with `afl-clang-lto`
+    fails and not practical
+    - trying with `.cargo/config.toml`
+        - `[target.x86_64-unknown-linux-gnu] linker = "afl-clang-lto"`
+- Checking if coverage worked by checking asm
+- `afl-clang-lto` needs more instrumention before in the pipeline
+- we need to check `cargo-afl`
 
 ### Ideas to explore
 - custom wry proxy

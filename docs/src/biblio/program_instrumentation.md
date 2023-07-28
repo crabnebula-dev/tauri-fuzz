@@ -104,10 +104,6 @@ Multiple advantages:
 - speed: compiler can still optimize code after instrumentation
 - portability: the instrumentation is architecture independent
 
-Tools:
-- CmpLog: logs results of comparison operands
-- afl-gcc-fast/afl-g++-fast: use gcc plugins
-
 ### AFL tools
 
 Recommendation from [AFL Guide to Fuzzing in Depth](https://github.com/AFLplusplus/AFLplusplus/blob/stable/docs/fuzzing_in_depth.md)
@@ -142,4 +138,25 @@ Instrument the target with the help of `gcc` plugins.
 The base version without any special features.
 - `afl-gcc/afl-g++` and `afl-clang/afl-clang++`
 
+### AFL options
 
+#### [CmpLog](https://github.com/AFLplusplus/AFLplusplus/blob/stable/instrumentation/README.cmplog.md)
+
+Log comparison operands in shared memory for the different mutators.
+Many comparison operands check whether part of the state are equal to a preset byte range. 
+These byte ranges are called magic bytes.
+
+`CmpLog` guide mutations by linking the inputs to the states magic bytes.
+
+#### [laf-intel](https://github.com/AFLplusplus/AFLplusplus/blob/stable/instrumentation/README.laf-intel.md)
+
+"De-optimize" certain LLVM passes to increase code coverage.
+
+#### [persistent-mode](https://github.com/AFLplusplus/AFLplusplus/blob/stable/instrumentation/README.persistent_mode.md)
+
+Fuzz a program in a single forked process instead of forking a new process for each fuzz execution.
+Really important if we fuzz with fork server, speed improvements x10-x20
+
+#### [partial instrumentation](https://github.com/AFLplusplus/AFLplusplus/blob/stable/instrumentation/README.instrument_list.md)
+
+Select which part of the code you want to instrument
