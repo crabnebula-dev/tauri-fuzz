@@ -1,5 +1,6 @@
 pub mod commands;
 pub use commands::*;
+pub mod shell_injection;
 
 use log::trace;
 use serde_json::{Number, Value as JsonValue};
