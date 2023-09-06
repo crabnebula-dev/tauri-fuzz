@@ -14,12 +14,14 @@ tauri-build = { version = "1.4", features = [] }
 [dependencies]
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
+log = "0.4"
+env_logger = "*"
 
 [dependencies.tauri]
 # path = "../../../../tauri-apps/tauri/core/tauri/"
 git = "ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git"
 default-features = false
-features = ["fuzz"]
+features = ["fuzz", "process-command-api", "shell-open-api"]
 
 [dependencies.tauri-runtime]
 # path = "../../../../tauri-apps/tauri/core/tauri-runtime"

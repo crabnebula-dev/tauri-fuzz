@@ -4,11 +4,13 @@
 )]
 #![allow(unused_imports)]
 
+use log::trace;
+
 #[tauri::command]
-#[no_mangle]
+// #[no_mangle]
 // No mangle is used for fuzzing when using Qemu
 pub fn tauri_cmd_1(input: &str) -> String {
-    println!("[mini-app] Entering tauri_cmd_1 with input:\n{}", input);
+    trace!("[tauri_cmd_1] Entering with input: {}", input);
     let mut bytes = input.bytes();
     if bytes.next() == Some(b'a') {
         if bytes.next() == Some(b'b') {
@@ -17,18 +19,16 @@ pub fn tauri_cmd_1(input: &str) -> String {
             }
         }
     }
-    println!("[mini-app] Exiting tauri_cmd_1");
     format!("Hello, you wrote {}!", input)
 }
 
 #[tauri::command]
-#[no_mangle]
+// #[no_mangle]
 // No mangle is used for fuzzing when using Qemu
 pub fn tauri_cmd_2(input: u32) -> String {
-    println!("[mini-app] Entering tauri_cmd_2 with input:\n{}", input);
+    trace!("[tauri_cmd_2] Entering with input: {}", input);
     if input == 100 {
         panic!("[mini-app] Crashing! =)");
     }
-    println!("[mini-app] Exiting tauri_cmd_2");
     format!("Hello, you wrote {}!", input)
 }
