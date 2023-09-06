@@ -5,8 +5,6 @@
 #![allow(dead_code)]
 
 use core::{ptr::addr_of_mut, time::Duration};
-use std::{env, path::PathBuf, process};
-
 use libafl::{
     bolts::{
         core_affinity::Cores,
@@ -34,9 +32,14 @@ use libafl::{
     Error,
 };
 
+use std::alloc::{alloc_zeroed, Layout};
+use std::{env, path::PathBuf, process};
+
 use crate::tauri_fuzz_tools::*;
 use crate::utils::*;
+use libafl_targets::{edges_map_mut_slice, edges_max_num, MAX_EDGES_NUM};
 
+pub static mut EDGES: &mut [u8] = &mut [];
 pub const MAX_INPUT_SIZE: usize = 1048576; // 1MB
 
 pub fn inprocess_fuzz() {
@@ -58,13 +61,13 @@ pub fn inprocess_fuzz() {
 
     let mut run_client = |state: Option<_>, mut mgr, _core_id| {
         // Create an observation channel using the coverage map
-        // let edges_observer = unsafe {
-        //     HitcountsMapObserver::new(VariableMapObserver::from_mut_slice(
-        //         "edges",
-        //         edges_map_mut_slice(),
-        //         addr_of_mut!(MAX_EDGES_NUM),
-        //     ))
-        // };
+        let edges_observer = unsafe {
+            HitcountsMapObserver::new(VariableMapObserver::from_mut_slice(
+                "edges",
+                edges_map_mut_slice(),
+                addr_of_mut!(MAX_EDGES_NUM),
+            ))
+        };
 
         // Create an observation channel to keep track of the execution time
         // let time_observer = TimeObserver::new("time");
@@ -77,7 +80,8 @@ pub fn inprocess_fuzz() {
         //     // Time feedback, this one does not need a feedback state
         //     TimeFeedback::with_observer(&time_observer)
         // );
-        let mut feedback = ();
+        let mut feedback = MaxMapFeedback::tracking(&edges_observer, true, true);
+        // let mut feedback = ();
 
         // A feedback to choose if an input is a solution or not
         // let mut objective = feedback_or_fast!(CrashFeedback::new(), TimeoutFeedback::new());

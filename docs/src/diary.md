@@ -172,12 +172,94 @@ Playing with the Tauri mock runtime
 - `afl-clang-lto` needs more instrumention before in the pipeline
 - we need to check `cargo-afl`
 
-### Ideas to explore
-- custom wry proxy
-    - https://webkitgtk.org/reference/webkit2gtk/2.28.2/WebKitNetworkProxySettings.html
-    - not sure you can proxy the custom protocol
-- `https://github.com/tauri-apps/tauri-invoke-http` to use http over localhost instead of default Tauri
-- types of fuzzer
-    - nix/frida/qemu
+## 14 
+- in `cargo-afl` 
+    - files are compiled with
+    `let mut rustflags = format!(
+        "-C debug-assertions \
+         -C overflow_checks \
+         -C passes={passes} \
+         -C codegen-units=1 \
+         -C llvm-args=-sanitizer-coverage-level=3 \
+         -C llvm-args=-sanitizer-coverage-trace-pc-guard \
+         -C llvm-args=-sanitizer-coverage-prune-blocks=0 \
+         -C llvm-args=-sanitizer-coverage-trace-compares \
+         -C opt-level=3 \
+         -C target-cpu=native "
+    );
+    rustflags.push_str("-Clink-arg=-fuse-ld=gold ");
+    `
+- Compile mini-app with the function above 
+    - issue all crates are instrumented 
+    - `export RUSTFLAGS="-C debug-assertions -C overflow_checks -C passes=sancov-module -C codegen-units=1 -C llvm-args=-sanitizer-coverage-level=3 -C llvm-args=-sanitizer-coverage-trace-pc-guard -C llvm-args=-sanitizer-coverage-prune-blocks=0 -C llvm-args=-sanitizer-coverage-trace-compares -C opt-level=3 -C target-cpu=native --cfg fuzzing -Clink-arg=-fuse-ld=gold -l afl-llvm-rt -L /home/adang/.local/share/afl.rs/rustc-1.70.0-90c5418/afl.rs-0.13.3/afl-llvm-rt"`
+    - we need to make `-fsanitize-coverage-allowlist=` work
 
+## 15
+- Check `LibAFL`
+    - `libafl_targets`
+    - `libafl_cc`
+- Compile with `-C llvm-args=-sanitizer-coverage-trace-pc-guard`
+    - it place calls to `__sanitizer_cov_trace_pc_guard` at every edge (by default)
+    - `libafl_targets` implements `__sanitizer_cov_trace_pc_guard`
+    - flags
+        - `export RUSTFLAGS="-C debug-assertions -C overflow_checks -C passes=sancov-module -C codegen-units=1 -C llvm-args=-sanitizer-coverage-level=3 -C llvm-args=-sanitizer-coverage-trace-pc-guard -C llvm-args=-sanitizer-coverage-prune-blocks=0 -C llvm-args=-sanitizer-coverage-trace-compares -C opt-level=3 -C target-cpu=native --cfg fuzzing -C llvm-artg=-D__sanitizer_cov_trace_pc_guard_init"`
+    - `sanitize-coverage-allowlist=coverage_allowlist.txt` not supported with rust
+    - linking error, `ld` does not find symbols in `libafl_targets`
+- Selective instrumentation
+    - try allowlist but not working
+    - `cargo rustc`, which only affects your crate and not its dependencies.
+        - https://stackoverflow.com/questions/64242625/how-do-i-compile-rust-code-without-linking-i-e-produce-object-files
+- From Discord: 
+    - "I had good experience with using cargo-fuzz and https://github.com/AFLplusplus/LibAFL/pull/981 together"
+    - "So cargo-fuzz will instrument everything and that branch has a libfuzzer compatible runtime"
+    - "In a default cargo-fuzz project, just depend on that LibAFL libfuzzer version instead of the one from crates.io."
+    - "There is also the (somewhat unmaintained) cargo-libafl crate that could give some pointers"
+- `rustc` llvm-args
+    - `rustc -C llvm-args="--help-hidden" | nvim -`
 
+## 16
+- `cargo-libafl` is a fork of `cargo-fuzz`
+- How does it work with libfuzzer 
+    1. `init` command creates a `fuzz` directory with
+        - `fuzz_targets` with harness using the `fuzz_target!` macro
+        - `Cargo.toml` containing dependency to `libfuzzer-sys`
+        - `libfuzzer-sys` can refer to the original from `crates.io`
+        or to the ported version from `libafl`
+    2. `cargo-fuzz run` command to fuzz the targets
+        - Working when using the deprecrated original `libfuzzer-sys`
+        - Failing to link with the version from `libafl` 
+        - Same error when using `cargo-libafl`
+        - Steps:
+            1. Compile the `fuzz_targets` with the command
+            `RUSTFLAGS="-Cpasses=sancov-module -Cllvm-args=-sanitizer-coverage-level=4 -Cllvm-args=-sanitizer-coverage-inline-8bit-counters -Cllvm-args=-sanitizer-coverage-pc-table -Cllvm-args=-sanitizer-coverage-trace-compares --cfg fuzzing -Clink-dead-code -Cllvm-args=-sanitizer-coverage-stack-depth -Cdebug-assertions -C codegen-units=1" "cargo" "build" "--manifest-path" "/home/adang/boum/fuzzy/playground/rust-url/fuzz/Cargo.toml" "--target" "x86_64-unknown-linux-gnu" "--release" "--bin" "fuzz_target_1"`
+            2. Run the `fuzz_targets` with the command
+            `RUSTFLAGS="-Cpasses=sancov-module -Cllvm-args=-sanitizer-coverage-level=4 -Cllvm-args=-sanitizer-coverage-inline-8bit-counters -Cllvm-args=-sanitizer-coverage-pc-table -Cllvm-args=-sanitizer-coverage-trace-compares --cfg fuzzing -Clink-dead-code -Cllvm-args=-sanitizer-coverage-stack-depth -Cdebug-assertions -C codegen-units=1" "cargo" "run" "--manifest-path" "/home/adang/boum/fuzzy/playground/rust-url/fuzz/Cargo.toml" "--target" "x86_64-unknown-linux-gnu" "--release" "--bin" "fuzz_target_1" "--" "-artifact_prefix=/home/adang/boum/fuzzy/playground/rust-url/fuzz/artifacts/fuzz_target_1/" "/home/adang/boum/fuzzy/playground/rust-url/fuzz/corpus/fuzz_target_1"`
+
+- `fuzz_target!` macro definition is in `cargo-libafl/cargo-libafl-helper`  
+- To have a more complete fuzzer with memory sanitizer and else check
+`cargo-libafl/cargo-libafl/cargo-libafl-runtime`
+- Fork `cargo-fuzz` or `cargo-libafl` to use their framework to easily fuzz Tauri applications
+
+## 17
+- Use `cargo-fuzz` as frontend for the fuzzing then use `libafl` as a backend replacing `libfuzzer`
+- Installing `rustup component add llvm-preview-tools` to see information about code coverage
+    1. `cargo fuzz run fuzz_target`
+    2. `cargo fuzz coverage fuzz_target`
+    3. Show code coverage with `llvm-cov show`
+    > `llvm-cov show \
+    -instr-profile=coverage/fuzz_target_1/coverage.profdata \
+    -Xdemangler=rustfilt target/x86_64-unknown-linux-gnu/coverage/x86_64-unknown-linux-gnu/release/fuzz_target_1 \
+    -use-color --ignore-filename-regex='/.cargo/registry' \
+    -output-dir=coverage/fuzz_target_1/report -format=html \
+    -show-line-counts-or-regions \
+    -ignore-filename-regex='/rustc/.+'`
+        - docs on [https://llvm.org/docs/CommandGuide/llvm-cov.html#llvm-cov-show](https://llvm.org/docs/CommandGuide/llvm-cov.html#llvm-cov-show)
+        - bin with coverage information is generated at `target/arch_triple/coverage/arch_triple/release/fuzz_target`
+        - profile file is generated at `coverage/fuzz_target/coverage.profdata`
+    4. Create a summary report with `llvm-cov report` 
+    > `llvm-cov report \
+    -instr-profile=coverage/fuzz_target_2/coverage.profdata \
+    -use-color --ignore-filename-regex='/.cargo/registry' \
+    -Xdemangler=rustfilt target/x86_64-unknown-linux-gnu/coverage/x86_64-unknown-linux-gnu/release/fuzz_target_2`
+- Swap `libfuzzer` backend with `libafl_libfuzzer` version
+    - doc for options in the `LibAFL/libafl_libfuzzer/src/lib.rs`

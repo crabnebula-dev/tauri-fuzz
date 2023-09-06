@@ -15,8 +15,13 @@ opt-level = 3
 debug = true
 
 [dependencies]
-libafl = "0.10.1"
-libafl_qemu = { version = "0.10.1", optional = true }
+# libafl = "0.10.1"
+# libafl_qemu = { version = "0.10.1", optional = true }
+# libafl_targets = { version = "0.10.1", features = ["sancov_pcguard_hitcounts"] }
+libafl = { path = "../../LibAFL/libafl" }
+libafl_qemu = { path = "../../LibAFL/libafl_qemu", optional = true }
+libafl_targets = { path = "../../LibAFL/libafl_targets", features = ["sancov_pcguard_hitcounts"] }
+
 mini-app = { path = "../mini-app/src-tauri/" }
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }

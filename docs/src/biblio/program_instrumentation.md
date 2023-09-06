@@ -104,6 +104,98 @@ Multiple advantages:
 - speed: compiler can still optimize code after instrumentation
 - portability: the instrumentation is architecture independent
 
+### Rust options 
+
+Two code coverage options: 
+- a GCC-compatible, gcov-based coverage implementation, enabled with `-Z profile`,
+which derives coverage data based on DebugInfo
+- a source-based code coverage implementation, enabled with `-C instrument-coverage`, 
+which uses LLVM's native, efficient coverage instrumentation to generate very precise coverage data
+
+#### [Rust Source-based coverage](https://doc.rust-lang.org/rustc/instrument-coverage.html)
+
+- `cargo-fuzz` uses this technique
+    - `cargo-fuzz` is not a fuzzer but a framework to call a fuzzer
+    - the only supported fuzzer is `libFuzzer` 
+    - through the `libfuzzer-sys` crate
+- done on MIR
+- based on llvm souce-based code coverage
+- `rustc -C instrument-coverage` does:
+    - insert `llvm.instrprof.increment` at control-flows
+    - add a map in each library and binary to keep track of coverage information
+    - use symbol mangling v0
+- uses the Rust profiler runtime
+    - enabled by default on the `+nightly` channel
+- needs to use a Rust demangler: [`rustfilt`](https://crates.io/crates/rustfilt)
+    - can be provided to llvm options
+
+##### Using it
+
+1. Compile with `cargo` 
+    - `RUSTFLAGS="-C instrument-coverage" cargo build`
+    - may be necessary to use the profiler runtime:
+    `RUSTC=$HOME/rust/build/x86_64-unknown-linux-gnu/stage1/bin/rustc`
+2. Run the binary compiled
+    - it should produce a file `default_*.profraw`
+    - or name it with `LLVM_PROFILE_FILE="toto.profraw"`
+3. Process coverage data with `llvm-profdata`
+    - can be installed with `rustup`
+    - `llvm-profdata merge -sparse toto.profraw -o toto.profdata`
+4. Create reports with `llvm-cov`
+    - can be installed with `rustup`
+    - create a report when combining _profdata_ with the binary
+    - `llvm-cov show -Xdemangler=rustfilt target/debug/examples/toto \
+    -instr-profile=toto.profdata \
+    -show-line-counts-or-regions \
+    -show-instantiations \
+    -name=add_quoted_string`
+
+### LLVM options 
+
+LLVM has multiple options to intrument program during compilation
+- Source Based Coverage 
+- Sanitizer Coverage 
+- `gcov`: A GCC-compatible coverage implementation which operates on DebugInfo. This is enabled by `-ftest-coverage` or `--coverage`
+
+#### [Source-Based Coverage](https://clang.llvm.org/docs/SourceBasedCodeCoverage.html)
+
+Operates on AST and preprocessor information directly
+- better to map lines of Rust source code to coverage reports
+- `-fprofile-instr-generate -fcoverage-mapping`
+
+#### [Sanitizer Coverage](https://clang.llvm.org/docs/SanitizerCoverage.html#introduction)
+
+- operates on LLVM IR
+- `-fsanitize-coverage=trace-pc-guard` to trace with guards/closures
+    - will insert a call to `__sanitizer_cov_trace_pc_guard(&guard_variable)` on every edge
+    - `__sanitizer_cov_trace_pc_guard(&guard_variable)` can be
+        - implented by user
+        - defaulted to a counter with `-fsanitize-coverage=inline-8bit-counters` 
+        - defualted to a boolean flag with `-fsanitize-coverage=inline-bool-flag `
+- partial instrumentation with `-fsanitize-coverage-allowlist=allowlist.txt` 
+and `-fsanitize-coverage-ignorelist=blocklist.txt`
+    - these lists are filled with function names
+
+### LibAFL tools
+
+LibAFL project has directories such as:
+- `libafl_targets` that can be used for instrumentation
+- `libafl_cc` a library that provide facilities to wrap compilers
+
+#### [`cargo-libafl`](https://github.com/AFLplusplus/cargo-libafl/tree/main)
+
+This is a replacement to `cargo-fuzz` which went into maintenance.
+`cargo-libafl` is just a framework to prepare fuzzing.
+The actual fuzzer is `libfuzzer-sys` that is maintained in `libafl_targets`.
+
+1. `cargo libafl init`
+    - create a directory `fuzz_targets`
+2. `cargo libafl run <fuzz target name>`
+    - `exec_build` gives
+    `RUSTFLAGS="-Cpasses=sancov-module -Cllvm-args=-sanitizer-coverage-level=4 -Cllvm-args=-sanitizer-coverage-inline-8bit-counters -Cllvm-args=-sanitizer-coverage-pc-table -L /home/adang/.local/share/cargo-libafl/rustc-1.70.0-90c5418/cargo-libafl-0.1.8/cargo-libafl -lcargo_libafl_runtime -Cllvm-args=-sanitizer-coverage-trace-compares --cfg fuzzing -Clink-dead-code -Cllvm-args=-sanitizer-coverage-stack-depth -Cdebug-assertions -C codegen-units=1" "cargo" "build" "--manifest-path" "/home/adang/boum/fuzzy/playground/rust-url/fuzz/Cargo.toml" "--target" "x86_64-unknown-linux-gnu" "--release" "--bin" "fuzz_target_1"`
+    - 
+
+
 ### AFL tools
 
 Recommendation from [AFL Guide to Fuzzing in Depth](https://github.com/AFLplusplus/AFLplusplus/blob/stable/docs/fuzzing_in_depth.md)
