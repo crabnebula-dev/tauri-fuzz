@@ -1,6 +1,6 @@
-# Fuzzy prototype
+# Tauri-Fuzzer
 
-Fuzzer prototype to use for Tauri applications
+Tauri-Fuzzer is used to fuzz Tauri applications
 
 ## Architecture
 
@@ -8,104 +8,66 @@ Fuzzer prototype to use for Tauri applications
 - `fuzzer` directory containing the custom fuzzer
 - `docs` contains information about bibliography and advancement of project
 
-## State of the Art Fuzzing
+## Biblio on fuzzing
 
-- Architecture of a Fuzzer
-- Types of fuzzers
-  - Black/Grey/White box
-  - Mutation/Generation based
-  - Generalized/Specialized
-- Popular fuzzers: AFL, libFuzzer, hongfuzz
-- LibAFL framework
-- Areas of research/improvement
-  - roadblock bypassing
-  - structure aware fuzzing
-  - corpus scheduling
-  - energy assignment
-
-## Test the fuzzer
-
-To fuzz the `mini-app` in the repo on the command `tauri_cmd_2`.
-This command is supposed to crash when given the input `100u32`.
-
-### Run the fuzz
-
-#### Locally
-
-In the `fuzzer` directory type:
-> `cargo run`
-
-#### With Docker
-
-The `Dockerfile` is meant to run the fuzzer. The idea is to use Vscode DevContainers for
-the fuzzer, as libAFL has some issues on some distros.
-
-`docker build . -t test-fuzz`
-
-`docker run -it --privileged test-fuzz`
-
-`cd fuzzer`
-
-`cargo build --release`
-
-OR
-
-Use the devcontainer feature from vscode and it magically works.
-
-### Check the fuzzing results
-
-Outputs from the fuzzer are stored in files in the `fuzzer/crash/` directory.
-Each file represents an input on which the tested command has crashed.
-
-View the input value using:
-> `hexdump -C crashes/file_in_the_dir`
-
-The result should contain this:
-> 00000000  00 00 00 64 35 ff ff ff
-
-The 4 first bytes represent the `u32` that was given to the tested command.
-In hex `0x64 = 100` which is the input on which the tested command crash.
-
-
-## Tauri Fuzzing
-
-### End Goal
-
-- Framework to build fuzzers for Tauri apps
-- Fuzzer for Tauri itself
-    - custom protocol
-    - backend/frontend communication
-    - configuration
-
-- Specialized / Grey Box / Mutation based
-- LibAFL choice of tools
-  - more customization for Tauri
-  - long-term taint tracking analysis
-
-## Step to fuzz the commands of a Tauri app
-
-1. Turn the Tauri app into a lib
-  - Add a `src-tauri/src/lib.rs` file in the Tauri app
-  - Turn Tauri commands visibility to `pub`
-  - Allow public re-export of Tauri commands by adding in the `lib.rs` file
-    - `pub mod file_where_commands_are`
-    - `pub use file_where_commands_are::*`
-2. Import the Tauri application as a crate in your Cargo file
-3. Code `InvokePayload` creation specific to each Tauri command
-  - examples are `crate::tauri_fuzz_tools::payload_for_tauri_cmd_2` and
-    `fuzzer::tauri_fuzz_tools::payload_for_tauri_cmd_1`
-4. Change the harness in `crate::fuzzer::in_process()` function
-  - use your payload creation function you just wrote
-
-## Documentation
-
-In an `mdbook` format.
+In the mdbook in `docs`.
 
 Requires `mdbook` and `mdbook-toc`
 
 > cargo install mdbook
 > cargo install mdbook-toc
 
+## Testing the fuzzer
+
+### Setup a VM for fuzzing
+
+Fuzzing may be harmful for your system.
+Especially in this case where the fuzzer try to shell execution, file system corruption, ...
+
+We provide a Debian VM in [virtual-machines repo](https://github.com/crabnebula-dev/virtual-machines) in the `tauri-fuzz` branch.
+
+#### Generate and connect to the VM: 
+- Go to the `virtual-machines` root directory
+- `$(cd linux/distros/debian; packer build .)`
+- `make -C linux/clients/linux debian`
+- You can connect to the VM using SSH using port 2222
+    - username is `user`
+    - password is `user`
+    - `ssh -p 2222 user@localhost`
+
+#### Setup Tauri fuzzing tools in the VM
+
+After connecting to the VM using SSH
+- __Requirements__:
+    - be part of CN github organization
+    - having registered an SSH key in Github
+    - having SSH key port forwarding for Github private CN repo
+- Execute the script at `/home/user/setup_fuzz_tools.sh`
+- This will download and compile:
+    - `cargo-tauri-fuzz` tools to fuzz programs
+    - `tauri-fuzzer` this repo
+
+### Test the fuzzer on `mini-app`
+
+We recommend using a VM for testing. 
+Instructions to get one are above.
+
+Go to the `mini-app/src-tauri/fuzz` directory.
+
+#### Fuzzing targets
+
+Fuzz targets are in the `fuzz_targets directory`.
+They can also be listed with 
+
+```
+cargo-tauri-fuzz list
+```
+
+#### Fuzz a target 
+
+```
+cargo-tauri-fuzz run {target name}
+```
 
 ## Tips
 

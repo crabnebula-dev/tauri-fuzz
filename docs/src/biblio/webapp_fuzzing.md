@@ -304,3 +304,9 @@ __Stateful__ REST APIs fuzzing.
 ### [Cefuzz](https://www.mdpi.com/2079-9292/11/5/758)
 
 TODO
+
+## Typical attacks
+
+### SQL injection
+
+[List of examples](https://github.com/payloadbox/sql-injection-payload-list)

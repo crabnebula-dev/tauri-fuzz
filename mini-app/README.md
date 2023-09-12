@@ -2,12 +2,16 @@
 
 This is a minimal Tauri app that is used for testing Tauri fuzzing.
 
-## Steps to fuzz
+## `mini-app` vulnerabilities
 
-1. Install `cargo-fuzz`
-2. `cd` to "mini-app/src-tauri"
-3. `cargo-fuzz list`
-4. `cargo-fuzz run {one of the target of previous step}`, it needs +nightly compiler
+We want the fuzzer to be able to test for:
+- shell command injection
+- file access and corruption
+- sql injection
+
+Commands containing these kind of vulnerabilities are implemented as Tauri `command` in `mini-app`
+
+
 
 
 
