@@ -403,6 +403,12 @@ out:
 	if (likely(!setjmp(loc.loc)))
 		setjobctl(0);
 	flushall();
+	
+	// [tauri-fuzz] to crash on error code
+	if (exitstatus != 0) {
+		abort();
+	}
+
 	_exit(exitstatus);
 	/* NOTREACHED */
 }

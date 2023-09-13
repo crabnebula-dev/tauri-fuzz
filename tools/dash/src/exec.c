@@ -33,6 +33,9 @@
  */
 
 #include <sys/types.h>
+
+// [tauri-fuzz] include wait lib
+#include <sys/wait.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -98,6 +101,7 @@ STATIC struct tblentry *cmdlookup(const char *, int);
 STATIC void delete_cmd_entry(void);
 STATIC void addcmdentry(char *, struct cmdentry *);
 STATIC int describe_command(struct output *, char *, const char *, int);
+void get_execve_status(char *, char **, char **);
 
 
 /*
@@ -157,16 +161,35 @@ tryexec(char *cmd, char **argv, char **envp)
 repeat:
 #ifdef SYSV
 	do {
-		execve(cmd, argv, envp);
+		// [tauri-fuzz] replace execve with our custom function
+		get_execve_status(cmd, argv, envp);
+		// execve(cmd, argv, envp);
 	} while (errno == EINTR);
 #else
-	execve(cmd, argv, envp);
+	// [tauri-fuzz] replace execve with our custom function
+	get_execve_status(cmd, argv, envp);
+	// execve(cmd, argv, envp);
 #endif
 	if (cmd != path_bshell && errno == ENOEXEC) {
 		*argv-- = cmd;
 		*argv = cmd = path_bshell;
 		goto repeat;
 	}
+}
+
+// [tauri-fuzz] Crash if execution of execve results in non-zero
+void get_execve_status(char *cmd, char **argv, char **envp) {
+	pid_t p = fork();
+	int status;
+	if (p == 0) {
+		// Child process
+		execve(cmd, argv, envp);
+	}
+	wait(&status);
+	if (status != 0) {
+		abort();
+	}
+	exit(status);
 }
 
 static const char *legal_pathopt(const char *opt, const char *term, int magic)

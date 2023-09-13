@@ -69,13 +69,14 @@ typedef void *pointer;
 #define NULL (void *)0
 #endif
 #define STATIC static
-#define MKINIT /* empty */
+#define MKINIT	/* empty */
 
-extern char nullstr[1]; /* null string */
+extern char nullstr[1];		/* null string */
+
 
 #ifdef DEBUG
-#define TRACE(param) trace param
-#define TRACEV(param) tracev param
+#define TRACE(param)	trace param
+#define TRACEV(param)	tracev param
 #else
 #define TRACE(param)
 #define TRACEV(param)
@@ -89,14 +90,15 @@ extern char nullstr[1]; /* null string */
 #define __builtin_expect(x, expected_value) (x)
 #endif
 
-#define likely(x) __builtin_expect(!!(x), 1)
-#define unlikely(x) __builtin_expect(!!(x), 0)
+#define likely(x)	__builtin_expect(!!(x),1)
+#define unlikely(x)	__builtin_expect(!!(x),0)
 
 /*
  * Hack to calculate maximum length.
  * (length * 8 - 1) * log10(2) + 1 + 1 + 12
  * The second 1 is for the minus sign and the 12 is a safety margin.
  */
-static inline int max_int_length(int bytes) {
-  return (bytes * 8 - 1) * 0.30102999566398119521 + 14;
+static inline int max_int_length(int bytes)
+{
+	return (bytes * 8 - 1) * 0.30102999566398119521 + 14;
 }
