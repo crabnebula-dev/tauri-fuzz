@@ -263,3 +263,24 @@ Playing with the Tauri mock runtime
     -Xdemangler=rustfilt target/x86_64-unknown-linux-gnu/coverage/x86_64-unknown-linux-gnu/release/fuzz_target_2`
 - Swap `libfuzzer` backend with `libafl_libfuzzer` version
     - doc for options in the `LibAFL/libafl_libfuzzer/src/lib.rs`
+
+## 18 
+- Clone dash
+- Clone sqlite
+- Modify `dash` to make it crash 
+
+- TODO 
+    - create tests for dash 
+        - command
+            - rustc -V
+            - rustc toto
+            - ls
+            - ls toto
+        - builtin
+            - echo a
+            - pwd 
+            - pwd -toto
+        - non existing cmd 
+            - pwda
+    - create command that may be 
+    - set new dash as /bin/sh

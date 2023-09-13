@@ -24,12 +24,11 @@ Requires `mdbook` and `mdbook-toc`
 Fuzzing may be harmful for your system.
 Especially in this case where the fuzzer try to shell execution, file system corruption, ...
 
-We provide a Debian VM in [virtual-machines repo](https://github.com/crabnebula-dev/virtual-machines) in the `tauri-fuzz` branch.
+We provide a Debian VM in [virtual-machines repo](https://github.com/crabnebula-dev/virtual-machines) in the `feat/tauri-fuzz` branch.
 
 #### Generate and connect to the VM: 
-- Go to the `virtual-machines` root directory
-- `$(cd linux/distros/debian; packer build .)`
-- `make -C linux/clients/linux debian`
+- Go to the `virtual-machines/01_tauri_fuzz/debian` directory
+- Build and start the VM with `make run`
 - You can connect to the VM using SSH using port 2222
     - username is `user`
     - password is `user`
