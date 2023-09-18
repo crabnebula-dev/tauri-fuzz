@@ -1,10 +1,12 @@
 #![no_main]
 
 use libfuzzer_sys::fuzz_target;
-use mini_app::tauri_commands::shell::*;
-use mini_app::*;
+
+use std::process::Command;
 
 fuzz_target!(|data: &[u8]| {
-    let app = setup_tauri_mock().expect("Failed to init Tauri app");
-    call_tauri_cmd(app, payload_for_bin_sh(data));
+    let mut sh = Command::new("sh");
+    let input = String::from_utf8_lossy(data).to_string();
+    // sh.arg("-c").arg("whoami");
+    sh.arg("-c").arg(&input);
 });

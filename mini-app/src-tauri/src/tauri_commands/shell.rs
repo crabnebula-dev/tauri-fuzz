@@ -30,9 +30,24 @@ pub fn shell_command_1(input: String, arg: String) -> tauri::Result<String> {
 }
 
 #[tauri::command]
-pub fn bin_sh(input: String) -> tauri::Result<String> {
-    trace!("[bin_sh] Entering with input: {:?}", input,);
+pub fn tauri_bin_sh(input: String) -> tauri::Result<String> {
+    trace!("[tauri_bin_sh] Entering with input: {:?}", input,);
     res_output_to_tauri_res(Command::new("/bin/sh").args(["-c", &input]).output())
+}
+
+#[tauri::command]
+pub fn bin_sh(bytes: &[u8]) -> i32 {
+    trace!("[bin_sh] Entering with input: {:?}", bytes);
+    let mut sh = std::process::Command::new("sh");
+    let input = String::from_utf8_lossy(bytes).to_string();
+    let res = sh
+        .arg("-c")
+        .arg(&input)
+        .output()
+        .expect(&format!("Failed shell command: {:?}", &input));
+    res.status
+        .code()
+        .expect(&format!("Failed shell command: {:?}", &input))
 }
 
 pub fn payload_for_shell_command_0(bytes: &[u8]) -> InvokePayload {

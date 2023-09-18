@@ -34,6 +34,12 @@ test = false
 doc = false
 
 [[bin]]
+name = "tauri_bin_sh"
+path = "fuzz_targets/tauri_bin_sh.rs"
+test = false
+doc = false
+
+[[bin]]
 name = "bin_sh"
 path = "fuzz_targets/bin_sh.rs"
 test = false
