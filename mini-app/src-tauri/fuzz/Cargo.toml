@@ -9,7 +9,7 @@ cargo-fuzz = true
 
 [dependencies]
 # libfuzzer-sys = "0.4"
-libfuzzer-sys = { version = "0.11.1", features = [], package = "libafl_libfuzzer" }
+libfuzzer-sys = { version = "=0.11.0", features = [], package = "libafl_libfuzzer" }
 
 [dependencies.mini-app]
 path = ".."

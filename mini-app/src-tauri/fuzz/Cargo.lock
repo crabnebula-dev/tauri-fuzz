@@ -1442,9 +1442,9 @@ checksum = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
 
 [[package]]
 name = "libafl_libfuzzer"
-version = "0.11.1"
+version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6d085f6772f0df805ace168e53e2f9bf3185f3bd8a7ca96436a89061361e1f62"
+checksum = "634250201c3cfa50af66d96c97ff10846e3c43478fac406fe9a8b8cf59aacf7d"
 dependencies = [
  "cc",
  "document-features",
