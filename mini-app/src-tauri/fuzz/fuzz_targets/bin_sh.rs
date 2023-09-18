@@ -5,4 +5,6 @@ use mini_app::tauri_commands::shell::*;
 
 use std::process::Command;
 
-fuzz_target!(|data: &[u8]| { bin_sh(data) });
+fuzz_target!(|data: &[u8]| {
+    bin_sh(data);
+});
