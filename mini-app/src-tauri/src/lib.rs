@@ -1,11 +1,10 @@
-pub mod commands;
-pub use commands::*;
-pub mod shell_injection;
+pub mod tauri_commands;
+pub use tauri_commands::basic::*;
 
 use log::trace;
-use serde_json::{Number, Value as JsonValue};
 use std::collections::HashMap;
 
+use serde_json::Value as JsonValue;
 use tauri::api::ipc::CallbackFn;
 use tauri::app::App as TauriApp;
 use tauri::hooks::InvokePayload;
@@ -22,6 +21,7 @@ pub fn setup_tauri_mock() -> Result<TauriApp<MockRuntime>, tauri::Error> {
 }
 
 pub fn call_tauri_cmd(app: TauriApp<MockRuntime>, payload: InvokePayload) {
+    // ) -> Result<TauriApp<MockRuntime>, tauri::Error> {
     app.run(move |app_handle, event| {
         trace!("[call_tauri_cmd] Received runtime event: {:?}", event);
         match event {
@@ -34,7 +34,14 @@ pub fn call_tauri_cmd(app: TauriApp<MockRuntime>, payload: InvokePayload) {
                 let main_window = windows.get("main").unwrap();
 
                 // Trigger a Tauri command by sending our crafted message
-                let _ = main_window.clone().on_message(payload.clone());
+                trace!("[call_tauri_cmd] Calling with {:#?}", payload);
+                main_window
+                    .clone()
+                    .on_message(payload.clone())
+                    .expect(&format!(
+                        "Failed to run tauri commands with payload: {:?}",
+                        payload
+                    ));
 
                 // Send a message to close the window
                 let _ = <MockDispatcher as tauri_runtime::Dispatch<()>>::close(
@@ -46,7 +53,7 @@ pub fn call_tauri_cmd(app: TauriApp<MockRuntime>, payload: InvokePayload) {
     trace!("[call_tauri_cmd] Finished calling command");
 }
 
-fn payload_for_tauri_cmd(
+pub fn payload_for_tauri_cmd(
     cmd_name: String,
     command_args: HashMap<String, JsonValue>,
 ) -> InvokePayload {
@@ -62,26 +69,6 @@ fn payload_for_tauri_cmd(
         error: CallbackFn(1),
         inner: JsonValue::Object(json_map),
     }
-}
-
-#[allow(dead_code)]
-pub fn payload_for_tauri_cmd_1(bytes: &[u8]) -> InvokePayload {
-    let input = String::from_utf8_lossy(bytes).to_string();
-    let arg_name = String::from("input");
-    let arg_value = JsonValue::String(input);
-    let mut args = HashMap::new();
-    args.insert(arg_name, arg_value);
-    payload_for_tauri_cmd(String::from("tauri_cmd_1"), args)
-}
-
-#[allow(dead_code)]
-pub fn payload_for_tauri_cmd_2(bytes: &[u8]) -> InvokePayload {
-    let input = bytes_input_to_u32(bytes);
-    let arg_name = String::from("input");
-    let arg_value = JsonValue::Number(Number::from(input));
-    let mut args = HashMap::new();
-    args.insert(arg_name, arg_value);
-    payload_for_tauri_cmd(String::from("tauri_cmd_2"), args)
 }
 
 pub fn bytes_input_to_u32(bytes_input: &[u8]) -> u32 {
