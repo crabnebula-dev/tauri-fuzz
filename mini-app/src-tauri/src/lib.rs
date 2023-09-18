@@ -1,5 +1,6 @@
 pub mod tauri_commands;
 pub use tauri_commands::basic::*;
+pub use tauri_commands::shell::*;
 
 use log::trace;
 use std::collections::HashMap;
@@ -16,7 +17,14 @@ use tauri::RunEvent;
 
 pub fn setup_tauri_mock() -> Result<TauriApp<MockRuntime>, tauri::Error> {
     tauri::Builder::<MockRuntime>::new()
-        .invoke_handler(tauri::generate_handler![tauri_cmd_1, tauri_cmd_2])
+        .invoke_handler(tauri::generate_handler![
+            tauri_cmd_1,
+            tauri_cmd_2,
+            shell_command_0,
+            shell_command_1,
+            bin_sh,
+            open_command
+        ])
         .build(mock_context(noop_assets()))
 }
 

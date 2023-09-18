@@ -1,11 +1,10 @@
 use env_logger;
 use log::trace;
-use mini_app::tauri_commands::basic::payload_for_tauri_cmd_2;
-use mini_app::tauri_commands::shell::payload_for_bin_sh;
-use mini_app::tauri_commands::shell::payload_for_shell_command_0;
+use mini_app::tauri_commands::basic::*;
+use mini_app::tauri_commands::shell::*;
 #[allow(unused_imports)]
 use mini_app::*;
-use tauri::api::process::Command;
+// use tauri::api::process::Command;
 
 fn main() {
     env_logger::init();
