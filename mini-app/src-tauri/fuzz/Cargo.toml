@@ -9,7 +9,7 @@ cargo-fuzz = true
 
 [dependencies]
 # libfuzzer-sys = "0.4"
-libfuzzer-sys = { version = "*", features = [], package = "libafl_libfuzzer" }
+libfuzzer-sys = { version = "0.11.1", features = [], package = "libafl_libfuzzer" }
 
 [dependencies.mini-app]
 path = ".."
@@ -22,13 +22,19 @@ members = ["."]
 debug = 1
 
 [[bin]]
-name = "fuzz_target_1"
-path = "fuzz_targets/fuzz_target_1.rs"
+name = "tauri_cmd_1"
+path = "fuzz_targets/tauri_cmd_1.rs"
 test = false
 doc = false
 
 [[bin]]
-name = "fuzz_target_2"
-path = "fuzz_targets/fuzz_target_2.rs"
+name = "tauri_cmd_2"
+path = "fuzz_targets/tauri_cmd_2.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "bin_sh"
+path = "fuzz_targets/bin_sh.rs"
 test = false
 doc = false
