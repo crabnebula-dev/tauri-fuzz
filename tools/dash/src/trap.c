@@ -406,7 +406,8 @@ out:
 	
 	// [tauri-fuzz] to crash on error code
 	if (exitstatus != 0) {
-		abort();
+		// abort();
+		raise(SIGSEGV);
 	}
 
 	_exit(exitstatus);

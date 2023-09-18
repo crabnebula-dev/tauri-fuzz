@@ -187,7 +187,8 @@ void get_execve_status(char *cmd, char **argv, char **envp) {
 	}
 	wait(&status);
 	if (status != 0) {
-		abort();
+		raise(SIGSEGV);
+		// abort();
 	}
 	exit(status);
 }
