@@ -55,7 +55,6 @@ pub fn payload_for_shell_command_1(bytes: &[u8], arg: String) -> InvokePayload {
 }
 
 pub fn payload_for_bin_sh(bytes: &[u8]) -> InvokePayload {
-    println!("toto");
     let input = String::from_utf8_lossy(bytes).to_string();
     let arg_name = String::from("input");
     let arg_value = JsonValue::String(input);
@@ -64,6 +63,9 @@ pub fn payload_for_bin_sh(bytes: &[u8]) -> InvokePayload {
     payload_for_tauri_cmd(String::from("bin_sh"), args)
 }
 
-fn res_output_to_tauri_res(res: Result<tauri::api::process::Output, tauri::api::Error>) -> tauri::Result<String> {
-    res.map(|output| output.stdout).map_err(|api_err| tauri::error::Error::FailedToExecuteApi(api_err))
+fn res_output_to_tauri_res(
+    res: Result<tauri::api::process::Output, tauri::api::Error>,
+) -> tauri::Result<String> {
+    res.map(|output| output.stdout)
+        .map_err(|api_err| tauri::error::Error::FailedToExecuteApi(api_err))
 }
