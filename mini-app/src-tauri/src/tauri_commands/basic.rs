@@ -4,11 +4,11 @@
 )]
 #![allow(unused_imports)]
 
-use crate::{bytes_input_to_u32, payload_for_tauri_cmd};
+use crate::{bytes_input_to_u32};
 use log::trace;
-use serde_json::{Number, Value as JsonValue};
 use std::collections::HashMap;
-use tauri::hooks::InvokePayload;
+use tauri::window::InvokeRequest;
+use tauri::fuzz::{create_invoke_request, CommandArgs};
 
 #[tauri::command]
 pub fn tauri_cmd_1(input: &str) -> String {
@@ -34,21 +34,19 @@ pub fn tauri_cmd_2(input: u32) -> String {
 }
 
 // Helper code to create a payload tauri_cmd_1
-pub fn payload_for_tauri_cmd_1(bytes: &[u8]) -> InvokePayload {
+pub fn payload_for_tauri_cmd_1(bytes: &[u8]) -> InvokeRequest {
     let input = String::from_utf8_lossy(bytes).to_string();
     let arg_name = String::from("input");
-    let arg_value = JsonValue::String(input);
-    let mut args = HashMap::new();
-    args.insert(arg_name, arg_value);
-    payload_for_tauri_cmd(String::from("tauri_cmd_1"), args)
+    let mut args = CommandArgs::new();
+    args.insert(arg_name, input);
+    create_invoke_request(String::from("tauri_cmd_1"), args)
 }
 
 // Helper code to create a payload tauri_cmd_2
-pub fn payload_for_tauri_cmd_2(bytes: &[u8]) -> InvokePayload {
+pub fn payload_for_tauri_cmd_2(bytes: &[u8]) -> InvokeRequest {
     let input = bytes_input_to_u32(bytes);
     let arg_name = String::from("input");
-    let arg_value = JsonValue::Number(Number::from(input));
-    let mut args = HashMap::new();
-    args.insert(arg_name, arg_value);
-    payload_for_tauri_cmd(String::from("tauri_cmd_2"), args)
+    let mut args = CommandArgs::new();
+    args.insert(arg_name, input);
+    create_invoke_request(String::from("tauri_cmd_2"), args)
 }

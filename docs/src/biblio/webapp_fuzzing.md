@@ -310,3 +310,8 @@ TODO
 ### SQL injection
 
 [List of examples](https://github.com/payloadbox/sql-injection-payload-list)
+
+### Command injection 
+
+[List of examples](https://github.com/payloadbox/command-injection-payload-list)
+
