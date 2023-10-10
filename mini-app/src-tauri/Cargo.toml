@@ -16,16 +16,17 @@ log = "0.4"
 env_logger = "*"
 
 [dependencies.tauri]
-path = "../../../tauri-2.0/core/tauri"
-# git = "ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git"
+# path = "../../../tauri-for-fuzzy/core/tauri-runtime"
+git = "ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git"
+branch = "2.0.0-alpha14"
 default-features = false
 # features = ["fuzz", "process-command-api", "shell-open-api"]
 features = ["fuzz"]
 
 [dependencies.tauri-runtime]
 # path = "../../../tauri-for-fuzzy/core/tauri-runtime"
-path = "../../../tauri-2.0/core/tauri-runtime"
-# git = "ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git"
+git = "ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git"
+branch = "2.0.0-alpha14"
 
 [features]
 # by default Tauri runs in production mode

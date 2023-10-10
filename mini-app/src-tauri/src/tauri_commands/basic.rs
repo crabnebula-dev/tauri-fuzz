@@ -4,11 +4,11 @@
 )]
 #![allow(unused_imports)]
 
-use crate::{bytes_input_to_u32};
+use crate::bytes_input_to_u32;
 use log::trace;
 use std::collections::HashMap;
-use tauri::window::InvokeRequest;
 use tauri::fuzz::{create_invoke_request, CommandArgs};
+use tauri::window::InvokeRequest;
 
 #[tauri::command]
 pub fn tauri_cmd_1(input: &str) -> String {

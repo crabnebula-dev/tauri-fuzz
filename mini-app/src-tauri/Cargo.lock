@@ -2531,6 +2531,7 @@ checksum = "9d0e916b1148c8e263850e1ebcbd046f333e0683c724876bb0da63ea4373dc8a"
 [[package]]
 name = "tauri"
 version = "2.0.0-alpha.14"
+source = "git+ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git?branch=2.0.0-alpha14#bb90252d63fd3eb94dd596c6f5f52cb5f2e24025"
 dependencies = [
  "anyhow",
  "bytes",
@@ -2593,6 +2594,7 @@ dependencies = [
 [[package]]
 name = "tauri-build"
 version = "2.0.0-alpha.8"
+source = "git+ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git?branch=2.0.0-alpha14#bb90252d63fd3eb94dd596c6f5f52cb5f2e24025"
 dependencies = [
  "anyhow",
  "cargo_toml",
@@ -2611,6 +2613,7 @@ dependencies = [
 [[package]]
 name = "tauri-codegen"
 version = "2.0.0-alpha.7"
+source = "git+ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git?branch=2.0.0-alpha14#bb90252d63fd3eb94dd596c6f5f52cb5f2e24025"
 dependencies = [
  "base64",
  "ico",
@@ -2634,6 +2637,7 @@ dependencies = [
 [[package]]
 name = "tauri-macros"
 version = "2.0.0-alpha.7"
+source = "git+ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git?branch=2.0.0-alpha14#bb90252d63fd3eb94dd596c6f5f52cb5f2e24025"
 dependencies = [
  "heck",
  "proc-macro2",
@@ -2646,6 +2650,7 @@ dependencies = [
 [[package]]
 name = "tauri-runtime"
 version = "1.0.0-alpha.1"
+source = "git+ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git?branch=2.0.0-alpha14#bb90252d63fd3eb94dd596c6f5f52cb5f2e24025"
 dependencies = [
  "gtk",
  "http",
@@ -2691,6 +2696,7 @@ dependencies = [
 [[package]]
 name = "tauri-utils"
 version = "2.0.0-alpha.7"
+source = "git+ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git?branch=2.0.0-alpha14#bb90252d63fd3eb94dd596c6f5f52cb5f2e24025"
 dependencies = [
  "ctor",
  "dunce",

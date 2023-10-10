@@ -307,6 +307,10 @@ TODO
 
 ## Typical attacks
 
+### Fuzz Vectors
+
+[OWASP](https://owasp.org/www-project-web-security-testing-guide/stable/6-Appendix/C-Fuzz_Vectors)
+
 ### SQL injection
 
 [List of examples](https://github.com/payloadbox/sql-injection-payload-list)
