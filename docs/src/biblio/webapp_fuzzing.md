@@ -234,7 +234,7 @@ Add two HTTP-specific mutations stages to AFL
 - does not reason about the application state
     - fuzzes one URL at a time
     - does not reason about multi-state actions
-  
+ 
 ## [BlackWidow](https://www.cse.chalmers.se/~andrei/bw21.pdf)
 
 Date: 2021
@@ -307,6 +307,15 @@ TODO
 
 ## Typical attacks
 
+### Fuzz Vectors
+
+[OWASP](https://owasp.org/www-project-web-security-testing-guide/stable/6-Appendix/C-Fuzz_Vectors)
+
 ### SQL injection
 
 [List of examples](https://github.com/payloadbox/sql-injection-payload-list)
+
+### Command injection
+
+[List of examples](https://github.com/payloadbox/command-injection-payload-list)
+
