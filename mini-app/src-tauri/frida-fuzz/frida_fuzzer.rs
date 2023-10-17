@@ -15,7 +15,7 @@ use libafl::{
     feedback_or, feedback_or_fast,
     feedbacks::{CrashFeedback, MaxMapFeedback, TimeFeedback, TimeoutFeedback},
     fuzzer::{Fuzzer, StdFuzzer},
-    inputs::{BytesInput},
+    inputs::BytesInput,
     monitors::MultiMonitor,
     mutators::{
         scheduled::{havoc_mutations, tokens_mutations, StdScheduledMutator},
@@ -30,7 +30,7 @@ use libafl::{
 #[cfg(unix)]
 use libafl::{feedback_and_fast, feedbacks::ConstFeedback};
 use libafl_bolts::{
-    cli::{FuzzerOptions},
+    cli::FuzzerOptions,
     current_nanos,
     rands::StdRand,
     shmem::{ShMemProvider, StdShMemProvider},
@@ -50,8 +50,10 @@ use libafl_frida::{
 use libafl_targets::cmplog::CmpLogObserver;
 
 /// The main fn, usually parsing parameters, and starting the fuzzer
-pub fn main<H>(harness: H, options: FuzzerOptions) 
-    where H: FnMut(&BytesInput) -> ExitKind {
+pub fn main<H>(harness: H, options: FuzzerOptions)
+where
+    H: FnMut(&BytesInput) -> ExitKind,
+{
     color_backtrace::install();
 
     unsafe {
@@ -65,7 +67,9 @@ pub fn main<H>(harness: H, options: FuzzerOptions)
 /// The actual fuzzer
 #[allow(clippy::too_many_lines, clippy::too_many_arguments)]
 unsafe fn fuzz<H>(mut frida_harness: H, options: &FuzzerOptions) -> Result<(), Error>
-    where H: FnMut(&BytesInput) -> ExitKind {
+where
+    H: FnMut(&BytesInput) -> ExitKind,
+{
     // 'While the stats are state, they are usually used in the broker - which is likely never restarted
     let monitor = MultiMonitor::new(|s| println!("{s}"));
 
@@ -81,7 +85,8 @@ unsafe fn fuzz<H>(mut frida_harness: H, options: &FuzzerOptions) -> Result<(), E
                 let coverage = CoverageRuntime::new();
                 #[cfg(unix)]
                 // let asan = AsanRuntime::new(&options);
-                let asan = AsanRuntime::new(options);
+                // let asan = AsanRuntime::new(options);
+                let asan = AsanRuntime::new(options.clone());
 
                 #[cfg(unix)]
                 let mut frida_helper =
@@ -193,11 +198,16 @@ unsafe fn fuzz<H>(mut frida_harness: H, options: &FuzzerOptions) -> Result<(), E
                             &mut executor,
                             &mut generator,
                             &mut mgr,
-                            8
-                            );
+                            8,
+                        );
                     } else {
                         state
-                            .load_initial_inputs(&mut fuzzer, &mut executor, &mut mgr, &options.input)
+                            .load_initial_inputs(
+                                &mut fuzzer,
+                                &mut executor,
+                                &mut mgr,
+                                &options.input,
+                            )
                             .unwrap_or_else(|_| {
                                 panic!("Failed to load initial corpus at {:?}", &options.input)
                             });
@@ -319,11 +329,16 @@ unsafe fn fuzz<H>(mut frida_harness: H, options: &FuzzerOptions) -> Result<(), E
                             &mut executor,
                             &mut generator,
                             &mut mgr,
-                            8
-                            );
+                            8,
+                        );
                     } else {
                         state
-                            .load_initial_inputs(&mut fuzzer, &mut executor, &mut mgr, &options.input)
+                            .load_initial_inputs(
+                                &mut fuzzer,
+                                &mut executor,
+                                &mut mgr,
+                                &options.input,
+                            )
                             .unwrap_or_else(|_| {
                                 panic!("Failed to load initial corpus at {:?}", &options.input)
                             });
@@ -463,11 +478,16 @@ unsafe fn fuzz<H>(mut frida_harness: H, options: &FuzzerOptions) -> Result<(), E
                             &mut executor,
                             &mut generator,
                             &mut mgr,
-                            8
-                            );
+                            8,
+                        );
                     } else {
                         state
-                            .load_initial_inputs(&mut fuzzer, &mut executor, &mut mgr, &options.input)
+                            .load_initial_inputs(
+                                &mut fuzzer,
+                                &mut executor,
+                                &mut mgr,
+                                &options.input,
+                            )
                             .unwrap_or_else(|_| {
                                 panic!("Failed to load initial corpus at {:?}", &options.input)
                             });
