@@ -1,0 +1,6 @@
+corpus_discovered
+tauri_cmd_1_fuzz
+tauri_cmd_2_fuzz
+/target/
+
+

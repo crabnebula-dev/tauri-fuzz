@@ -269,18 +269,37 @@ Playing with the Tauri mock runtime
 - Clone sqlite
 - Modify `dash` to make it crash 
 
-- TODO 
-    - create tests for dash 
-        - command
-            - rustc -V
-            - rustc toto
-            - ls
-            - ls toto
-        - builtin
-            - echo a
-            - pwd 
-            - pwd -toto
-        - non existing cmd 
-            - pwda
-    - create command that may be 
-    - set new dash as /bin/sh
+## 19 
+### Frida 
+Frida is a binary analyser with 2 main features
+    - _Stalker_ code-tracing engine
+        - follow threads and trace every instruction 
+        that are being called
+        - uses a technique called _dynamic recompilation_
+            - while a program is running the current basic block is copied and stored in caches
+            - these copy can be modified and executed on demand
+            - the original instructions are unmodified
+    - _Interceptor_ hooks
+        - allows inspection and modification of the flow of function calls
+        - different possible techniques but most common are trampoline based hooks
+        - code is inserted at the beginning of a function A to execute another function B so function B is "inserted" in the middle of function A
+
+#### Strong points 
+
+- Portability: frida works/exists on almost all platforms
+- Frida is binary analysis 
+    - works directly on binaries and do not require special compilation
+
+#### Libafl-frida
+
+- `libafl-frida` uses frida ability to modify the code to
+    - provide coverage
+    - provide asan 
+    - provide cmplog
+- to create more behaviour we just need to implement the `FridaRuntime` and add it to the possible runtimes
+    - for example a runtime that crash on system call
+- `libafl-frida` has been made to fuzz C libraries
+    - no easy way to fuzz a Rust crate
+
+## 20 
+- Fuzz a rust crate with Frida
