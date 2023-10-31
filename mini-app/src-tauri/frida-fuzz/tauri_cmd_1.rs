@@ -15,7 +15,7 @@ pub fn main() {
         asan: false,
         asan_cores: Cores::from_cmdline("0").unwrap(),
         iterations: 0,
-        harness: Some(PathBuf::from_str("mini-app").unwrap()),
+        harness: Some(PathBuf::from_str("tauri_cmd_1").unwrap()),
         harness_args: vec![],
         harness_function: String::from(""),
         libs_to_instrument: vec![],
@@ -34,7 +34,7 @@ pub fn main() {
         tokens: vec![],          // check
         // input: vec![PathBuf::from_str("tauri_cmd_1_fuzz/corpus").unwrap()],
         input: vec![],
-        output: PathBuf::from_str("tauri_cmd_1_fuzz/solutions").unwrap(),
+        output: PathBuf::from_str("tauri_cmd_1_solutions").unwrap(),
         cores: Cores::from_cmdline("0").unwrap(),
         broker_port: 8888,
         remote_broker_addr: None,

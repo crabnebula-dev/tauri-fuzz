@@ -1876,7 +1876,7 @@ checksum = "830d08ce1d1d941e6b30645f1a0eb5643013d835ce3779a5fc208261dbe10f55"
 [[package]]
 name = "libafl"
 version = "0.11.1"
-source = "git+https://github.com/AFLplusplus/LibAFL.git#0b38fabeb009a201cce87cc0e56a57f5ea4199dc"
+source = "git+https://github.com/AFLplusplus/LibAFL.git#976d6b2e97d87cf6c4cc8d86b2dccbf2c139942d"
 dependencies = [
  "ahash",
  "backtrace",
@@ -1909,7 +1909,7 @@ dependencies = [
 [[package]]
 name = "libafl_bolts"
 version = "0.11.1"
-source = "git+https://github.com/AFLplusplus/LibAFL.git#0b38fabeb009a201cce87cc0e56a57f5ea4199dc"
+source = "git+https://github.com/AFLplusplus/LibAFL.git#976d6b2e97d87cf6c4cc8d86b2dccbf2c139942d"
 dependencies = [
  "ahash",
  "backtrace",
@@ -1940,7 +1940,7 @@ dependencies = [
 [[package]]
 name = "libafl_derive"
 version = "0.11.1"
-source = "git+https://github.com/AFLplusplus/LibAFL.git#0b38fabeb009a201cce87cc0e56a57f5ea4199dc"
+source = "git+https://github.com/AFLplusplus/LibAFL.git#976d6b2e97d87cf6c4cc8d86b2dccbf2c139942d"
 dependencies = [
  "quote",
  "syn 2.0.38",
@@ -1949,7 +1949,7 @@ dependencies = [
 [[package]]
 name = "libafl_frida"
 version = "0.11.1"
-source = "git+https://github.com/AFLplusplus/LibAFL.git#0b38fabeb009a201cce87cc0e56a57f5ea4199dc"
+source = "git+https://github.com/AFLplusplus/LibAFL.git#976d6b2e97d87cf6c4cc8d86b2dccbf2c139942d"
 dependencies = [
  "ahash",
  "backtrace",
@@ -1977,7 +1977,7 @@ dependencies = [
 [[package]]
 name = "libafl_targets"
 version = "0.11.1"
-source = "git+https://github.com/AFLplusplus/LibAFL.git#0b38fabeb009a201cce87cc0e56a57f5ea4199dc"
+source = "git+https://github.com/AFLplusplus/LibAFL.git#976d6b2e97d87cf6c4cc8d86b2dccbf2c139942d"
 dependencies = [
  "bindgen 0.68.1",
  "cc",
@@ -2207,7 +2207,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "mini-app--fridafuzz"
+name = "mini-app-fridafuzz"
 version = "0.0.0"
 dependencies = [
  "clap",

@@ -8,6 +8,9 @@ repository = ""
 edition = "2021"
 rust-version = "1.57"
 
+[lib]
+# crate-type = ["dylib"]
+
 [build-dependencies]
 tauri-build = { version = "*", features = [] }
 

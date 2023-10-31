@@ -55,10 +55,11 @@ where
     H: FnMut(&BytesInput) -> ExitKind,
 {
     color_backtrace::install();
+    env_logger::init();
 
     unsafe {
         match fuzz(harness, &options) {
-            Ok(()) | Err(Error::ShuttingDown) => println!("\nFinished fuzzing. Good bye."),
+            Ok(()) | Err(Error::ShuttingDown) => println!("Finished fuzzing. Good bye."),
             Err(e) => panic!("Error during fuzzing: {e:?}"),
         }
     }
@@ -144,17 +145,6 @@ where
                 });
 
                 println!("We're a client, let's fuzz :)");
-
-                // Create a PNG dictionary if not existing
-                if state.metadata_map().get::<Tokens>().is_none() {
-                    state.add_metadata(Tokens::from([
-                        vec![137, 80, 78, 71, 13, 10, 26, 10], // PNG header
-                        b"IHDR".to_vec(),
-                        b"IDAT".to_vec(),
-                        b"PLTE".to_vec(),
-                        b"IEND".to_vec(),
-                    ]));
-                }
 
                 // Setup a basic mutator with a mutational stage
                 let mutator = StdScheduledMutator::new(havoc_mutations().merge(tokens_mutations()));
@@ -276,17 +266,6 @@ where
 
                 println!("We're a client, let's fuzz :)");
 
-                // Create a PNG dictionary if not existing
-                if state.metadata_map().get::<Tokens>().is_none() {
-                    state.add_metadata(Tokens::from([
-                        vec![137, 80, 78, 71, 13, 10, 26, 10], // PNG header
-                        b"IHDR".to_vec(),
-                        b"IDAT".to_vec(),
-                        b"PLTE".to_vec(),
-                        b"IEND".to_vec(),
-                    ]));
-                }
-
                 // Setup a basic mutator with a mutational stage
                 let mutator = StdScheduledMutator::new(havoc_mutations().merge(tokens_mutations()));
 
@@ -375,7 +354,18 @@ where
                 let mut frida_helper =
                     FridaInstrumentationHelper::new(&gum, options, tuple_list!(coverage));
 
-                println!("frida_helper: {:?}", frida_helper);
+                log::info!("frida_helper: {:#?}", frida_helper);
+                // println!(
+                //     "frida_modules: {:#?}",
+                //     frida_gum::Module::enumerate_modules().iter().map(
+                //         |module| {
+                //             format!("ModuleDetails {{ name: {:?}, path: {:?}, base_address: {:#08x?}, size: {:#x?}}}",
+                //                     module.name,
+                //                     module.path,
+                //                     module.base_address,
+                //                     module.size)
+                //         }).collect::<Vec<String>>()
+                //     );
 
                 // Create an observation channel using the coverage map
                 let edges_observer = HitcountsMapObserver::new(StdMapObserver::from_mut_ptr(
@@ -423,17 +413,6 @@ where
                 });
 
                 println!("We're a client, let's fuzz :)");
-
-                // Create a PNG dictionary if not existing
-                if state.metadata_map().get::<Tokens>().is_none() {
-                    state.add_metadata(Tokens::from([
-                        vec![137, 80, 78, 71, 13, 10, 26, 10], // PNG header
-                        b"IHDR".to_vec(),
-                        b"IDAT".to_vec(),
-                        b"PLTE".to_vec(),
-                        b"IEND".to_vec(),
-                    ]));
-                }
 
                 // Setup a basic mutator with a mutational stage
                 let mutator = StdScheduledMutator::new(havoc_mutations().merge(tokens_mutations()));
