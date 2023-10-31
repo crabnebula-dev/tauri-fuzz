@@ -12,7 +12,7 @@ pub fn main() {
         verbose: true,
         stdout: String::from("/dev/stdout"),
         configuration: String::from("default configuration"),
-        asan: false,
+        asan: true,
         asan_cores: Cores::from_cmdline("0").unwrap(),
         iterations: 0,
         harness: Some(PathBuf::from_str("tauri_cmd_2").unwrap()),

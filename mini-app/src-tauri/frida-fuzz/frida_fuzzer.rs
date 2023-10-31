@@ -116,13 +116,13 @@ where
 
                 // Feedbacks to recognize an input as solution
                 #[cfg(unix)]
-                // let mut objective = feedback_or_fast!(
-                //     CrashFeedback::new(),
-                //     TimeoutFeedback::new(),
-                //     // true enables the AsanErrorFeedback
-                //     feedback_and_fast!(ConstFeedback::from(true), AsanErrorsFeedback::new())
-                // );
-                let mut objective = feedback_or_fast!(CrashFeedback::new(), TimeoutFeedback::new());
+                let mut objective = feedback_or_fast!(
+                    CrashFeedback::new(),
+                    TimeoutFeedback::new(),
+                    // true enables the AsanErrorFeedback
+                    feedback_and_fast!(ConstFeedback::from(true), AsanErrorsFeedback::new())
+                );
+                // let mut objective = feedback_or_fast!(CrashFeedback::new(), TimeoutFeedback::new());
 
                 #[cfg(windows)]
                 let mut objective = feedback_or_fast!(CrashFeedback::new(), TimeoutFeedback::new());
