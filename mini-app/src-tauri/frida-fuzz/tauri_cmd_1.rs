@@ -3,6 +3,7 @@ use libafl::inputs::{BytesInput, HasBytesVec};
 use libafl::prelude::ExitKind;
 use libafl_bolts::bolts_prelude::Cores;
 use libafl_bolts::cli::FuzzerOptions;
+use mini_app::setup_tauri_mock;
 use std::path::PathBuf;
 use std::str::FromStr;
 
@@ -43,7 +44,7 @@ pub fn main() {
     };
 
     let harness = |input: &BytesInput| {
-        let app = mini_app::setup_tauri_mock().expect("Failed to init Tauri app");
+        let app = setup_tauri_mock().expect("Failed to init Tauri app");
         tauri::fuzz::invoke_tauri_cmd(app, mini_app::payload_for_tauri_cmd_1(input.bytes()));
         ExitKind::Ok
     };

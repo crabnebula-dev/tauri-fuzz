@@ -19,22 +19,13 @@ log = "0.4"
 env_logger = "*"
 
 [dependencies.tauri]
-# path = "../../../tauri-for-fuzzy/core/tauri-runtime"
+# path = "../../../../tauri-for-fuzzy/core/tauri"
 git = "ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git"
-branch = "2.0.0-alpha14"
+branch = "1.5.1"
 default-features = false
-# features = ["fuzz", "process-command-api", "shell-open-api"]
 features = ["fuzz"]
 
 [dependencies.tauri-runtime]
-# path = "../../../tauri-for-fuzzy/core/tauri-runtime"
+# path = "../../../../tauri-for-fuzzy/core/tauri-runtime"
 git = "ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git"
-branch = "2.0.0-alpha14"
-
-[features]
-# by default Tauri runs in production mode
-# when `tauri dev` runs it is executed with `cargo run --no-default-features` if `devPath` is an URL
-default = ["custom-protocol"]
-# this feature is used used for production builds where `devPath` points to the filesystem
-# DO NOT remove this
-custom-protocol = ["tauri/custom-protocol"]
+branch = "1.5.1"
