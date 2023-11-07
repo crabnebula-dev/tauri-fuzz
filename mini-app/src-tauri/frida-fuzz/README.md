@@ -3,7 +3,7 @@
 ## Fuzz `tauri_cmd_*`
 
 Available commands for testing is `tauri_cmd_1` and `tauri_cmd_2`
-- go to directory `src-tauri/frida-fuzz`
+- go to directory `tauri-fuzzer/mini-app/src-tauri/frida-fuzz`
 - run `cargo r --bin tauri_cmd_*`
     - `tauri_cmd_1` could run for a long time before finding a crash
 
