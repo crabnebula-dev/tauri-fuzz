@@ -2305,6 +2305,7 @@ checksum = "14c39fd04924ca3a864207c66fc2cd7d22d7c016007f9ce846cbb9326331930a"
 [[package]]
 name = "tauri"
 version = "1.5.1"
+source = "git+ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git?branch=1.5.1#94d2bb0438bf58afd6f499f33e504a7998256054"
 dependencies = [
  "anyhow",
  "cocoa",
@@ -2334,7 +2335,7 @@ dependencies = [
  "tar",
  "tauri-macros",
  "tauri-runtime",
- "tauri-utils 1.5.0",
+ "tauri-utils 1.5.0 (git+ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git?branch=1.5.1)",
  "tempfile",
  "thiserror",
  "tokio",
@@ -2367,6 +2368,7 @@ dependencies = [
 [[package]]
 name = "tauri-codegen"
 version = "1.4.1"
+source = "git+ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git?branch=1.5.1#94d2bb0438bf58afd6f499f33e504a7998256054"
 dependencies = [
  "base64",
  "ico",
@@ -2379,7 +2381,7 @@ dependencies = [
  "serde",
  "serde_json",
  "sha2",
- "tauri-utils 1.5.0",
+ "tauri-utils 1.5.0 (git+ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git?branch=1.5.1)",
  "thiserror",
  "time",
  "uuid",
@@ -2389,18 +2391,20 @@ dependencies = [
 [[package]]
 name = "tauri-macros"
 version = "1.4.1"
+source = "git+ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git?branch=1.5.1#94d2bb0438bf58afd6f499f33e504a7998256054"
 dependencies = [
  "heck 0.4.1",
  "proc-macro2",
  "quote",
  "syn 1.0.109",
  "tauri-codegen",
- "tauri-utils 1.5.0",
+ "tauri-utils 1.5.0 (git+ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git?branch=1.5.1)",
 ]
 
 [[package]]
 name = "tauri-runtime"
 version = "0.14.1"
+source = "git+ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git?branch=1.5.1#94d2bb0438bf58afd6f499f33e504a7998256054"
 dependencies = [
  "gtk",
  "http",
@@ -2409,7 +2413,7 @@ dependencies = [
  "raw-window-handle",
  "serde",
  "serde_json",
- "tauri-utils 1.5.0",
+ "tauri-utils 1.5.0 (git+ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git?branch=1.5.1)",
  "thiserror",
  "url",
  "uuid",
@@ -2420,6 +2424,8 @@ dependencies = [
 [[package]]
 name = "tauri-utils"
 version = "1.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "34d55e185904a84a419308d523c2c6891d5e2dbcee740c4997eb42e75a7b0f46"
 dependencies = [
  "ctor",
  "dunce",
@@ -2447,8 +2453,7 @@ dependencies = [
 [[package]]
 name = "tauri-utils"
 version = "1.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "34d55e185904a84a419308d523c2c6891d5e2dbcee740c4997eb42e75a7b0f46"
+source = "git+ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git?branch=1.5.1#94d2bb0438bf58afd6f499f33e504a7998256054"
 dependencies = [
  "ctor",
  "dunce",

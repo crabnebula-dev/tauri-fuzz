@@ -36,7 +36,9 @@ pub fn main() {
         // input: vec![PathBuf::from_str("tauri_cmd_1_fuzz/corpus").unwrap()],
         input: vec![],
         output: PathBuf::from_str("tauri_cmd_1_solutions").unwrap(),
-        cores: Cores::from_cmdline("0").unwrap(),
+        // Doesn't work on MacOS
+        // cores: Cores::from_cmdline("0").unwrap(),
+        cores: Cores::from_cmdline("1-4").unwrap(),
         broker_port: 8888,
         remote_broker_addr: None,
         replay: None, // check

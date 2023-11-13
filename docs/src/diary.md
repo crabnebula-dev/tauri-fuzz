@@ -301,5 +301,40 @@ Frida is a binary analyser with 2 main features
 - `libafl-frida` has been made to fuzz C libraries
     - no easy way to fuzz a Rust crate
 
+
 ## 20 
-- Fuzz a rust crate with Frida
+
+### Syscall isolation runtime
+
+#### Intercepting syscalls
+- using ldpreload trick 
+- intercept all libc and `syscall` instruction
+
+#### Preventing too many false positive 
+- SET a flag every time you change of running environement (disable flag when running fuzzer code)
+    - needs to be run single-threaded
+- Check for stack trace to see if it came from the Tauri app
+    - can be costly 
+- Use fork fuzzing to not have syscalls from the fuzzer?
+- EBPF could be a solution to filter false positive? There may be already existing ebpf rules that exist that we could reuse
+- Using libafl minimizer
+
+## 21 
+
+### tauri-for-fuzzy 
+- `window.close()` has different behaviour in 1.5 and 2.0
+
+### Fuzzer on macos 
+- `tauri::Window` other than "main" can't trigger `on_message`
+- issue with using `Cores("0")` but works fine with other cores
+    - `cores.set_affinity()` not supported for MacOS
+    - I have a hunch that `Cores("0")` represent inmemory fuzzing
+
+### Ideas for Frida
+- For injecting library dependency on PE, Mach0 or ELF
+- https://github.com/lief-project/LIEF
+
+### Interesting project 
+- [ziggy](https://github.com/srlabs/ziggy/tree/3b47b49ae7a822a0359ffabe3fa597b575cc9c69)
+    - fuzzer manager for Rust project
+
