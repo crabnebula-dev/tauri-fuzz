@@ -9,4 +9,5 @@
     - [Program Instrumentation](./biblio/program_instrumentation.md)
     - [Input Generation/Mutation](./biblio/input_generation_mutation.md)
     - [Benchmarks for Fuzzers](./biblio/benchmarks.md)
+    - [System Calls Interception](./biblio/syscall_interception.md)
 - [Diary](./diary.md)
