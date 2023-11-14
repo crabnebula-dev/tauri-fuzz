@@ -5,6 +5,10 @@ use libafl_bolts::bolts_prelude::Cores;
 use libafl_bolts::cli::FuzzerOptions;
 use std::path::PathBuf;
 use std::str::FromStr;
+use tauri::fuzz::{create_invoke_payload, CommandArgs};
+use tauri::test::{mock_builder, mock_context, noop_assets, MockRuntime};
+use tauri::App as TauriApp;
+use tauri::InvokePayload;
 
 pub fn main() {
     let options = FuzzerOptions {
@@ -35,7 +39,9 @@ pub fn main() {
         // input: vec![PathBuf::from_str("tauri_cmd_2_fuzz/corpus").unwrap()],
         input: vec![],
         output: PathBuf::from_str("tauri_cmd_2_solutions").unwrap(),
-        cores: Cores::from_cmdline("0").unwrap(),
+        // Doesn't work on MacOS
+        // cores: Cores::from_cmdline("0").unwrap(),
+        cores: Cores::from_cmdline("1-4").unwrap(),
         broker_port: 8888,
         remote_broker_addr: None,
         replay: None, // check
@@ -43,10 +49,34 @@ pub fn main() {
     };
 
     let harness = |input: &BytesInput| {
-        let app = mini_app::setup_tauri_mock().expect("Failed to init Tauri app");
-        tauri::fuzz::invoke_tauri_cmd(app, mini_app::payload_for_tauri_cmd_2(input.bytes()));
+        let app = setup_tauri_mock().expect("Failed to init Tauri app");
+        tauri::fuzz::invoke_tauri_cmd(app, payload_for_tauri_cmd_2(input.bytes()));
         ExitKind::Ok
     };
 
     frida_fuzzer::main(harness, options);
+}
+
+fn setup_tauri_mock() -> Result<TauriApp<MockRuntime>, tauri::Error> {
+    mock_builder()
+        .invoke_handler(tauri::generate_handler![mini_app::tauri_cmd_2])
+        .build(mock_context(noop_assets()))
+}
+
+// Helper code to create a payload tauri_cmd_2
+fn payload_for_tauri_cmd_2(bytes: &[u8]) -> InvokePayload {
+    let input = bytes_input_to_u32(bytes);
+    let arg_name = String::from("input");
+    let mut args = CommandArgs::new();
+    args.insert(arg_name, input);
+    create_invoke_payload(String::from("tauri_cmd_2"), args)
+}
+
+fn bytes_input_to_u32(bytes_input: &[u8]) -> u32 {
+    let mut array_input = [0u8; 4];
+    for (dst, src) in array_input.iter_mut().zip(bytes_input) {
+        *dst = *src
+    }
+    let res = u32::from_be_bytes(array_input);
+    res
 }

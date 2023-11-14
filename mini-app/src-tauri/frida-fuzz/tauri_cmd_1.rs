@@ -3,9 +3,12 @@ use libafl::inputs::{BytesInput, HasBytesVec};
 use libafl::prelude::ExitKind;
 use libafl_bolts::bolts_prelude::Cores;
 use libafl_bolts::cli::FuzzerOptions;
-use mini_app::setup_tauri_mock;
 use std::path::PathBuf;
 use std::str::FromStr;
+use tauri::fuzz::{create_invoke_payload, CommandArgs};
+use tauri::test::{mock_builder, mock_context, noop_assets, MockRuntime};
+use tauri::App as TauriApp;
+use tauri::InvokePayload;
 
 pub fn main() {
     let options = FuzzerOptions {
@@ -47,9 +50,24 @@ pub fn main() {
 
     let harness = |input: &BytesInput| {
         let app = setup_tauri_mock().expect("Failed to init Tauri app");
-        tauri::fuzz::invoke_tauri_cmd(app, mini_app::payload_for_tauri_cmd_1(input.bytes()));
+        tauri::fuzz::invoke_tauri_cmd(app, payload_for_tauri_cmd_1(input.bytes()));
         ExitKind::Ok
     };
 
     frida_fuzzer::main(harness, options);
+}
+
+fn setup_tauri_mock() -> Result<TauriApp<MockRuntime>, tauri::Error> {
+    mock_builder()
+        .invoke_handler(tauri::generate_handler![mini_app::tauri_cmd_1])
+        .build(mock_context(noop_assets()))
+}
+
+// Helper code to create a payload tauri_cmd_1
+fn payload_for_tauri_cmd_1(bytes: &[u8]) -> InvokePayload {
+    let input = String::from_utf8_lossy(bytes).to_string();
+    let arg_name = String::from("input");
+    let mut args = CommandArgs::new();
+    args.insert(arg_name, input);
+    create_invoke_payload(String::from("tauri_cmd_1"), args)
 }

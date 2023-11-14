@@ -19,13 +19,13 @@ log = "0.4"
 env_logger = "*"
 
 [dependencies.tauri]
-# path = "../../../../tauri-for-fuzzy/core/tauri"
-git = "ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git"
-branch = "1.5.1"
+path = "../../../tauri-for-fuzzy/core/tauri"
+# git = "ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git"
+# branch = "1.5.1"
 default-features = false
-features = ["fuzz"]
+feature = ["fuzz"]
 
 [dependencies.tauri-runtime]
-# path = "../../../../tauri-for-fuzzy/core/tauri-runtime"
-git = "ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git"
-branch = "1.5.1"
+path = "../../../tauri-for-fuzzy/core/tauri-runtime"
+# git = "ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git"
+# branch = "1.5.1"
