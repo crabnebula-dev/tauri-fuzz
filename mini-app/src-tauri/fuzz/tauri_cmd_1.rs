@@ -8,7 +8,7 @@ use tauri::App as TauriApp;
 use tauri::InvokePayload;
 
 pub fn main() {
-    let options = fuzz_utils::get_options("tauri_cmd_1");
+    let options = fuzz_utils::get_options("tauri_cmd_2", "libmini_app.so");
 
     let harness = |input: &BytesInput| {
         let app = setup_tauri_mock().expect("Failed to init Tauri app");

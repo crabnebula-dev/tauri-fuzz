@@ -40,6 +40,7 @@ The goal is to provide our fuzzer a runtime that intercept any system calls.
 - tools to intercept syscalls
     - [syscall\_intercept](https://github.com/pmem/syscall_intercept/tree/2c8765fa292bc9c28a22624c528580d54658813d)
     - [extrasafe](https://github.com/boustrophedon/extrasafe)
+    - [LD_PRELOAD](https://man7.org/linux/man-pages/man8/ld.so.8.html)
 
 
 With LibAFL Frida intercept any instruction 
@@ -51,6 +52,14 @@ With LibAFL Frida intercept any instruction
 - only on Linux
 
 ## [extrasafe](https://github.com/boustrophedon/extrasafe)
+
 - wrapper around [seccomp](https://www.kernel.org/doc/html/latest/userspace-api/seccomp_filter.html)
 - only Linux
+
+## [LD_PRELOAD](https://man7.org/linux/man-pages/man8/ld.so.8.html)
+
+- Load specified shared object instead of default one 
+- Can be used to override libc 
+- This is specific to Unix systems 
+    - on Windows you may use DLL injection
 

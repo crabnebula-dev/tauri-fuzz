@@ -341,6 +341,9 @@ Frida is a binary analyser with 2 main features
 ## 22
 
 - Update docs on syscalls
+- Compile `mini-app` as a dylib 
+    - libafl prevent instrumenting its own crate to prevent weird recursion
+- Clean the `mini-app` fuzzing code
 
 
 

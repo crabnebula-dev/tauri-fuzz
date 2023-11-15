@@ -3,21 +3,21 @@ use libafl_bolts::cli::FuzzerOptions;
 use std::path::PathBuf;
 use std::str::FromStr;
 
-pub(crate) fn get_options(command: &str) -> FuzzerOptions {
+pub(crate) fn get_options(command: &str, crate_name: &str) -> FuzzerOptions {
     FuzzerOptions {
         timeout: std::time::Duration::from_secs(5),
         verbose: true,
         stdout: String::from("/dev/stdout"),
         configuration: String::from("default configuration"),
-        asan: true,
-        asan_cores: Cores::from_cmdline("0").unwrap(),
+        asan: false,
+        asan_cores: Cores::from_cmdline("1-4").unwrap(),
         iterations: 0,
         harness: Some(PathBuf::from_str(command).unwrap()),
         harness_args: vec![],
         harness_function: String::from(""),
-        libs_to_instrument: vec![],
+        libs_to_instrument: vec![crate_name.into()],
         cmplog: true,
-        cmplog_cores: Cores::from_cmdline("0").unwrap(),
+        cmplog_cores: Cores::from_cmdline("1-4").unwrap(),
         detect_leaks: false,
         continue_on_error: false,
         allocation_backtraces: true,
