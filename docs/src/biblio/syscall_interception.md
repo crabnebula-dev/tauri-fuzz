@@ -43,7 +43,7 @@ The goal is to provide our fuzzer a runtime that intercept any system calls.
     - [LD_PRELOAD](https://man7.org/linux/man-pages/man8/ld.so.8.html)
 
 
-With LibAFL Frida intercept any instruction 
+With LibAFL Frida intercept any instruction
 
 ## [syscall\_intercept](https://github.com/pmem/syscall_intercept/tree/2c8765fa292bc9c28a22624c528580d54658813d)
 
@@ -58,8 +58,43 @@ With LibAFL Frida intercept any instruction
 
 ## [LD_PRELOAD](https://man7.org/linux/man-pages/man8/ld.so.8.html)
 
-- Load specified shared object instead of default one 
-- Can be used to override libc 
-- This is specific to Unix systems 
+- Load specified shared object instead of default one
+- Can be used to override libc
+- This is specific to Unix systems
     - on Windows you may use DLL injection
+
+## Tools used
+
+- [capstone](https://docs.rs/capstone/latest/capstone/index.html#)
+    - multi-platform, multi-architecture disassembly framework
+    - frida is used for binary analysis and the rely on capstone to disassemble the
+    instruction to be able to operate on them
+- [frida](https://frida.re/docs/home/)
+    - dynamic code instrumentation toolkit
+    - allows you to inject snippet of code in native apps
+    - [frida-core]
+        - its role it to attach/hijack the target program to be able to interact with it
+            - package `frida-gum` as a shared lib which is injected into the target program
+            - then provide a two way communication to interact with `frida-gum` with your scripts
+        - this is the common way to use frida
+        - sometimes it's not possible to do so (jail iOS or Android)
+            - in this situation you can use `frida-gadget`
+    - [frida-gadget](https://frida.re/docs/gadget/)
+        - shared library meant to be loaded by the target program
+        - multiple way to load this lib
+            - modify the source code
+            - LD_PRELOAD
+            - patching one of the target program library
+        - it's started as soon as the dynamic linker call its constructor function
+    - [frida-gum](https://github.com/frida/frida-gum)
+        - instrumentation and introspection lib
+        - C lib but provide a JS api to interact with it
+        - 3 instrumentation core
+            - [Stalker](https://frida.re/docs/stalker/)
+                - code tracing enging
+                - capture every function/code/instruction that is executed
+            - [Interceptor](https://docs.rs/frida-gum/latest/frida_gum/interceptor/index.html#)
+                - function hooking engine
+            - [MemoryAccessMonitor](https://github.com/frida/frida-gum/blob/main/gum/gummemoryaccessmonitor.h)
+
 

@@ -1,1 +1,2 @@
-docker-cp.sh
+/target/
+Cargo.lock

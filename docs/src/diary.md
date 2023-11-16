@@ -235,7 +235,7 @@ Playing with the Tauri mock runtime
             2. Run the `fuzz_targets` with the command
             `RUSTFLAGS="-Cpasses=sancov-module -Cllvm-args=-sanitizer-coverage-level=4 -Cllvm-args=-sanitizer-coverage-inline-8bit-counters -Cllvm-args=-sanitizer-coverage-pc-table -Cllvm-args=-sanitizer-coverage-trace-compares --cfg fuzzing -Clink-dead-code -Cllvm-args=-sanitizer-coverage-stack-depth -Cdebug-assertions -C codegen-units=1" "cargo" "run" "--manifest-path" "/home/adang/boum/fuzzy/playground/rust-url/fuzz/Cargo.toml" "--target" "x86_64-unknown-linux-gnu" "--release" "--bin" "fuzz_target_1" "--" "-artifact_prefix=/home/adang/boum/fuzzy/playground/rust-url/fuzz/artifacts/fuzz_target_1/" "/home/adang/boum/fuzzy/playground/rust-url/fuzz/corpus/fuzz_target_1"`
 
-- `fuzz_target!` macro definition is in `cargo-libafl/cargo-libafl-helper` 
+- `fuzz_target!` macro definition is in `cargo-libafl/cargo-libafl-helper`
 - To have a more complete fuzzer with memory sanitizer and else check
 `cargo-libafl/cargo-libafl/cargo-libafl-runtime`
 - Fork `cargo-fuzz` or `cargo-libafl` to use their framework to easily fuzz Tauri applications
@@ -341,9 +341,19 @@ Frida is a binary analyser with 2 main features
 ## 22
 
 - Update docs on syscalls
-- Compile `mini-app` as a dylib 
+- Compile `mini-app` as a dylib
     - libafl prevent instrumenting its own crate to prevent weird recursion
 - Clean the `mini-app` fuzzing code
+- Make `mini-app` dynamic
+    - to use the binary directly and linking with the dynamic `libmini_app.so`
+    - LD_LIBRARY_PATH='/home/user/tauri-fuzzer/mini-app/src-tauri/fuzz/target/debug/deps:/home/user/.rustup/toolchains/1.70-x86_64-unknown-linux-gnu/lib:/home/user/tauri-fuzzer/mini-app/src-tauri/fuzz/target/debug:/home/user/.rustup/toolchains/1.70-x86_64-unknown-linux-gnu/lib'
+- Create a tauri command that do a system call without using the libc
+
+## 23
+
+- Create a separate crate `tauri_fuzz_tools` for helper functions
+    - this function connect Tauri to LibAFL
+- Change whole repo to a workspace
 
 
 
