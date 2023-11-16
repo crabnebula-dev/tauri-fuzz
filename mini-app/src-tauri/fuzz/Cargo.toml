@@ -69,3 +69,9 @@ name = "tauri_cmd_2"
 path = "tauri_cmd_2.rs"
 test = false
 doc = false
+
+[[bin]]
+name = "write_to_stdout"
+path = "write_to_stdout.rs"
+test = false
+doc = false

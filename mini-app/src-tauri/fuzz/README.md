@@ -15,4 +15,6 @@ Available commands for testing is `tauri_cmd_1` and `tauri_cmd_2`
     - for `tauri_cmd_2` it should contain the value `100` 
         - with `xxd tauri_cmd_2_solutions/file_name` it should contain `0x0064`
 
-
+## Details 
+- `mini-app` should be compiled as a dynamic library
+    - this allows frida to only instrument the code we want to target

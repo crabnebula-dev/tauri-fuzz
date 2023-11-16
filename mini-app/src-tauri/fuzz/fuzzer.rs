@@ -41,6 +41,7 @@ use libafl_frida::{
     coverage_rt::{CoverageRuntime, MAP_SIZE},
     executor::FridaInProcessExecutor,
     helper::FridaInstrumentationHelper,
+    syscall_isolation_rt::SyscallIsolationRuntime,
 };
 use libafl_targets::cmplog::CmpLogObserver;
 
@@ -79,9 +80,13 @@ where
 
             let coverage = CoverageRuntime::new();
             let cmplog = CmpLogRuntime::new();
+            let syscall_blocker = SyscallIsolationRuntime::new();
 
-            let mut frida_helper =
-                FridaInstrumentationHelper::new(&gum, options, tuple_list!(coverage, cmplog));
+            let mut frida_helper = FridaInstrumentationHelper::new(
+                &gum,
+                options,
+                tuple_list!(coverage, cmplog, syscall_blocker),
+            );
 
             println!("helper: {:#?}", frida_helper);
 

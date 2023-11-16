@@ -1,6 +1,5 @@
 corpus_discovered
-tauri_cmd_1_solutions
-tauri_cmd_2_solutions
+*_solutions
 /target/
 
 

@@ -1,5 +1,5 @@
-mod frida_fuzzer;
 mod fuzz_utils;
+mod fuzzer;
 use libafl::inputs::{BytesInput, HasBytesVec};
 use libafl::prelude::ExitKind;
 use tauri::test::{create_invoke_payload, CommandArgs};
@@ -14,14 +14,14 @@ fn setup_tauri_mock() -> Result<TauriApp<MockRuntime>, tauri::Error> {
 }
 
 pub fn main() {
-    let options = fuzz_utils::get_options("tauri_cmd_2", "libmini_app.so");
+    let options = fuzz_utils::get_options("tauri_cmd_2", vec!["libmini_app.so"]);
     let harness = |input: &BytesInput| {
         let app = setup_tauri_mock().expect("Failed to init Tauri app");
         let _res = invoke_command_and_stop::<String>(app, payload_for_tauri_cmd_2(input.bytes()));
         ExitKind::Ok
     };
 
-    frida_fuzzer::main(harness, options);
+    fuzzer::main(harness, options);
 }
 
 // Helper code to create a payload tauri_cmd_2

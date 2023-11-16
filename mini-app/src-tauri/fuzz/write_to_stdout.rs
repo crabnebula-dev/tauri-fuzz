@@ -7,29 +7,29 @@ use tauri::test::{invoke_command_and_stop, mock_builder, mock_context, noop_asse
 use tauri::App as TauriApp;
 use tauri::InvokePayload;
 
-pub fn main() {
-    let options = fuzz_utils::get_options("tauri_cmd_2", vec!["libmini_app.so"]);
+fn setup_tauri_mock() -> Result<TauriApp<MockRuntime>, tauri::Error> {
+    mock_builder()
+        .invoke_handler(tauri::generate_handler![
+            mini_app::direct_syscalls::write_to_stdout
+        ])
+        .build(mock_context(noop_assets()))
+}
 
+pub fn main() {
+    let options = fuzz_utils::get_options("write_to_stdout", vec!["libmini_app.so"]);
     let harness = |input: &BytesInput| {
         let app = setup_tauri_mock().expect("Failed to init Tauri app");
-        let _ = invoke_command_and_stop::<String>(app, payload_for_tauri_cmd_1(input.bytes()));
+        let _res = invoke_command_and_stop::<String>(app, create_payload(input.bytes()));
         ExitKind::Ok
     };
 
     fuzzer::main(harness, options);
 }
 
-fn setup_tauri_mock() -> Result<TauriApp<MockRuntime>, tauri::Error> {
-    mock_builder()
-        .invoke_handler(tauri::generate_handler![mini_app::tauri_cmd_1])
-        .build(mock_context(noop_assets()))
-}
-
-// Helper code to create a payload tauri_cmd_1
-fn payload_for_tauri_cmd_1(bytes: &[u8]) -> InvokePayload {
+fn create_payload(bytes: &[u8]) -> InvokePayload {
     let input = String::from_utf8_lossy(bytes).to_string();
-    let arg_name = String::from("input");
+    let arg_name = String::from("s");
     let mut args = CommandArgs::new();
     args.insert(arg_name, input);
-    create_invoke_payload(String::from("tauri_cmd_1"), args)
+    create_invoke_payload(String::from("write_to_stdout"), args)
 }
