@@ -1,7 +1,22 @@
+#![allow(dead_code)]
 use libafl_bolts::bolts_prelude::Cores;
 use libafl_bolts::cli::FuzzerOptions;
+use serde::de::DeserializeOwned;
+use std::collections::HashMap;
+use std::fmt::Debug;
 use std::path::PathBuf;
 use std::str::FromStr;
+use tauri::api::ipc::CallbackFn;
+use tauri::test::MockRuntime;
+use tauri::App;
+use tauri::AppHandle;
+use tauri::InvokePayload;
+use tauri::RunEvent;
+use tauri::Manager;
+use serde_json::Value as JsonValue;
+use tauri::test::{Ipc, IpcKey};
+use tauri::Builder;
+
 
 pub(crate) fn get_options(command: &str, libs_to_instrument: Vec<&str>) -> FuzzerOptions {
     FuzzerOptions {
@@ -45,6 +60,11 @@ pub(crate) fn get_options(command: &str, libs_to_instrument: Vec<&str>) -> Fuzze
     }
 }
 
+/// Minimal builder for a Tauri application using the `MockRuntime`
+pub fn mock_builder_minimal() -> Builder<MockRuntime> {
+    Builder::<MockRuntime>::new()
+}
+
 /// Invoke a Tauri command given an `InvokePayload`.
 ///
 /// The application processes the command and stops.
@@ -76,14 +96,13 @@ pub fn invoke_command_and_stop<T: DeserializeOwned + Debug>(
     mut app: App<MockRuntime>,
     payload: InvokePayload,
 ) -> Result<T, T> {
-    let w = app.get_window("main").expect("Could not get main window");
-
     let (tx, rx) = std::sync::mpsc::channel();
-
+    let w = app.get_window("main").expect("Could not get main window");
     let callback = payload.callback;
     let error = payload.error;
+
     let ipc = w.state::<Ipc>();
-    ipc.0.lock().unwrap().insert(IpcKey { callback, error }, tx);
+    ipc.insert_ipc(IpcKey { callback, error }, tx);
     w.on_message(payload).unwrap();
 
     app.run_iteration();
@@ -93,7 +112,6 @@ pub fn invoke_command_and_stop<T: DeserializeOwned + Debug>(
         .map_err(|e| serde_json::from_value(e).unwrap())
 }
 
-use crate::RunEvent;
 /// Invoke a Tauri command given an `InvokePayload`.
 ///
 /// A callback can be provided to interact with future events.
@@ -132,25 +150,31 @@ pub fn invoke_command<F: FnMut(&AppHandle<MockRuntime>, RunEvent) + 'static>(
 ) {
     let w = app.get_window("main").expect("Could not get main window");
 
-    let (tx, rx) = std::sync::mpsc::channel();
+    let (tx, _rx) = std::sync::mpsc::channel();
 
     let callback = payload.callback;
     let error = payload.error;
     let ipc = w.state::<Ipc>();
-    ipc.0.lock().unwrap().insert(IpcKey { callback, error }, tx);
+    ipc.insert_ipc(IpcKey { callback, error }, tx);
     w.on_message(payload).unwrap();
     app.run(event_callback);
 }
 
+/// Invoke a command but does not try to get the command return value
+pub fn invoke_command_minimal(app: App<MockRuntime>, payload: InvokePayload) {
+    let w = app.get_window("main").expect("Could not get main window");
+    w.on_message(payload).unwrap();
+}
+
 /// Helper function to create a Tauri `InvokePayload`.
-pub fn create_invoke_payload(cmd_name: String, command_args: CommandArgs) -> InvokePayload {
+pub fn create_invoke_payload(cmd_name: &str, command_args: CommandArgs) -> InvokePayload {
     let mut json_map = serde_json::map::Map::new();
     for (k, v) in command_args.inner {
         json_map.insert(k, v);
     }
 
     InvokePayload {
-        cmd: cmd_name,
+        cmd: cmd_name.into(),
         tauri_module: None,
         callback: CallbackFn(0),
         error: CallbackFn(1),
@@ -180,5 +204,24 @@ impl CommandArgs {
         value: impl Into<serde_json::Value>,
     ) -> Option<serde_json::Value> {
         self.inner.insert(key.into(), value.into())
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use tauri::test::{noop_assets, mock_context, mock_builder};
+
+    #[tauri::command]
+    fn test_command() {}
+
+    #[cfg(test)]
+    fn invoke_1_command() {
+        let app = mock_builder()
+            .invoke_handler(tauri::generate_handler![test_command])
+            .build(mock_context(noop_assets())).unwrap();
+        let payload = create_invoke_payload("test_command", CommandArgs::new());
+        let res = invoke_command_and_stop::<String>(app, payload);
+        assert!(res.is_ok());
     }
 }

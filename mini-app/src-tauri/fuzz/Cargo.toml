@@ -5,6 +5,8 @@ publish = false
 edition = "2021"
 
 [dependencies]
+serde_json = { version = "1.0" }
+serde = "1.0"
 log = "0.4"
 env_logger = "*"
 # Fuzz dependencies
@@ -26,16 +28,16 @@ color-backtrace = "0.5"
 clap = { version = "4.0" }
 
 [dependencies.tauri]
-# path = "../../../../cn-tauri/core/tauri"
-git = "ssh://git@github.com/crabnebula-dev/tauri.git"
-branch = "feat/fuzz"
-default-features = false
+path = "../../../../cn-tauri/core/tauri"
+# git = "ssh://git@github.com/crabnebula-dev/tauri.git"
+# branch = "feat/fuzz"
+# default-features = false
 features = ["test"]
 
 [dependencies.tauri-runtime]
-# path = "../../../../cn-tauri/core/tauri-runtime"
-git = "ssh://git@github.com/crabnebula-dev/tauri.git"
-branch = "feat/fuzz"
+path = "../../../../cn-tauri/core/tauri-runtime"
+# git = "ssh://git@github.com/crabnebula-dev/tauri.git"
+# branch = "feat/fuzz"
 
 [features]
 # by default Tauri runs in production mode
@@ -75,3 +77,8 @@ name = "write_to_stdout"
 path = "write_to_stdout.rs"
 test = false
 doc = false
+
+[[bin]]
+name = "test_utils"
+path = "test_utils.rs"
+test = true

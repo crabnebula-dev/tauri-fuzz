@@ -1,3 +1,4 @@
+// Inspired from https://github.com/phip1611/direct-syscalls-linux-from-rust/blob/main/src/main.rs
 #![allow(dead_code)]
 // use crate::LinuxFileFlags::{O_APPEND, O_CREAT, O_RDONLY, O_WRONLY};
 use std::arch::asm;
