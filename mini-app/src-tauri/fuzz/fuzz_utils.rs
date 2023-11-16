@@ -49,7 +49,7 @@ pub(crate) fn get_options(command: &str, libs_to_instrument: Vec<&str>) -> Fuzze
         tokens: vec![],          // check
         // input: vec![PathBuf::from_str("tauri_cmd_2_fuzz/corpus").unwrap()],
         input: vec![],
-        output: PathBuf::from_str(&format!("{}_solutions", command)).unwrap(),
+        output: PathBuf::from_str(&format!("fuzz_solutions/{}_solutions", command)).unwrap(),
         // Doesn't work on MacOS
         // cores: Cores::from_cmdline("0").unwrap(),
         cores: Cores::from_cmdline("1-4").unwrap(),
@@ -78,15 +78,15 @@ pub fn mock_builder_minimal() -> Builder<MockRuntime> {
 ///   "pong"
 /// }
 ///
+/// use tauri::test::*;
 /// fn create_app<R: tauri::Runtime>(mut builder: tauri::Builder<R>) -> tauri::App<R> {
 ///   builder
 ///     .invoke_handler(tauri::generate_handler![ping])
-///     // remove the string argument on your app
-///     .build(tauri::generate_context!("test/fixture/src-tauri/tauri.conf.json"))
+///     .build(mock_context(noop_assets()))
 ///     .expect("failed to build app")
 /// }
-///
-/// use tauri::test::*;
+/// 
+/// use tauri::test::mock_builder;
 /// let app = create_app(mock_builder());
 /// let payload = create_invoke_payload("ping".into(), CommandArgs::new());
 /// let res: Result<String, String> = invoke_command_and_stop(app, payload);

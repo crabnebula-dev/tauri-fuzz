@@ -1,11 +1,11 @@
-mod fuzz_utils;
-mod fuzzer;
 use libafl::inputs::{BytesInput, HasBytesVec};
 use libafl::prelude::ExitKind;
-use tauri::test::{create_invoke_payload, CommandArgs};
-use tauri::test::{invoke_command_and_stop, mock_builder, mock_context, noop_assets, MockRuntime};
+use tauri::test::{mock_builder, mock_context, noop_assets, MockRuntime};
 use tauri::App as TauriApp;
 use tauri::InvokePayload;
+use tauri_fuzz_tools::{
+    create_invoke_payload, fuzzer, get_options, invoke_command_and_stop, CommandArgs,
+};
 
 fn setup_tauri_mock() -> Result<TauriApp<MockRuntime>, tauri::Error> {
     mock_builder()
@@ -14,7 +14,7 @@ fn setup_tauri_mock() -> Result<TauriApp<MockRuntime>, tauri::Error> {
 }
 
 pub fn main() {
-    let options = fuzz_utils::get_options("tauri_cmd_2", vec!["libmini_app.so"]);
+    let options = get_options("tauri_cmd_2", vec!["libmini_app.so"]);
     let harness = |input: &BytesInput| {
         let app = setup_tauri_mock().expect("Failed to init Tauri app");
         let _res = invoke_command_and_stop::<String>(app, payload_for_tauri_cmd_2(input.bytes()));
@@ -30,7 +30,7 @@ fn payload_for_tauri_cmd_2(bytes: &[u8]) -> InvokePayload {
     let arg_name = String::from("input");
     let mut args = CommandArgs::new();
     args.insert(arg_name, input);
-    create_invoke_payload(String::from("tauri_cmd_2"), args)
+    create_invoke_payload("tauri_cmd_2", args)
 }
 
 fn bytes_input_to_u32(bytes_input: &[u8]) -> u32 {

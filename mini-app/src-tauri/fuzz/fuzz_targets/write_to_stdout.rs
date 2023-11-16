@@ -1,14 +1,15 @@
-mod fuzz_utils;
-mod fuzzer;
 use libafl::inputs::{BytesInput, HasBytesVec};
 use libafl::prelude::ExitKind;
-use tauri::test::{create_invoke_payload, CommandArgs};
-use tauri::test::{invoke_command_and_stop, mock_builder, mock_context, noop_assets, MockRuntime};
+use tauri::test::{mock_context, noop_assets, MockRuntime};
 use tauri::App as TauriApp;
 use tauri::InvokePayload;
+use tauri_fuzz_tools::{
+    create_invoke_payload, fuzzer, get_options, invoke_command_minimal, mock_builder_minimal,
+    CommandArgs,
+};
 
 fn setup_tauri_mock() -> Result<TauriApp<MockRuntime>, tauri::Error> {
-    mock_builder()
+    mock_builder_minimal()
         .invoke_handler(tauri::generate_handler![
             mini_app::direct_syscalls::write_to_stdout
         ])
@@ -16,10 +17,10 @@ fn setup_tauri_mock() -> Result<TauriApp<MockRuntime>, tauri::Error> {
 }
 
 pub fn main() {
-    let options = fuzz_utils::get_options("write_to_stdout", vec!["libmini_app.so"]);
+    let options = get_options("write_to_stdout", vec!["libmini_app.so"]);
     let harness = |input: &BytesInput| {
         let app = setup_tauri_mock().expect("Failed to init Tauri app");
-        let _res = invoke_command_and_stop::<String>(app, create_payload(input.bytes()));
+        let _res = invoke_command_minimal(app, create_payload(input.bytes()));
         ExitKind::Ok
     };
 
@@ -31,5 +32,5 @@ fn create_payload(bytes: &[u8]) -> InvokePayload {
     let arg_name = String::from("s");
     let mut args = CommandArgs::new();
     args.insert(arg_name, input);
-    create_invoke_payload(String::from("write_to_stdout"), args)
+    create_invoke_payload("write_to_stdout", args)
 }

@@ -17,7 +17,7 @@ use tauri::InvokePayload;
 use tauri::Manager;
 use tauri::RunEvent;
 
-pub(crate) fn get_options(command: &str, libs_to_instrument: Vec<&str>) -> FuzzerOptions {
+pub fn get_options(command: &str, libs_to_instrument: Vec<&str>) -> FuzzerOptions {
     FuzzerOptions {
         timeout: std::time::Duration::from_secs(5),
         verbose: true,

@@ -1,7 +1,6 @@
 mod fuzz_utils;
-mod fuzzer;
+pub mod fuzzer;
 pub use fuzz_utils::*;
-pub use fuzzer::main;
 
 #[cfg(test)]
 mod tests {
