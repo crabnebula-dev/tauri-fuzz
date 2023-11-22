@@ -354,6 +354,13 @@ Frida is a binary analyser with 2 main features
 - Create a separate crate `tauri_fuzz_tools` for helper functions
     - this function connect Tauri to LibAFL
 - Change whole repo to a workspace
-
-
-
+- Catch a call to libc
+    - Check any "calls" and destination address
+        - we don't need to instrument libc
+        - we may miss hidden calls
+    - Instrument the libc and verify the instruction location
+        - we need to instrument libc and all libc instructions will be analysed
+        - easier to implement
+- Found how to get libc symbols through `friga_gum::Module::enumerate_exports`
+- Strange "double crash bug"
+    - does not appear when removing coverage from the runtimes

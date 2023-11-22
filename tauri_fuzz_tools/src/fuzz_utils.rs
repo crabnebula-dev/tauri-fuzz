@@ -17,7 +17,7 @@ use tauri::InvokePayload;
 use tauri::Manager;
 use tauri::RunEvent;
 
-pub fn get_options(command: &str, libs_to_instrument: Vec<&str>) -> FuzzerOptions {
+pub fn get_options(tauri_command: &str, libs_to_instrument: Vec<&str>) -> FuzzerOptions {
     FuzzerOptions {
         timeout: std::time::Duration::from_secs(5),
         verbose: true,
@@ -26,7 +26,7 @@ pub fn get_options(command: &str, libs_to_instrument: Vec<&str>) -> FuzzerOption
         asan: false,
         asan_cores: Cores::from_cmdline("1-4").unwrap(),
         iterations: 0,
-        harness: Some(PathBuf::from_str(command).unwrap()),
+        harness: Some(PathBuf::from_str(tauri_command).unwrap()),
         harness_args: vec![],
         harness_function: String::from(""),
         libs_to_instrument: libs_to_instrument
@@ -48,7 +48,7 @@ pub fn get_options(command: &str, libs_to_instrument: Vec<&str>) -> FuzzerOption
         tokens: vec![],          // check
         // input: vec![PathBuf::from_str("tauri_cmd_2_fuzz/corpus").unwrap()],
         input: vec![],
-        output: PathBuf::from_str(&format!("fuzz_solutions/{}_solutions", command)).unwrap(),
+        output: PathBuf::from_str(&format!("fuzz_solutions/{}_solutions", tauri_command)).unwrap(),
         // Doesn't work on MacOS
         // cores: Cores::from_cmdline("0").unwrap(),
         cores: Cores::from_cmdline("1-4").unwrap(),

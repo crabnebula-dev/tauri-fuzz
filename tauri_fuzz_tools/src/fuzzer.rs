@@ -50,6 +50,9 @@ pub fn main<H>(harness: H, options: FuzzerOptions)
 where
     H: FnMut(&BytesInput) -> ExitKind,
 {
+    color_backtrace::install();
+    env_logger::init();
+
     unsafe {
         match fuzz(harness, &options) {
             Ok(()) | Err(Error::ShuttingDown) => println!("Finished fuzzing. Good bye."),
@@ -77,12 +80,16 @@ where
 
             let coverage = CoverageRuntime::new();
             let cmplog = CmpLogRuntime::new();
-            let syscall_blocker = SyscallIsolationRuntime::new();
+            // TODO Change the way to pass the tauri app lib name
+            let syscall_blocker =
+                SyscallIsolationRuntime::new(options.libs_to_instrument.first().unwrap()).unwrap();
 
             let mut frida_helper = FridaInstrumentationHelper::new(
                 &gum,
                 options,
-                tuple_list!(coverage, cmplog, syscall_blocker),
+                // tuple_list!(coverage, cmplog, syscall_blocker),
+                // tuple_list!(cmplog, syscall_blocker),
+                tuple_list!(coverage),
             );
 
             println!("helper: {:#?}", frida_helper);

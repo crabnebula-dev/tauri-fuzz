@@ -20,6 +20,7 @@ log = "0.4"
 env_logger = "*"
 tauri = { workspace = true }
 tauri_fuzz_tools = { path = "../../tauri_fuzz_tools" }
+# libc = "*"
 
 
 # [dependencies.tauri-runtime]

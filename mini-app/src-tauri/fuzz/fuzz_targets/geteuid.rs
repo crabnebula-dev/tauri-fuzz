@@ -10,9 +10,7 @@ use tauri_fuzz_tools::{
 
 fn setup_tauri_mock() -> Result<TauriApp<MockRuntime>, tauri::Error> {
     mock_builder_minimal()
-        .invoke_handler(tauri::generate_handler![
-            mini_app::direct_syscalls::write_to_stdout
-        ])
+        .invoke_handler(tauri::generate_handler![mini_app::libc_calls::geteuid])
         .build(mock_context(noop_assets()))
 }
 
@@ -28,10 +26,6 @@ pub fn main() {
     fuzzer::main(harness, options);
 }
 
-fn create_payload(bytes: &[u8]) -> InvokePayload {
-    let input = String::from_utf8_lossy(bytes).to_string();
-    let arg_name = String::from("s");
-    let mut args = CommandArgs::new();
-    args.insert(arg_name, input);
-    create_invoke_payload("write_to_stdout", args)
+fn create_payload(_bytes: &[u8]) -> InvokePayload {
+    create_invoke_payload("geteuid", CommandArgs::new())
 }

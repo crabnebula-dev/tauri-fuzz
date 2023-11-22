@@ -54,6 +54,7 @@ test = false
 doc = false
 
 [[bin]]
-name = "test_utils"
-path = "test_utils.rs"
-test = true
+name = "geteuid"
+path = "fuzz_targets/geteuid.rs"
+test = false
+doc = false
