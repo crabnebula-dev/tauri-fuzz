@@ -17,19 +17,19 @@ libafl_frida = { path = "../LibAFL/libafl_frida", features = ["cmplog"] }
 libafl_targets = { path = "../LibAFL/libafl_targets", features = ["sancov_cmplog"] }
 
 [workspace.dependencies.tauri]
-path = "../cn-tauri/core/tauri"
+path = "../tauri/core/tauri"
 # git = "ssh://git@github.com/crabnebula-dev/tauri.git"
 # branch = "feat/fuzz"
 default-features = false
 features = ["test"]
 
 [workspace.dependencies.tauri-runtime]
-path = "../cn-tauri/core/tauri-runtime"
+path = "../tauri/core/tauri-runtime"
 # git = "ssh://git@github.com/crabnebula-dev/tauri.git"
 # branch = "feat/fuzz"
 
 [workspace.dependencies.tauri-build]
-path = "../cn-tauri/core/tauri-build"
+path = "../tauri/core/tauri-build"
 # git = "ssh://git@github.com/crabnebula-dev/tauri.git"
 # branch = "feat/fuzz"
 

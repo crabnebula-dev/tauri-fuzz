@@ -87,9 +87,7 @@ where
             let mut frida_helper = FridaInstrumentationHelper::new(
                 &gum,
                 options,
-                // tuple_list!(coverage, cmplog, syscall_blocker),
-                // tuple_list!(cmplog, syscall_blocker),
-                tuple_list!(coverage),
+                tuple_list!(coverage, cmplog, syscall_blocker),
             );
 
             println!("helper: {:#?}", frida_helper);
