@@ -14,7 +14,6 @@ fn setup_tauri_mock() -> Result<TauriApp<MockRuntime>, tauri::Error> {
 }
 
 pub fn main() {
-    // TODO currently libs have to be given in this order
     let options = get_options("tauri_cmd_2", vec!["libmini_app.so"]);
     let harness = |input: &BytesInput| {
         let app = setup_tauri_mock().expect("Failed to init Tauri app");

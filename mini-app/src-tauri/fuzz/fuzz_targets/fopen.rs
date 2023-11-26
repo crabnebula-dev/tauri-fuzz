@@ -10,14 +10,12 @@ use tauri_fuzz_tools::{
 
 fn setup_tauri_mock() -> Result<TauriApp<MockRuntime>, tauri::Error> {
     mock_builder_minimal()
-        .invoke_handler(tauri::generate_handler![
-            mini_app::direct_syscalls::write_to_stdout
-        ])
+        .invoke_handler(tauri::generate_handler![mini_app::libc_calls::fopen])
         .build(mock_context(noop_assets()))
 }
 
 pub fn main() {
-    let options = get_options("write_to_stdout", vec!["libmini_app.so"]);
+    let options = get_options("fopen", vec!["libmini_app.so"]);
     let harness = |input: &BytesInput| {
         let app = setup_tauri_mock().expect("Failed to init Tauri app");
         let _res = invoke_command_minimal(app, create_payload(input.bytes()));
@@ -27,10 +25,9 @@ pub fn main() {
     fuzzer::main(harness, options);
 }
 
-fn create_payload(bytes: &[u8]) -> InvokePayload {
-    let input = String::from_utf8_lossy(bytes).to_string();
-    let arg_name = String::from("s");
+fn create_payload(_bytes: &[u8]) -> InvokePayload {
     let mut args = CommandArgs::new();
-    args.insert(arg_name, input);
-    create_invoke_payload("write_to_stdout", args)
+    args.insert("filename", "/tmp/foo");
+    args.insert("mode", "w");
+    create_invoke_payload("fopen", args)
 }

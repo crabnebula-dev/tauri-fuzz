@@ -8,7 +8,6 @@ use tauri_fuzz_tools::{
 };
 
 pub fn main() {
-    // TODO currently libs have to be given in this order
     let options = get_options("tauri_cmd_2", vec!["libmini_app.so"]);
 
     let harness = |input: &BytesInput| {

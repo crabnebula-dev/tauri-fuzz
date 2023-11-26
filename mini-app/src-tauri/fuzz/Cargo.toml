@@ -20,7 +20,6 @@ libafl_bolts = { workspace = true }
 libafl_frida = { workspace = true }
 libafl_targets = { workspace = true }
 
-
 [features]
 # by default Tauri runs in production mode
 # when `tauri dev` runs it is executed with `cargo run --no-default-features` if `devPath` is an URL
@@ -56,5 +55,11 @@ doc = false
 [[bin]]
 name = "geteuid"
 path = "fuzz_targets/geteuid.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fopen"
+path = "fuzz_targets/fopen.rs"
 test = false
 doc = false

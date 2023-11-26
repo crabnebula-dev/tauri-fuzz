@@ -1,6 +1,7 @@
 mod fuzz_utils;
 pub mod fuzzer;
 pub use fuzz_utils::*;
+mod libc_instrumented_functions;
 
 #[cfg(test)]
 mod tests {

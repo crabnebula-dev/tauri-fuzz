@@ -36,6 +36,7 @@ use libafl_bolts::{
     tuples::{tuple_list, Merge},
 };
 
+use crate::libc_instrumented_functions::LIBC_BLOCKED_FUNCTIONS;
 use libafl_frida::{
     cmplog_rt::CmpLogRuntime,
     coverage_rt::{CoverageRuntime, MAP_SIZE},
@@ -81,8 +82,11 @@ where
             let coverage = CoverageRuntime::new();
             let cmplog = CmpLogRuntime::new();
             // TODO Change the way to pass the tauri app lib name
-            let syscall_blocker =
-                SyscallIsolationRuntime::new(options.libs_to_instrument.first().unwrap()).unwrap();
+            let syscall_blocker = SyscallIsolationRuntime::new(
+                options.libs_to_instrument.first().unwrap(),
+                LIBC_BLOCKED_FUNCTIONS,
+            )
+            .unwrap();
 
             let mut frida_helper = FridaInstrumentationHelper::new(
                 &gum,
@@ -90,7 +94,7 @@ where
                 tuple_list!(coverage, cmplog, syscall_blocker),
             );
 
-            println!("helper: {:#?}", frida_helper);
+            log::trace!("Frida helper instantiated: {:#?}", frida_helper);
 
             // Create an observation channel using the coverage map
             let edges_observer = HitcountsMapObserver::new(StdMapObserver::from_mut_ptr(
@@ -128,8 +132,6 @@ where
                 )
                 .unwrap()
             });
-
-            println!("We're a client, let's fuzz :)");
 
             // Setup a basic mutator with a mutational stage
             let mutator = StdScheduledMutator::new(havoc_mutations().merge(tokens_mutations()));

@@ -34,7 +34,7 @@ pub fn get_options(tauri_command: &str, libs_to_instrument: Vec<&str>) -> Fuzzer
             .map(|lib| lib.into())
             .collect(),
         cmplog: true,
-        cmplog_cores: Cores::from_cmdline("1-4").unwrap(),
+        cmplog_cores: Cores::from_cmdline("1").unwrap(),
         detect_leaks: false,
         continue_on_error: false,
         allocation_backtraces: true,
@@ -51,7 +51,7 @@ pub fn get_options(tauri_command: &str, libs_to_instrument: Vec<&str>) -> Fuzzer
         output: PathBuf::from_str(&format!("fuzz_solutions/{}_solutions", tauri_command)).unwrap(),
         // Doesn't work on MacOS
         // cores: Cores::from_cmdline("0").unwrap(),
-        cores: Cores::from_cmdline("1-4").unwrap(),
+        cores: Cores::from_cmdline("1").unwrap(),
         broker_port: 8888,
         remote_broker_addr: None,
         replay: None, // check
