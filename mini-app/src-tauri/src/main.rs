@@ -1,25 +1,27 @@
 use env_logger;
 use log::trace;
-use mini_app::tauri_commands::basic::*;
-// use mini_app::tauri_commands::shell::*;
 #[allow(unused_imports)]
 use mini_app::*;
-use tauri::fuzz;
-// use tauri::api::process::Command;
+use tauri::test::{mock_builder, mock_context, noop_assets};
+use tauri_fuzz_tools::{create_invoke_payload, invoke_command_and_stop, CommandArgs};
 
 fn main() {
     env_logger::init();
     trace!("Start tracing");
-    let data = 8u32.to_be_bytes();
-    let app = setup_tauri_mock().expect("Failed to init Tauri app");
-    fuzz::invoke_tauri_cmd(app, payload_for_tauri_cmd_2(&data));
-    // let app = setup_tauri_mock().expect("Failed to init Tauri app");
-    // let data = "whoami".as_bytes();
-    // call_tauri_cmd(app, payload_for_bin_sh(data));
 
-    // let data = "whoamia".as_bytes();
-    // let code = bin_sh(data);
-    // println!("code: {:?}", code)
+    let app = mock_builder()
+        .invoke_handler(tauri::generate_handler![
+            tauri_cmd_2,
+            no_args,
+            mini_app::direct_syscalls::write_to_stdout
+        ])
+        .build(mock_context(noop_assets()))
+        .expect("Failed to init Tauri app");
 
-    // println!("{:?}", Command::new("ps").args(["-p", "$$"]).output());
+    let mut args = CommandArgs::new();
+    args.insert("s", "toto");
+
+    let payload = create_invoke_payload("write_to_stdout", args);
+
+    let _res = invoke_command_and_stop::<i64>(app, payload);
 }

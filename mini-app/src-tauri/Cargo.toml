@@ -9,23 +9,21 @@ edition = "2021"
 rust-version = "1.57"
 
 [lib]
-# crate-type = ["dylib"]
+# crate-type = ["dylib", "rlib"]
+crate-type = ["dylib"]
 
 [build-dependencies]
-tauri-build = { version = "*", features = [] }
+tauri-build = { workspace = true }
 
 [dependencies]
 log = "0.4"
 env_logger = "*"
+tauri = { workspace = true }
+tauri_fuzz_tools = { path = "../../tauri_fuzz_tools" }
+libc = "*"
 
-[dependencies.tauri]
-# path = "../../../../tauri-for-fuzzy/core/tauri"
-git = "ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git"
-branch = "1.5.1"
-default-features = false
-features = ["fuzz"]
 
-[dependencies.tauri-runtime]
-# path = "../../../../tauri-for-fuzzy/core/tauri-runtime"
-git = "ssh://git@github.com/crabnebula-dev/tauri-for-fuzzy.git"
-branch = "1.5.1"
+# [dependencies.tauri-runtime]
+# # path = "../../../cn-tauri/core/tauri-runtime"
+# git = "ssh://git@github.com/crabnebula-dev/tauri.git"
+# branch = "feat/fuzz"

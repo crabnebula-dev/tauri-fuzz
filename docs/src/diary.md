@@ -141,22 +141,22 @@ Playing with the Tauri mock runtime
     - by sending a message `Message::CloseWindow`
     - then sending another message which is __not__ `ExitRequestedEventAction::Prevent`
 
-## 11 
-- Move code that setup and calls tauri commands to the fuzzer 
-    - now the application can add an almost empty `lib.rs` file to 
+## 11
+- Move code that setup and calls tauri commands to the fuzzer
+    - now the application can add an almost empty `lib.rs` file to
       to be fuzzed
 - Refactor and clean code
 - Bibliography
     - tinyinst
 
 ## 12
-- Bibliography 
+- Bibliography
 - Mdbook
 - Plan for the future with Github issues
 
-## 13 
-- Read AFL++ docs for code instrumentation 
-- Redo the dockerfile 
+## 13
+- Read AFL++ docs for code instrumentation
+- Redo the dockerfile
     - Change to higher version of Debian to have llvm14 - Fail, llvm14 is not new enough to compile rust code
     - Change to Ubuntu container 23.04
     - Pin the Rust version to 17.0
@@ -172,8 +172,8 @@ Playing with the Tauri mock runtime
 - `afl-clang-lto` needs more instrumention before in the pipeline
 - we need to check `cargo-afl`
 
-## 14 
-- in `cargo-afl` 
+## 14
+- in `cargo-afl`
     - files are compiled with
     `let mut rustflags = format!(
         "-C debug-assertions \
@@ -189,8 +189,8 @@ Playing with the Tauri mock runtime
     );
     rustflags.push_str("-Clink-arg=-fuse-ld=gold ");
     `
-- Compile mini-app with the function above 
-    - issue all crates are instrumented 
+- Compile mini-app with the function above
+    - issue all crates are instrumented
     - `export RUSTFLAGS="-C debug-assertions -C overflow_checks -C passes=sancov-module -C codegen-units=1 -C llvm-args=-sanitizer-coverage-level=3 -C llvm-args=-sanitizer-coverage-trace-pc-guard -C llvm-args=-sanitizer-coverage-prune-blocks=0 -C llvm-args=-sanitizer-coverage-trace-compares -C opt-level=3 -C target-cpu=native --cfg fuzzing -Clink-arg=-fuse-ld=gold -l afl-llvm-rt -L /home/adang/.local/share/afl.rs/rustc-1.70.0-90c5418/afl.rs-0.13.3/afl-llvm-rt"`
     - we need to make `-fsanitize-coverage-allowlist=` work
 
@@ -209,7 +209,7 @@ Playing with the Tauri mock runtime
     - try allowlist but not working
     - `cargo rustc`, which only affects your crate and not its dependencies.
         - https://stackoverflow.com/questions/64242625/how-do-i-compile-rust-code-without-linking-i-e-produce-object-files
-- From Discord: 
+- From Discord:
     - "I had good experience with using cargo-fuzz and https://github.com/AFLplusplus/LibAFL/pull/981 together"
     - "So cargo-fuzz will instrument everything and that branch has a libfuzzer compatible runtime"
     - "In a default cargo-fuzz project, just depend on that LibAFL libfuzzer version instead of the one from crates.io."
@@ -219,7 +219,7 @@ Playing with the Tauri mock runtime
 
 ## 16
 - `cargo-libafl` is a fork of `cargo-fuzz`
-- How does it work with libfuzzer 
+- How does it work with libfuzzer
     1. `init` command creates a `fuzz` directory with
         - `fuzz_targets` with harness using the `fuzz_target!` macro
         - `Cargo.toml` containing dependency to `libfuzzer-sys`
@@ -227,7 +227,7 @@ Playing with the Tauri mock runtime
         or to the ported version from `libafl`
     2. `cargo-fuzz run` command to fuzz the targets
         - Working when using the deprecrated original `libfuzzer-sys`
-        - Failing to link with the version from `libafl` 
+        - Failing to link with the version from `libafl`
         - Same error when using `cargo-libafl`
         - Steps:
             1. Compile the `fuzz_targets` with the command
@@ -235,7 +235,7 @@ Playing with the Tauri mock runtime
             2. Run the `fuzz_targets` with the command
             `RUSTFLAGS="-Cpasses=sancov-module -Cllvm-args=-sanitizer-coverage-level=4 -Cllvm-args=-sanitizer-coverage-inline-8bit-counters -Cllvm-args=-sanitizer-coverage-pc-table -Cllvm-args=-sanitizer-coverage-trace-compares --cfg fuzzing -Clink-dead-code -Cllvm-args=-sanitizer-coverage-stack-depth -Cdebug-assertions -C codegen-units=1" "cargo" "run" "--manifest-path" "/home/adang/boum/fuzzy/playground/rust-url/fuzz/Cargo.toml" "--target" "x86_64-unknown-linux-gnu" "--release" "--bin" "fuzz_target_1" "--" "-artifact_prefix=/home/adang/boum/fuzzy/playground/rust-url/fuzz/artifacts/fuzz_target_1/" "/home/adang/boum/fuzzy/playground/rust-url/fuzz/corpus/fuzz_target_1"`
 
-- `fuzz_target!` macro definition is in `cargo-libafl/cargo-libafl-helper`  
+- `fuzz_target!` macro definition is in `cargo-libafl/cargo-libafl-helper`
 - To have a more complete fuzzer with memory sanitizer and else check
 `cargo-libafl/cargo-libafl/cargo-libafl-runtime`
 - Fork `cargo-fuzz` or `cargo-libafl` to use their framework to easily fuzz Tauri applications
@@ -256,7 +256,7 @@ Playing with the Tauri mock runtime
         - docs on [https://llvm.org/docs/CommandGuide/llvm-cov.html#llvm-cov-show](https://llvm.org/docs/CommandGuide/llvm-cov.html#llvm-cov-show)
         - bin with coverage information is generated at `target/arch_triple/coverage/arch_triple/release/fuzz_target`
         - profile file is generated at `coverage/fuzz_target/coverage.profdata`
-    4. Create a summary report with `llvm-cov report` 
+    4. Create a summary report with `llvm-cov report`
     > `llvm-cov report \
     -instr-profile=coverage/fuzz_target_2/coverage.profdata \
     -use-color --ignore-filename-regex='/.cargo/registry' \
@@ -264,16 +264,16 @@ Playing with the Tauri mock runtime
 - Swap `libfuzzer` backend with `libafl_libfuzzer` version
     - doc for options in the `LibAFL/libafl_libfuzzer/src/lib.rs`
 
-## 18 
+## 18
 - Clone dash
 - Clone sqlite
-- Modify `dash` to make it crash 
+- Modify `dash` to make it crash
 
-## 19 
-### Frida 
+## 19
+### Frida
 Frida is a binary analyser with 2 main features
     - _Stalker_ code-tracing engine
-        - follow threads and trace every instruction 
+        - follow threads and trace every instruction
         that are being called
         - uses a technique called _dynamic recompilation_
             - while a program is running the current basic block is copied and stored in caches
@@ -284,17 +284,17 @@ Frida is a binary analyser with 2 main features
         - different possible techniques but most common are trampoline based hooks
         - code is inserted at the beginning of a function A to execute another function B so function B is "inserted" in the middle of function A
 
-#### Strong points 
+#### Strong points
 
 - Portability: frida works/exists on almost all platforms
-- Frida is binary analysis 
+- Frida is binary analysis
     - works directly on binaries and do not require special compilation
 
 #### Libafl-frida
 
 - `libafl-frida` uses frida ability to modify the code to
     - provide coverage
-    - provide asan 
+    - provide asan
     - provide cmplog
 - to create more behaviour we just need to implement the `FridaRuntime` and add it to the possible runtimes
     - for example a runtime that crash on system call
@@ -302,29 +302,29 @@ Frida is a binary analyser with 2 main features
     - no easy way to fuzz a Rust crate
 
 
-## 20 
+## 20
 
 ### Syscall isolation runtime
 
 #### Intercepting syscalls
-- using ldpreload trick 
+- using ldpreload trick
 - intercept all libc and `syscall` instruction
 
-#### Preventing too many false positive 
+#### Preventing too many false positive
 - SET a flag every time you change of running environement (disable flag when running fuzzer code)
     - needs to be run single-threaded
 - Check for stack trace to see if it came from the Tauri app
-    - can be costly 
+    - can be costly
 - Use fork fuzzing to not have syscalls from the fuzzer?
 - EBPF could be a solution to filter false positive? There may be already existing ebpf rules that exist that we could reuse
 - Using libafl minimizer
 
-## 21 
+## 21
 
-### tauri-for-fuzzy 
+### tauri-for-fuzzy
 - `window.close()` has different behaviour in 1.5 and 2.0
 
-### Fuzzer on macos 
+### Fuzzer on macos
 - `tauri::Window` other than "main" can't trigger `on_message`
 - issue with using `Cores("0")` but works fine with other cores
     - `cores.set_affinity()` not supported for MacOS
@@ -334,7 +334,33 @@ Frida is a binary analyser with 2 main features
 - For injecting library dependency on PE, Mach0 or ELF
 - https://github.com/lief-project/LIEF
 
-### Interesting project 
+### Interesting project
 - [ziggy](https://github.com/srlabs/ziggy/tree/3b47b49ae7a822a0359ffabe3fa597b575cc9c69)
     - fuzzer manager for Rust project
 
+## 22
+
+- Update docs on syscalls
+- Compile `mini-app` as a dylib
+    - libafl prevent instrumenting its own crate to prevent weird recursion
+- Clean the `mini-app` fuzzing code
+- Make `mini-app` dynamic
+    - to use the binary directly and linking with the dynamic `libmini_app.so`
+    - LD_LIBRARY_PATH='/home/user/tauri-fuzzer/mini-app/src-tauri/fuzz/target/debug/deps:/home/user/.rustup/toolchains/1.70-x86_64-unknown-linux-gnu/lib:/home/user/tauri-fuzzer/mini-app/src-tauri/fuzz/target/debug:/home/user/.rustup/toolchains/1.70-x86_64-unknown-linux-gnu/lib'
+- Create a tauri command that do a system call without using the libc
+
+## 23
+
+- Create a separate crate `tauri_fuzz_tools` for helper functions
+    - this function connect Tauri to LibAFL
+- Change whole repo to a workspace
+- Catch a call to libc
+    - Check any "calls" and destination address
+        - we don't need to instrument libc
+        - we may miss hidden calls
+    - Instrument the libc and verify the instruction location
+        - we need to instrument libc and all libc instructions will be analysed
+        - easier to implement
+- Found how to get libc symbols through `friga_gum::Module::enumerate_exports`
+- Strange "double crash bug"
+    - does not appear when removing coverage from the runtimes

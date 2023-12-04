@@ -1,25 +1,38 @@
 [package]
-name = "mini-app-fuzz"
+name = "mini-app-fridafuzz"
 version = "0.0.0"
 publish = false
 edition = "2021"
 
-[package.metadata]
-cargo-fuzz = true
-
 [dependencies]
-# libfuzzer-sys = "0.4"
-libfuzzer-sys = { version = "=0.11.0", features = [], package = "libafl_libfuzzer" }
+serde_json = { version = "1.0" }
+serde = "1.0"
+log = "0.4"
+env_logger = "*"
+color-backtrace = "0.5"
+libloading = "0.7"
+clap = { version = "4.0" }
+tauri = { workspace = true }
+mini-app = { path = ".."}
+tauri_fuzz_tools = { path = "../../../tauri_fuzz_tools" }
+libafl = { workspace = true }
+libafl_bolts = { workspace = true }
+libafl_frida = { workspace = true }
+libafl_targets = { workspace = true }
 
-[dependencies.mini-app]
-path = ".."
-
-# Prevent this from interfering with workspaces
-[workspace]
-members = ["."]
+[features]
+# by default Tauri runs in production mode
+# when `tauri dev` runs it is executed with `cargo run --no-default-features` if `devPath` is an URL
+default = ["custom-protocol"]
+# this feature is used used for production builds where `devPath` points to the filesystem
+# DO NOT remove this
+custom-protocol = ["tauri/custom-protocol"]
 
 [profile.release]
-debug = 1
+lto = true
+codegen-units = 1
+opt-level = 3
+debug = true
 
 [[bin]]
 name = "tauri_cmd_1"
@@ -34,13 +47,19 @@ test = false
 doc = false
 
 [[bin]]
-name = "tauri_bin_sh"
-path = "fuzz_targets/tauri_bin_sh.rs"
+name = "write_to_stdout"
+path = "fuzz_targets/write_to_stdout.rs"
 test = false
 doc = false
 
 [[bin]]
-name = "bin_sh"
-path = "fuzz_targets/bin_sh.rs"
+name = "geteuid"
+path = "fuzz_targets/geteuid.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fopen"
+path = "fuzz_targets/fopen.rs"
 test = false
 doc = false

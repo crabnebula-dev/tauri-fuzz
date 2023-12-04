@@ -4,11 +4,8 @@
 )]
 #![allow(unused_imports)]
 
-use crate::bytes_input_to_u32;
 use log::trace;
 use std::collections::HashMap;
-use tauri::fuzz::{create_invoke_payload, CommandArgs};
-use tauri::InvokePayload;
 
 #[tauri::command]
 pub fn tauri_cmd_1(input: &str) -> String {
@@ -33,20 +30,7 @@ pub fn tauri_cmd_2(input: u32) -> String {
     format!("Hello, you wrote {}!", input)
 }
 
-// Helper code to create a payload tauri_cmd_1
-pub fn payload_for_tauri_cmd_1(bytes: &[u8]) -> InvokePayload {
-    let input = String::from_utf8_lossy(bytes).to_string();
-    let arg_name = String::from("input");
-    let mut args = CommandArgs::new();
-    args.insert(arg_name, input);
-    create_invoke_payload(String::from("tauri_cmd_1"), args)
-}
-
-// Helper code to create a payload tauri_cmd_2
-pub fn payload_for_tauri_cmd_2(bytes: &[u8]) -> InvokePayload {
-    let input = bytes_input_to_u32(bytes);
-    let arg_name = String::from("input");
-    let mut args = CommandArgs::new();
-    args.insert(arg_name, input);
-    create_invoke_payload(String::from("tauri_cmd_2"), args)
+#[tauri::command]
+pub fn no_args() -> String {
+    String::from("toto")
 }
