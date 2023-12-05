@@ -364,3 +364,15 @@ Frida is a binary analyser with 2 main features
 - Found how to get libc symbols through `friga_gum::Module::enumerate_exports`
 - Strange "double crash bug"
     - does not appear when removing coverage from the runtimes
+
+## 24
+
+- Inspect minimization
+    -  misunderstanding of what minimization is
+    - thought that minimization would reduce the number of solutions found to only keep ones with different coverage
+    - Real use of minimization:
+        - reduce size of the "interesting" inputs while preserving the code coverage
+        - removes the "noise" in inputs for easier analysis and mutations
+    - Docs and examples can be found at:
+        - https://docs.rs/libafl/latest/libafl/corpus/minimizer/trait.CorpusMinimizer.html
+        - an example fuzzer in: "LibAFL/fuzzers/libfuzzer_libpng_cmin/src/lib.rs"
