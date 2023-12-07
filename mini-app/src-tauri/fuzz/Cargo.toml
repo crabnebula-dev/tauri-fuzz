@@ -63,3 +63,9 @@ name = "fopen"
 path = "fuzz_targets/fopen.rs"
 test = false
 doc = false
+
+[[bin]]
+name = "write_read_tmp_file"
+path = "fuzz_targets/write_read_tmp_file.rs"
+test = false
+doc = false
