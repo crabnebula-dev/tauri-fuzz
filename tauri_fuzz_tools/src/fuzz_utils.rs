@@ -18,9 +18,8 @@ use tauri::Manager;
 use tauri::RunEvent;
 
 pub fn get_options(tauri_command: &str, libs_to_instrument: Vec<&str>) -> FuzzerOptions {
-    let mut solutions_dir = PathBuf::new();
-    solutions_dir.push("fuzz_solutions");
-    solutions_dir.push(tauri_command.into());
+    let solutions_dir: PathBuf = ["fuzz_solutions", tauri_command].iter().collect();
+
     FuzzerOptions {
         timeout: std::time::Duration::from_secs(5),
         verbose: true,
@@ -51,7 +50,7 @@ pub fn get_options(tauri_command: &str, libs_to_instrument: Vec<&str>) -> Fuzzer
         tokens: vec![],          // check
         // input: vec![PathBuf::from_str("tauri_cmd_2_fuzz/corpus").unwrap()],
         input: vec![],
-        output: solutions_dir; 
+        output: solutions_dir,
         // Doesn't work on MacOS
         // cores: Cores::from_cmdline("0").unwrap(),
         cores: Cores::from_cmdline("1").unwrap(),

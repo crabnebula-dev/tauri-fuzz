@@ -8,7 +8,7 @@ use tauri_fuzz_tools::{
 };
 
 pub fn main() {
-    let options = get_options("tauri_cmd_2", vec!["libmini_app.so"]);
+    let options = get_options("tauri_cmd_2", vec!["mini_app"]);
 
     let harness = |input: &BytesInput| {
         let app = setup_tauri_mock().expect("Failed to init Tauri app");
