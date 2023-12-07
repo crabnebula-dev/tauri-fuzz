@@ -1,7 +1,7 @@
 //! Tauri commands calling libc functions directly
 use std::ffi::CString;
 
-#[cfg(windows)]
+#[cfg(unix)]
 #[tauri::command]
 pub fn geteuid() -> u32 {
     unsafe { libc::geteuid() }

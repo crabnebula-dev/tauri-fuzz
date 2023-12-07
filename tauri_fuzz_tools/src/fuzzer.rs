@@ -27,7 +27,7 @@ use libafl::{
     state::{HasCorpus, StdState},
     Error,
 };
-#[cfg(unix)]
+
 use libafl_bolts::{
     cli::FuzzerOptions,
     current_nanos,
