@@ -7,6 +7,8 @@ use tauri_fuzz_tools::{
     create_invoke_payload, fuzzer, get_options, invoke_command_and_stop, CommandArgs,
 };
 
+const COMMAND_NAME: &str = "tauri_cmd_2";
+
 fn setup_tauri_mock() -> Result<TauriApp<MockRuntime>, tauri::Error> {
     mock_builder()
         .invoke_handler(tauri::generate_handler![mini_app::tauri_cmd_2])
@@ -14,7 +16,7 @@ fn setup_tauri_mock() -> Result<TauriApp<MockRuntime>, tauri::Error> {
 }
 
 pub fn main() {
-    let options = get_options("tauri_cmd_2", vec!["mini_app"]);
+    let options = get_options(COMMAND_NAME);
     let harness = |input: &BytesInput| {
         let app = setup_tauri_mock().expect("Failed to init Tauri app");
         let _res = invoke_command_and_stop::<String>(app, payload_for_tauri_cmd_2(input.bytes()));
@@ -30,7 +32,7 @@ fn payload_for_tauri_cmd_2(bytes: &[u8]) -> InvokePayload {
     let arg_name = String::from("input");
     let mut args = CommandArgs::new();
     args.insert(arg_name, input);
-    create_invoke_payload("tauri_cmd_2", args)
+    create_invoke_payload(COMMAND_NAME, args)
 }
 
 fn bytes_input_to_u32(bytes_input: &[u8]) -> u32 {

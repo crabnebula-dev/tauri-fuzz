@@ -7,8 +7,10 @@ use tauri_fuzz_tools::{
     create_invoke_payload, fuzzer, get_options, invoke_command_and_stop, CommandArgs,
 };
 
+const COMMAND_NAME: &str = "tauri_cmd_1";
+
 pub fn main() {
-    let options = get_options("tauri_cmd_2", vec!["mini_app"]);
+    let options = get_options(COMMAND_NAME);
 
     let harness = |input: &BytesInput| {
         let app = setup_tauri_mock().expect("Failed to init Tauri app");
@@ -31,5 +33,5 @@ fn payload_for_tauri_cmd_1(bytes: &[u8]) -> InvokePayload {
     let arg_name = String::from("input");
     let mut args = CommandArgs::new();
     args.insert(arg_name, input);
-    create_invoke_payload("tauri_cmd_1", args)
+    create_invoke_payload(COMMAND_NAME, args)
 }

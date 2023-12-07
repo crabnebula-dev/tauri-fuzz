@@ -8,6 +8,8 @@ use tauri_fuzz_tools::{
     CommandArgs,
 };
 
+const COMMAND_NAME: &str = "fopen";
+
 fn setup_tauri_mock() -> Result<TauriApp<MockRuntime>, tauri::Error> {
     mock_builder_minimal()
         .invoke_handler(tauri::generate_handler![mini_app::libc_calls::fopen])
@@ -15,7 +17,7 @@ fn setup_tauri_mock() -> Result<TauriApp<MockRuntime>, tauri::Error> {
 }
 
 pub fn main() {
-    let options = get_options("fopen", vec!["mini_app"]);
+    let options = get_options(COMMAND_NAME);
     let harness = |input: &BytesInput| {
         let app = setup_tauri_mock().expect("Failed to init Tauri app");
         let _res = invoke_command_minimal(app, create_payload(input.bytes()));
@@ -29,5 +31,5 @@ fn create_payload(_bytes: &[u8]) -> InvokePayload {
     let mut args = CommandArgs::new();
     args.insert("filename", "/tmp/foo");
     args.insert("mode", "w");
-    create_invoke_payload("fopen", args)
+    create_invoke_payload(COMMAND_NAME, args)
 }

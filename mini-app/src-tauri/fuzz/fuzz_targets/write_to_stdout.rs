@@ -8,6 +8,8 @@ use tauri_fuzz_tools::{
     CommandArgs,
 };
 
+const COMMAND_NAME: &str = "write_to_stdout";
+
 fn setup_tauri_mock() -> Result<TauriApp<MockRuntime>, tauri::Error> {
     mock_builder_minimal()
         .invoke_handler(tauri::generate_handler![
@@ -17,7 +19,7 @@ fn setup_tauri_mock() -> Result<TauriApp<MockRuntime>, tauri::Error> {
 }
 
 pub fn main() {
-    let options = get_options("write_to_stdout", vec!["mini_app"]);
+    let options = get_options(COMMAND_NAME);
     let harness = |input: &BytesInput| {
         let app = setup_tauri_mock().expect("Failed to init Tauri app");
         let _res = invoke_command_minimal(app, create_payload(input.bytes()));
@@ -32,5 +34,5 @@ fn create_payload(bytes: &[u8]) -> InvokePayload {
     let arg_name = String::from("s");
     let mut args = CommandArgs::new();
     args.insert(arg_name, input);
-    create_invoke_payload("write_to_stdout", args)
+    create_invoke_payload(COMMAND_NAME, args)
 }

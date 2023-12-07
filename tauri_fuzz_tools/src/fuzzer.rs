@@ -82,11 +82,7 @@ where
             let coverage = CoverageRuntime::new();
             let cmplog = CmpLogRuntime::new();
             // TODO Change the way to pass the tauri app lib name
-            let syscall_blocker = SyscallIsolationRuntime::new(
-                options.libs_to_instrument.first().unwrap(),
-                LIBC_BLOCKED_FUNCTIONS,
-            )
-            .unwrap();
+            let syscall_blocker = SyscallIsolationRuntime::new(LIBC_BLOCKED_FUNCTIONS).unwrap();
 
             let mut frida_helper = FridaInstrumentationHelper::new(
                 &gum,
@@ -94,7 +90,7 @@ where
                 tuple_list!(coverage, cmplog, syscall_blocker),
             );
 
-            log::trace!("Frida helper instantiated: {:#?}", frida_helper);
+            log::info!("Frida helper instantiated: {:#?}", frida_helper);
 
             // Create an observation channel using the coverage map
             let edges_observer = HitcountsMapObserver::new(StdMapObserver::from_mut_ptr(

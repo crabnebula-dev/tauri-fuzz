@@ -53,12 +53,6 @@ test = false
 doc = false
 
 [[bin]]
-name = "geteuid"
-path = "fuzz_targets/geteuid.rs"
-test = false
-doc = false
-
-[[bin]]
 name = "fopen"
 path = "fuzz_targets/fopen.rs"
 test = false
@@ -67,5 +61,11 @@ doc = false
 [[bin]]
 name = "write_read_tmp_file"
 path = "fuzz_targets/write_read_tmp_file.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "read_foo_file"
+path = "fuzz_targets/read_foo_file.rs"
 test = false
 doc = false

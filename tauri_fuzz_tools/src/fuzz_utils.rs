@@ -17,7 +17,7 @@ use tauri::InvokePayload;
 use tauri::Manager;
 use tauri::RunEvent;
 
-pub fn get_options(tauri_command: &str, libs_to_instrument: Vec<&str>) -> FuzzerOptions {
+pub fn get_options(tauri_command: &str) -> FuzzerOptions {
     let solutions_dir: PathBuf = ["fuzz_solutions", tauri_command].iter().collect();
 
     FuzzerOptions {
@@ -31,10 +31,11 @@ pub fn get_options(tauri_command: &str, libs_to_instrument: Vec<&str>) -> Fuzzer
         harness: Some(PathBuf::from_str(tauri_command).unwrap()),
         harness_args: vec![],
         harness_function: String::from(""),
-        libs_to_instrument: libs_to_instrument
-            .into_iter()
-            .map(|lib| lib.into())
-            .collect(),
+        // libs_to_instrument: libs_to_instrument
+        //     .into_iter()
+        //     .map(|lib| lib.into())
+        //     .collect(),
+        libs_to_instrument: vec![],
         cmplog: true,
         cmplog_cores: Cores::from_cmdline("1").unwrap(),
         detect_leaks: false,
