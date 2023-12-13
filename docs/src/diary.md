@@ -376,3 +376,22 @@ Frida is a binary analyser with 2 main features
     - Docs and examples can be found at:
         - https://docs.rs/libafl/latest/libafl/corpus/minimizer/trait.CorpusMinimizer.html
         - an example fuzzer in: "LibAFL/fuzzers/libfuzzer_libpng_cmin/src/lib.rs"
+
+## 25
+
+- on Windows
+    - change visibility for the different modules
+    - make sure that given paths are portable
+- Noticed that when opening a file `fopen` is not called but `open`
+- Another issue is that interceptor do not distinguish between calls from the crates and the code we are targetting
+    - we need to have an interceptor that sets up a flag on the tauri command we are fuzzing (then it's single threaded?)
+
+## 26
+
+- Trying to setup the interceptor only when the harness functions are entered
+    - when entering the tauri command we are fuzzing 
+    - when we are entering the harness: `setup_tauri_mock` + `on_msg`
+- In our mental model it's one thread per harness executed 
+    - the `SyscallIsolationRuntime` is initiated for each thread 
+    - we should be able to have one flag per `SyscallIsolationRuntime` to setup when the harness function has been entered
+- Bug but maybe disable other runtime

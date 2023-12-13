@@ -17,7 +17,7 @@ use tauri::InvokePayload;
 use tauri::Manager;
 use tauri::RunEvent;
 
-pub fn get_options(tauri_command: &str) -> FuzzerOptions {
+pub fn get_options(app_name: &str, tauri_command: &str) -> FuzzerOptions {
     let solutions_dir: PathBuf = ["fuzz_solutions", tauri_command].iter().collect();
 
     FuzzerOptions {
@@ -30,13 +30,14 @@ pub fn get_options(tauri_command: &str) -> FuzzerOptions {
         iterations: 0,
         harness: Some(PathBuf::from_str(tauri_command).unwrap()),
         harness_args: vec![],
-        harness_function: String::from(""),
+        harness_function: tauri_command.into(),
         // libs_to_instrument: libs_to_instrument
         //     .into_iter()
         //     .map(|lib| lib.into())
         //     .collect(),
-        libs_to_instrument: vec![],
-        cmplog: true,
+        libs_to_instrument: vec![app_name.into()],
+        // cmplog: true,
+        cmplog: false,
         cmplog_cores: Cores::from_cmdline("1").unwrap(),
         detect_leaks: false,
         continue_on_error: false,
@@ -44,11 +45,12 @@ pub fn get_options(tauri_command: &str) -> FuzzerOptions {
         max_allocation: 1073741824,
         max_total_allocation: 4294967296,
         max_allocation_panics: true,
-        disable_coverage: false,
+        // disable_coverage: false,
+        disable_coverage: true,
         drcov: false,
-        disable_excludes: true,  // check
-        dont_instrument: vec![], // check
-        tokens: vec![],          // check
+        disable_excludes: true,
+        dont_instrument: vec![],
+        tokens: vec![], // check
         // input: vec![PathBuf::from_str("tauri_cmd_2_fuzz/corpus").unwrap()],
         input: vec![],
         output: solutions_dir,
@@ -57,7 +59,7 @@ pub fn get_options(tauri_command: &str) -> FuzzerOptions {
         cores: Cores::from_cmdline("1").unwrap(),
         broker_port: 8888,
         remote_broker_addr: None,
-        replay: None, // check
+        replay: None,
         repeat: None,
     }
 }

@@ -4,7 +4,7 @@ use tauri::test::{mock_builder, mock_context, noop_assets, MockRuntime};
 use tauri::App as TauriApp;
 use tauri::InvokePayload;
 use tauri_fuzz_tools::{
-    create_invoke_payload, fuzzer, get_options, invoke_command_and_stop, CommandArgs,
+    create_invoke_payload, fuzzer, get_options, invoke_command_minimal, CommandArgs,
 };
 
 const COMMAND_NAME: &str = "tauri_cmd_2";
@@ -16,13 +16,12 @@ fn setup_tauri_mock() -> Result<TauriApp<MockRuntime>, tauri::Error> {
 }
 
 pub fn main() {
-    let options = get_options(COMMAND_NAME);
+    let options = get_options("mini_app", COMMAND_NAME);
     let harness = |input: &BytesInput| {
         let app = setup_tauri_mock().expect("Failed to init Tauri app");
-        let _res = invoke_command_and_stop::<String>(app, payload_for_tauri_cmd_2(input.bytes()));
+        let _res = invoke_command_minimal(app, payload_for_tauri_cmd_2(input.bytes()));
         ExitKind::Ok
     };
-
     fuzzer::main(harness, options);
 }
 

@@ -10,7 +10,7 @@ use tauri_fuzz_tools::{
 const COMMAND_NAME: &str = "tauri_cmd_1";
 
 pub fn main() {
-    let options = get_options(COMMAND_NAME);
+    let options = get_options("mini_app", COMMAND_NAME);
 
     let harness = |input: &BytesInput| {
         let app = setup_tauri_mock().expect("Failed to init Tauri app");
