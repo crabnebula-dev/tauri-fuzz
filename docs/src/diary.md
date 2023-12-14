@@ -389,9 +389,20 @@ Frida is a binary analyser with 2 main features
 ## 26
 
 - Trying to setup the interceptor only when the harness functions are entered
-    - when entering the tauri command we are fuzzing 
+    - when entering the tauri command we are fuzzing
     - when we are entering the harness: `setup_tauri_mock` + `on_msg`
-- In our mental model it's one thread per harness executed 
-    - the `SyscallIsolationRuntime` is initiated for each thread 
+- In our mental model it's one thread per harness executed
+    - the `SyscallIsolationRuntime` is initiated for each thread
     - we should be able to have one flag per `SyscallIsolationRuntime` to setup when the harness function has been entered
 - Bug but maybe disable other runtime
+
+## 27
+
+- Finding function symbol in the runtime with a pointer rather than a name
+    - name mangling make it harder
+    - more precise
+- the fuzzer intercepts the `open` syscall
+    - this happens in the fuzzer `panic_hook` to write state to disk
+        - it's difficult to set the `SyscallIsolationRuntime` flag from the `panic_hook`
+        - we dodge the issue by rewriting the `panic_hook`
+    - this happens with the stalker
