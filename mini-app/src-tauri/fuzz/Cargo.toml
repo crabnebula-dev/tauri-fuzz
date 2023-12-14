@@ -69,3 +69,9 @@ name = "read_foo_file"
 path = "fuzz_targets/read_foo_file.rs"
 test = false
 doc = false
+
+[[bin]]
+name = "direct_panic"
+path = "fuzz_targets/direct_panic.rs"
+test = false
+doc = false

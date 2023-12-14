@@ -10,15 +10,15 @@ use tauri_fuzz_tools::{
 const COMMAND_NAME: &str = "tauri_cmd_1";
 
 pub fn main() {
-    let options = get_options("mini_app", COMMAND_NAME);
-
+    let ptr = mini_app::tauri_cmd_1 as *const ();
+    let options = get_options(COMMAND_NAME);
     let harness = |input: &BytesInput| {
         let app = setup_tauri_mock().expect("Failed to init Tauri app");
         let _ = invoke_command_and_stop::<String>(app, payload_for_tauri_cmd_1(input.bytes()));
         ExitKind::Ok
     };
 
-    fuzzer::main(harness, options);
+    fuzzer::main(harness, options, ptr as usize);
 }
 
 fn setup_tauri_mock() -> Result<TauriApp<MockRuntime>, tauri::Error> {

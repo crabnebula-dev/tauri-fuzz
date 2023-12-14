@@ -30,6 +30,11 @@ pub fn tauri_cmd_2(input: u32) -> String {
 }
 
 #[tauri::command]
+pub fn direct_panic() {
+    panic!("[mini-app] Crashing! =)")
+}
+
+#[tauri::command]
 pub fn no_args() -> String {
     String::from("toto")
 }

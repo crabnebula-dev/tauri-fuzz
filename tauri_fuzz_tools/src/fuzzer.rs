@@ -47,7 +47,7 @@ use libafl_frida::{
 use libafl_targets::cmplog::CmpLogObserver;
 
 /// The main fn, usually parsing parameters, and starting the fuzzer
-pub fn main<H>(harness: H, options: FuzzerOptions)
+pub fn main<H>(harness: H, options: FuzzerOptions, tauri_cmd_address: usize)
 where
     H: FnMut(&BytesInput) -> ExitKind,
 {
@@ -55,8 +55,8 @@ where
     env_logger::init();
 
     unsafe {
-        match fuzz_test(harness, &options) {
-            // match fuzz(harness, &options) {
+        // match fuzz_test(harness, &options, tauri_cmd_address) {
+        match fuzz(harness, &options, tauri_cmd_address) {
             Ok(()) | Err(Error::ShuttingDown) => println!("Finished fuzzing. Good bye."),
             Err(e) => panic!("Error during fuzzing: {e:?}"),
         }
@@ -65,7 +65,11 @@ where
 
 /// The actual fuzzer
 #[allow(clippy::too_many_lines, clippy::too_many_arguments, dead_code)]
-unsafe fn fuzz<H>(mut frida_harness: H, options: &FuzzerOptions) -> Result<(), Error>
+unsafe fn fuzz<H>(
+    mut frida_harness: H,
+    options: &FuzzerOptions,
+    tauri_cmd_address: usize,
+) -> Result<(), Error>
 where
     H: FnMut(&BytesInput) -> ExitKind,
 {
@@ -84,9 +88,9 @@ where
             let cmplog = CmpLogRuntime::new();
             // TODO Change the way to pass the tauri app lib name
             let syscall_blocker = SyscallIsolationRuntime::new(
-                options.libs_to_instrument.first().unwrap().to_string(),
                 options.harness_function.clone(),
                 LIBC_BLOCKED_FUNCTIONS,
+                tauri_cmd_address,
             )
             .unwrap();
 
@@ -222,7 +226,11 @@ where
 
 // Fuzz just a single iteration for testing
 #[allow(dead_code)]
-unsafe fn fuzz_test<H>(mut frida_harness: H, options: &FuzzerOptions) -> Result<(), Error>
+unsafe fn fuzz_test<H>(
+    mut frida_harness: H,
+    options: &FuzzerOptions,
+    tauri_cmd_address: usize,
+) -> Result<(), Error>
 where
     H: FnMut(&BytesInput) -> ExitKind,
 {
@@ -234,9 +242,9 @@ where
     // let cmplog = CmpLogRuntime::new();
     // TODO Change the way to pass the tauri app lib name
     let syscall_blocker = SyscallIsolationRuntime::new(
-        options.libs_to_instrument.first().unwrap().to_string(),
         options.harness_function.clone(),
         LIBC_BLOCKED_FUNCTIONS,
+        tauri_cmd_address,
     )
     .unwrap();
 

@@ -17,7 +17,7 @@ use tauri::InvokePayload;
 use tauri::Manager;
 use tauri::RunEvent;
 
-pub fn get_options(app_name: &str, tauri_command: &str) -> FuzzerOptions {
+pub fn get_options(tauri_command: &str) -> FuzzerOptions {
     let solutions_dir: PathBuf = ["fuzz_solutions", tauri_command].iter().collect();
 
     FuzzerOptions {
@@ -35,7 +35,7 @@ pub fn get_options(app_name: &str, tauri_command: &str) -> FuzzerOptions {
         //     .into_iter()
         //     .map(|lib| lib.into())
         //     .collect(),
-        libs_to_instrument: vec![app_name.into()],
+        libs_to_instrument: vec![],
         // cmplog: true,
         cmplog: false,
         cmplog_cores: Cores::from_cmdline("1").unwrap(),
@@ -56,6 +56,7 @@ pub fn get_options(app_name: &str, tauri_command: &str) -> FuzzerOptions {
         output: solutions_dir,
         // Doesn't work on MacOS
         // cores: Cores::from_cmdline("0").unwrap(),
+        // cores: Cores::from_cmdline("1-4").unwrap(),
         cores: Cores::from_cmdline("1").unwrap(),
         broker_port: 8888,
         remote_broker_addr: None,
