@@ -19,14 +19,16 @@ fn setup_tauri_mock() -> Result<TauriApp<MockRuntime>, tauri::Error> {
 }
 
 pub fn main() {
-    let options = get_options("mini_app", COMMAND_NAME);
+    let addr = mini_app::direct_syscalls::write_to_stdout as *const () as usize;
+    let fuzz_dir = std::path::PathBuf::from(std::env!("CARGO_MANIFEST_DIR"));
+    let options = get_options(COMMAND_NAME, fuzz_dir);
     let harness = |input: &BytesInput| {
         let app = setup_tauri_mock().expect("Failed to init Tauri app");
         let _res = invoke_command_minimal(app, create_payload(input.bytes()));
         ExitKind::Ok
     };
 
-    fuzzer::main(harness, options);
+    fuzzer::main(harness, options, addr);
 }
 
 fn create_payload(bytes: &[u8]) -> InvokePayload {

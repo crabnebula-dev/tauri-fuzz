@@ -17,8 +17,10 @@ use tauri::InvokePayload;
 use tauri::Manager;
 use tauri::RunEvent;
 
-pub fn get_options(tauri_command: &str) -> FuzzerOptions {
-    let solutions_dir: PathBuf = ["fuzz_solutions", tauri_command].iter().collect();
+pub fn get_options(tauri_command: &str, fuzz_dir: PathBuf) -> FuzzerOptions {
+    let mut solutions_dir = fuzz_dir.clone();
+    solutions_dir.push("fuzz_solutions");
+    solutions_dir.push(tauri_command);
 
     FuzzerOptions {
         timeout: std::time::Duration::from_secs(5),
@@ -31,13 +33,8 @@ pub fn get_options(tauri_command: &str) -> FuzzerOptions {
         harness: Some(PathBuf::from_str(tauri_command).unwrap()),
         harness_args: vec![],
         harness_function: tauri_command.into(),
-        // libs_to_instrument: libs_to_instrument
-        //     .into_iter()
-        //     .map(|lib| lib.into())
-        //     .collect(),
         libs_to_instrument: vec![],
-        // cmplog: true,
-        cmplog: false,
+        cmplog: true,
         cmplog_cores: Cores::from_cmdline("1").unwrap(),
         detect_leaks: false,
         continue_on_error: false,
@@ -45,9 +42,8 @@ pub fn get_options(tauri_command: &str) -> FuzzerOptions {
         max_allocation: 1073741824,
         max_total_allocation: 4294967296,
         max_allocation_panics: true,
-        // disable_coverage: false,
-        disable_coverage: true,
-        drcov: false,
+        disable_coverage: false,
+        drcov: true,
         disable_excludes: true,
         dont_instrument: vec![],
         tokens: vec![], // check
@@ -56,8 +52,8 @@ pub fn get_options(tauri_command: &str) -> FuzzerOptions {
         output: solutions_dir,
         // Doesn't work on MacOS
         // cores: Cores::from_cmdline("0").unwrap(),
-        // cores: Cores::from_cmdline("1-4").unwrap(),
-        cores: Cores::from_cmdline("1").unwrap(),
+        cores: Cores::from_cmdline("1-4").unwrap(),
+        // cores: Cores::from_cmdline("1").unwrap(),
         broker_port: 8888,
         remote_broker_addr: None,
         replay: None,

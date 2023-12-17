@@ -124,12 +124,15 @@ where
             let mut objective = feedback_or_fast!(CrashFeedback::new(), TimeoutFeedback::new());
 
             // If not restarting, create a State from scratch
+            let mut corpus_path = options.output.clone();
+            corpus_path.pop();
+            corpus_path.push("./corpus_discovered");
             let mut state = state.unwrap_or_else(|| {
                 StdState::new(
                     // RNG
                     StdRand::with_seed(current_nanos()),
                     // Corpus that will be evolved, we keep it in memory for performance
-                    CachedOnDiskCorpus::no_meta(PathBuf::from("./corpus_discovered"), 64).unwrap(),
+                    CachedOnDiskCorpus::no_meta(corpus_path, 64).unwrap(),
                     // Corpus in which we store solutions (crashes in this example),
                     // on disk so the user can get them after stopping the fuzzer
                     OnDiskCorpus::new(options.output.clone()).unwrap(),

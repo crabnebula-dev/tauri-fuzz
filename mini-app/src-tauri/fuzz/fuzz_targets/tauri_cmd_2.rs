@@ -17,7 +17,8 @@ fn setup_tauri_mock() -> Result<TauriApp<MockRuntime>, tauri::Error> {
 
 pub fn main() {
     let ptr = mini_app::tauri_cmd_2 as *const ();
-    let options = get_options(COMMAND_NAME);
+    let fuzz_dir = std::path::PathBuf::from(std::env!("CARGO_MANIFEST_DIR"));
+    let options = get_options(COMMAND_NAME, fuzz_dir);
     let harness = |input: &BytesInput| {
         let app = setup_tauri_mock().expect("Failed to init Tauri app");
         let _res = invoke_command_minimal(app, payload_for_tauri_cmd_2(input.bytes()));
