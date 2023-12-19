@@ -97,4 +97,27 @@ With LibAFL Frida intercept any instruction
                 - function hooking engine
             - [MemoryAccessMonitor](https://github.com/frida/frida-gum/blob/main/gum/gummemoryaccessmonitor.h)
 
+## Panic in Rust
+
+### `panic!`
+
+1. `std::panic::panic_any(msg)`
+2. if exists, panic hook is called
+    - `std::panic::set_hook`
+3. if panic hook returns, unwind the thread stack
+4. if the registers are messed up
+    - the unwinding fails and thread aborts
+    - else, per frame the data is dropped
+        - if a panic is hit while dropping data then thread aborts
+5. some frames may be marked as "catching" the unwind
+    - marked via `std::panic::catch_unwind()`
+6. When the thread has finished unwinding
+    - if it's main thread then `core::intrisics::abort`
+    - else, thread is terminated and can be collected with `std::thread::join`
+
+### panic is memory costly
+
+To unwind the stack some debugging information is added to the stack
+- debug information in DWARF format
+- in embedded `panic = abort` is used
 

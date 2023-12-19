@@ -364,3 +364,64 @@ Frida is a binary analyser with 2 main features
 - Found how to get libc symbols through `friga_gum::Module::enumerate_exports`
 - Strange "double crash bug"
     - does not appear when removing coverage from the runtimes
+
+## 24
+
+- Inspect minimization
+    -  misunderstanding of what minimization is
+    - thought that minimization would reduce the number of solutions found to only keep ones with different coverage
+    - Real use of minimization:
+        - reduce size of the "interesting" inputs while preserving the code coverage
+        - removes the "noise" in inputs for easier analysis and mutations
+    - Docs and examples can be found at:
+        - https://docs.rs/libafl/latest/libafl/corpus/minimizer/trait.CorpusMinimizer.html
+        - an example fuzzer in: "LibAFL/fuzzers/libfuzzer_libpng_cmin/src/lib.rs"
+
+## 25
+
+- on Windows
+    - change visibility for the different modules
+    - make sure that given paths are portable
+- Noticed that when opening a file `fopen` is not called but `open`
+- Another issue is that interceptor do not distinguish between calls from the crates and the code we are targetting
+    - we need to have an interceptor that sets up a flag on the tauri command we are fuzzing (then it's single threaded?)
+
+## 26
+
+- Trying to setup the interceptor only when the harness functions are entered
+    - when entering the tauri command we are fuzzing
+    - when we are entering the harness: `setup_tauri_mock` + `on_msg`
+- In our mental model it's one thread per harness executed
+    - the `SyscallIsolationRuntime` is initiated for each thread
+    - we should be able to have one flag per `SyscallIsolationRuntime` to setup when the harness function has been entered
+- Bug but maybe disable other runtime
+
+## 27
+
+- Finding function symbol in the runtime with a pointer rather than a name
+    - name mangling make it harder
+    - more precise
+- the fuzzer intercepts the `open` syscall
+    - this happens in the fuzzer `panic_hook` to write state to disk
+        - it's difficult to set the `SyscallIsolationRuntime` flag from the `panic_hook`
+        - we dodge the issue by rewriting the `panic_hook`
+    - this happens with the stalker
+
+## 28
+
+- Trying to refact `fuzzer.rs` to have the same code to use `fuzz_one` or `Launcher`
+    - really difficult due to the numerous traits used by LibAFL
+    - the trick they use is to use a closure so we don't need to precise a type for all objects used
+    - but to turn this into a function
+        - using `impl` return type does not work due to Rust not supporting nested `impl`
+        - returning generic type not really working either since the return type is clearly defined in the function body
+        - using exact type is super difficult too due to the complexity of the types in LibAFL
+    - I think I need a rust expert for this
+- Writing tests for our fuzz targets
+    - Issue is that tests that crash actually are handled by the fuzzer and actually `libc::_exit(134)`
+    - This is not handled by cargo tests
+    - What I've tried
+        - `#[should_panic]` this is not a panic so it does not work
+        - `panic::setup_hook(panic!)` this is rewritten by the fuzzer =(
+        - `uses abort rather than panic` does not work either
+

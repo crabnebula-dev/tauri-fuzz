@@ -4,12 +4,11 @@
 )]
 #![allow(unused_imports)]
 
-use log::trace;
 use std::collections::HashMap;
 
 #[tauri::command]
 pub fn tauri_cmd_1(input: &str) -> String {
-    trace!("[tauri_cmd_1] Entering with input: {}", input);
+    log::debug!("[tauri_cmd_1] Entering with input: {}", input);
     let mut bytes = input.bytes();
     if bytes.next() == Some(b'a') {
         if bytes.next() == Some(b'b') {
@@ -23,11 +22,16 @@ pub fn tauri_cmd_1(input: &str) -> String {
 
 #[tauri::command]
 pub fn tauri_cmd_2(input: u32) -> String {
-    log::info!("[tauri_cmd_2] Entering with input: {}", input);
+    log::debug!("[tauri_cmd_2] Entering with input: {}", input);
     if input == 100 {
         panic!("[mini-app] Crashing! =)");
     }
     format!("Hello, you wrote {}!", input)
+}
+
+#[tauri::command]
+pub fn direct_panic() {
+    panic!("[mini-app] Crashing! =)")
 }
 
 #[tauri::command]

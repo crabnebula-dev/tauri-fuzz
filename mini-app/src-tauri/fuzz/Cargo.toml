@@ -1,5 +1,5 @@
 [package]
-name = "mini-app-fridafuzz"
+name = "mini-app-fuzz"
 version = "0.0.0"
 publish = false
 edition = "2021"
@@ -13,7 +13,7 @@ color-backtrace = "0.5"
 libloading = "0.7"
 clap = { version = "4.0" }
 tauri = { workspace = true }
-mini-app = { path = ".."}
+mini-app = { path = ".." }
 tauri_fuzz_tools = { path = "../../../tauri_fuzz_tools" }
 libafl = { workspace = true }
 libafl_bolts = { workspace = true }
@@ -53,13 +53,25 @@ test = false
 doc = false
 
 [[bin]]
-name = "geteuid"
-path = "fuzz_targets/geteuid.rs"
+name = "fopen"
+path = "fuzz_targets/fopen.rs"
 test = false
 doc = false
 
 [[bin]]
-name = "fopen"
-path = "fuzz_targets/fopen.rs"
+name = "write_read_tmp_file"
+path = "fuzz_targets/write_read_tmp_file.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "read_foo_file"
+path = "fuzz_targets/read_foo_file.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "direct_panic"
+path = "fuzz_targets/direct_panic.rs"
 test = false
 doc = false

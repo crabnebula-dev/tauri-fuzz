@@ -3,6 +3,9 @@
 
 pub(crate) const LIBC_BLOCKED_FUNCTIONS: &[&str] = &[
     // For testing
-    "geteuid", // File input/output https://en.wikipedia.org/wiki/C_file_input/output
+    #[cfg(unix)]
+    "geteuid",
     "fopen",
+    "open",
+    "open64",
 ];

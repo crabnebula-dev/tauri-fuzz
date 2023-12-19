@@ -1,34 +1,35 @@
 use libafl::inputs::{BytesInput, HasBytesVec};
 use libafl::prelude::ExitKind;
-use tauri::test::{mock_builder, mock_context, noop_assets, MockRuntime};
+use tauri::test::{mock_context, noop_assets, MockRuntime};
 use tauri::App as TauriApp;
 use tauri::InvokePayload;
 use tauri_fuzz_tools::{
-    create_invoke_payload, fuzzer, get_options, invoke_command_minimal, CommandArgs,
+    create_invoke_payload, fuzzer, get_options, invoke_command_minimal, mock_builder_minimal,
+    CommandArgs,
 };
 
-const COMMAND_NAME: &str = "tauri_cmd_1";
+const COMMAND_NAME: &str = "write_read_tmp_file";
+
+fn setup_tauri_mock() -> Result<TauriApp<MockRuntime>, tauri::Error> {
+    mock_builder_minimal()
+        .invoke_handler(tauri::generate_handler![
+            mini_app::tauri_commands::file_access::write_read_tmp_file
+        ])
+        .build(mock_context(noop_assets()))
+}
 
 pub fn main() {
-    let ptr = mini_app::tauri_cmd_1 as *const ();
+    let ptr = mini_app::tauri_commands::file_access::write_read_tmp_file as *const ();
     let fuzz_dir = std::path::PathBuf::from(std::env!("CARGO_MANIFEST_DIR"));
     let options = get_options(COMMAND_NAME, fuzz_dir);
     let harness = |input: &BytesInput| {
         let app = setup_tauri_mock().expect("Failed to init Tauri app");
-        let _ = invoke_command_minimal(app, create_payload(input.bytes()));
+        let _res = invoke_command_minimal(app, create_payload(input.bytes()));
         ExitKind::Ok
     };
-
     fuzzer::main(harness, options, ptr as usize);
 }
 
-fn setup_tauri_mock() -> Result<TauriApp<MockRuntime>, tauri::Error> {
-    mock_builder()
-        .invoke_handler(tauri::generate_handler![mini_app::tauri_cmd_1])
-        .build(mock_context(noop_assets()))
-}
-
-// Helper code to create a payload tauri_cmd_1
 fn create_payload(bytes: &[u8]) -> InvokePayload {
     let input = String::from_utf8_lossy(bytes).to_string();
     let arg_name = String::from("input");
