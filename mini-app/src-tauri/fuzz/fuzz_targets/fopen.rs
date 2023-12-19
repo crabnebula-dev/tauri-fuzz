@@ -25,7 +25,7 @@ pub fn main() {
         let _res = invoke_command_minimal(app, create_payload(input.bytes()));
         ExitKind::Ok
     };
-    fuzzer::main(harness, options, ptr as usize);
+    fuzzer::main(harness, options, addr as usize);
 }
 
 fn create_payload(_bytes: &[u8]) -> InvokePayload {
@@ -33,4 +33,26 @@ fn create_payload(_bytes: &[u8]) -> InvokePayload {
     args.insert("filename", "/tmp/foo");
     args.insert("mode", "w");
     create_invoke_payload(COMMAND_NAME, args)
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    // TODO: We are not able to catch crash yet because
+    // the fuzzer transform panic into `libc::exit`
+    // #[test]
+    fn test_direct_panic() {
+        let addr = mini_app::libc_calls::fopen as *const ();
+        let fuzz_dir = std::path::PathBuf::from(std::env!("CARGO_MANIFEST_DIR"));
+        let options = get_options(COMMAND_NAME, fuzz_dir);
+        let harness = |input: &BytesInput| {
+            let app = setup_tauri_mock().expect("Failed to init Tauri app");
+            let _res = invoke_command_minimal(app, create_payload(input.bytes()));
+            ExitKind::Ok
+        };
+        unsafe {
+            let _ = fuzzer::fuzz_test(harness, &options, addr as usize).is_ok();
+        }
+    }
 }

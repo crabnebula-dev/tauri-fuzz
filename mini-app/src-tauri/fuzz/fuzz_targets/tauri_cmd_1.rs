@@ -4,7 +4,7 @@ use tauri::test::{mock_builder, mock_context, noop_assets, MockRuntime};
 use tauri::App as TauriApp;
 use tauri::InvokePayload;
 use tauri_fuzz_tools::{
-    create_invoke_payload, fuzzer, get_options, invoke_command_and_stop, CommandArgs,
+    create_invoke_payload, fuzzer, get_options, invoke_command_minimal, CommandArgs,
 };
 
 const COMMAND_NAME: &str = "tauri_cmd_1";
@@ -15,7 +15,7 @@ pub fn main() {
     let options = get_options(COMMAND_NAME, fuzz_dir);
     let harness = |input: &BytesInput| {
         let app = setup_tauri_mock().expect("Failed to init Tauri app");
-        let _ = invoke_command_and_stop::<String>(app, payload_for_tauri_cmd_1(input.bytes()));
+        let _ = invoke_command_minimal(app, create_payload(input.bytes()));
         ExitKind::Ok
     };
 
@@ -29,7 +29,7 @@ fn setup_tauri_mock() -> Result<TauriApp<MockRuntime>, tauri::Error> {
 }
 
 // Helper code to create a payload tauri_cmd_1
-fn payload_for_tauri_cmd_1(bytes: &[u8]) -> InvokePayload {
+fn create_payload(bytes: &[u8]) -> InvokePayload {
     let input = String::from_utf8_lossy(bytes).to_string();
     let arg_name = String::from("input");
     let mut args = CommandArgs::new();

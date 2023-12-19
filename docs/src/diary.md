@@ -406,3 +406,22 @@ Frida is a binary analyser with 2 main features
         - it's difficult to set the `SyscallIsolationRuntime` flag from the `panic_hook`
         - we dodge the issue by rewriting the `panic_hook`
     - this happens with the stalker
+
+## 28
+
+- Trying to refact `fuzzer.rs` to have the same code to use `fuzz_one` or `Launcher`
+    - really difficult due to the numerous traits used by LibAFL
+    - the trick they use is to use a closure so we don't need to precise a type for all objects used
+    - but to turn this into a function
+        - using `impl` return type does not work due to Rust not supporting nested `impl`
+        - returning generic type not really working either since the return type is clearly defined in the function body
+        - using exact type is super difficult too due to the complexity of the types in LibAFL
+    - I think I need a rust expert for this
+- Writing tests for our fuzz targets
+    - Issue is that tests that crash actually are handled by the fuzzer and actually `libc::_exit(134)`
+    - This is not handled by cargo tests
+    - What I've tried
+        - `#[should_panic]` this is not a panic so it does not work
+        - `panic::setup_hook(panic!)` this is rewritten by the fuzzer =(
+        - `uses abort rather than panic` does not work either
+

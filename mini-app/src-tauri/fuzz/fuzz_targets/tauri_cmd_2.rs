@@ -16,19 +16,19 @@ fn setup_tauri_mock() -> Result<TauriApp<MockRuntime>, tauri::Error> {
 }
 
 pub fn main() {
-    let ptr = mini_app::tauri_cmd_2 as *const ();
+    let addr = mini_app::tauri_cmd_2 as *const ();
     let fuzz_dir = std::path::PathBuf::from(std::env!("CARGO_MANIFEST_DIR"));
     let options = get_options(COMMAND_NAME, fuzz_dir);
     let harness = |input: &BytesInput| {
         let app = setup_tauri_mock().expect("Failed to init Tauri app");
-        let _res = invoke_command_minimal(app, payload_for_tauri_cmd_2(input.bytes()));
+        let _res = invoke_command_minimal(app, create_payload(input.bytes()));
         ExitKind::Ok
     };
-    fuzzer::main(harness, options, ptr as usize);
+    fuzzer::main(harness, options, addr as usize);
 }
 
 // Helper code to create a payload tauri_cmd_2
-fn payload_for_tauri_cmd_2(bytes: &[u8]) -> InvokePayload {
+fn create_payload(bytes: &[u8]) -> InvokePayload {
     let input = bytes_input_to_u32(bytes);
     let arg_name = String::from("input");
     let mut args = CommandArgs::new();
@@ -43,4 +43,24 @@ fn bytes_input_to_u32(bytes_input: &[u8]) -> u32 {
     }
     let res = u32::from_be_bytes(array_input);
     res
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_tauri_cmd_2() {
+        let addr = mini_app::tauri_cmd_2 as *const ();
+        let fuzz_dir = std::path::PathBuf::from(std::env!("CARGO_MANIFEST_DIR"));
+        let options = get_options(COMMAND_NAME, fuzz_dir);
+        let harness = |input: &BytesInput| {
+            let app = setup_tauri_mock().expect("Failed to init Tauri app");
+            let _res = invoke_command_minimal(app, create_payload(input.bytes()));
+            ExitKind::Ok
+        };
+        unsafe {
+            assert!(fuzzer::fuzz_test(harness, &options, addr as usize).is_ok());
+        }
+    }
 }

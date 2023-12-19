@@ -4,12 +4,10 @@
 // #[global_allocator]
 // static GLOBAL: MiMalloc = MiMalloc;
 
-use std::path::PathBuf;
-
 use frida_gum::Gum;
-use libafl::generators::RandPrintablesGenerator;
+use libafl::generators::{Generator, RandPrintablesGenerator};
 use libafl::{
-    corpus::{CachedOnDiskCorpus, Corpus, OnDiskCorpus},
+    corpus::{testcase::Testcase, CachedOnDiskCorpus, Corpus, OnDiskCorpus},
     events::{launcher::Launcher, llmp::LlmpRestartingEventManager, EventConfig},
     executors::{inprocess::InProcessExecutor, ExitKind, ShadowExecutor},
     feedback_or, feedback_or_fast,
@@ -170,13 +168,24 @@ where
             if state.must_load_initial_inputs() {
                 if options.input.is_empty() {
                     let mut generator = RandPrintablesGenerator::new(32);
-                    let _ = state.generate_initial_inputs_forced(
-                        &mut fuzzer,
-                        &mut executor,
-                        &mut generator,
-                        &mut mgr,
-                        8,
-                    );
+                    let nb_initial_inputs = 8;
+                    for _ in 0..nb_initial_inputs {
+                        let input = generator
+                            .generate(&mut state)
+                            .expect("Failed to generate random input");
+                        // let testcase = Testcase::<BytesInput>::new(input);
+                        let testcase = Testcase::new(input);
+                        let _idx = state.corpus_mut().add(testcase)?;
+                    }
+
+                // // Force execution of the fuzzer with generated inputs to have initial corpus
+                // let _ = state.generate_initial_inputs_forced(
+                //     &mut fuzzer,
+                //     &mut executor,
+                //     &mut generator,
+                //     &mut mgr,
+                //     8,
+                // );
                 } else {
                     state
                         .load_initial_inputs(&mut fuzzer, &mut executor, &mut mgr, &options.input)
@@ -229,7 +238,7 @@ where
 
 // Fuzz just a single iteration for testing
 #[allow(dead_code)]
-unsafe fn fuzz_test<H>(
+pub unsafe fn fuzz_test<H>(
     mut frida_harness: H,
     options: &FuzzerOptions,
     tauri_cmd_address: usize,
@@ -237,12 +246,14 @@ unsafe fn fuzz_test<H>(
 where
     H: FnMut(&BytesInput) -> ExitKind,
 {
-    let gum = Gum::obtain();
     let monitor = MultiMonitor::new(|s| println!("{s}"));
     let mut mgr = libafl::events::simple::SimpleEventManager::new(monitor);
 
-    // let coverage = CoverageRuntime::new();
-    // let cmplog = CmpLogRuntime::new();
+    let state = None;
+
+    let gum = Gum::obtain();
+    let coverage = CoverageRuntime::new();
+    let cmplog = CmpLogRuntime::new();
     // TODO Change the way to pass the tauri app lib name
     let syscall_blocker = SyscallIsolationRuntime::new(
         options.harness_function.clone(),
@@ -254,18 +265,17 @@ where
     let mut frida_helper = FridaInstrumentationHelper::new(
         &gum,
         options,
-        // tuple_list!(coverage, cmplog, syscall_blocker),
-        tuple_list!(syscall_blocker),
+        tuple_list!(coverage, cmplog, syscall_blocker),
     );
 
     // log::info!("Frida helper instantiated: {:#?}", frida_helper);
 
     // Create an observation channel using the coverage map
-    // let edges_observer = HitcountsMapObserver::new(StdMapObserver::from_mut_ptr(
-    //     "edges",
-    //     frida_helper.map_mut_ptr().unwrap(),
-    //     MAP_SIZE,
-    // ));
+    let edges_observer = HitcountsMapObserver::new(StdMapObserver::from_mut_ptr(
+        "edges",
+        frida_helper.map_mut_ptr().unwrap(),
+        MAP_SIZE,
+    ));
 
     // Create an observation channel to keep track of the execution time
     let time_observer = TimeObserver::new("time");
@@ -274,26 +284,31 @@ where
     // This one is composed by two Feedbacks in OR
     let mut feedback = feedback_or!(
         // New maximization map feedback linked to the edges observer and the feedback state
-        // MaxMapFeedback::tracking(&edges_observer, true, false),
+        MaxMapFeedback::tracking(&edges_observer, true, false),
         // Time feedback, this one does not need a feedback state
         TimeFeedback::with_observer(&time_observer)
     );
 
     let mut objective = feedback_or_fast!(CrashFeedback::new(), TimeoutFeedback::new());
 
-    // Create a State from scratch
-    let mut state = StdState::new(
-        // RNG
-        StdRand::with_seed(current_nanos()),
-        // Corpus that will be evolved, we keep it in memory for performance
-        CachedOnDiskCorpus::no_meta(PathBuf::from("./corpus_discovered"), 64).unwrap(),
-        // Corpus in which we store solutions (crashes in this example),
-        // on disk so the user can get them after stopping the fuzzer
-        OnDiskCorpus::new(options.output.clone()).unwrap(),
-        &mut feedback,
-        &mut objective,
-    )
-    .unwrap();
+    // If not restarting, create a State from scratch
+    let mut corpus_path = options.output.clone();
+    corpus_path.pop();
+    corpus_path.push("./corpus_discovered");
+    let mut state = state.unwrap_or_else(|| {
+        StdState::new(
+            // RNG
+            StdRand::with_seed(current_nanos()),
+            // Corpus that will be evolved, we keep it in memory for performance
+            CachedOnDiskCorpus::no_meta(corpus_path, 64).unwrap(),
+            // Corpus in which we store solutions (crashes in this example),
+            // on disk so the user can get them after stopping the fuzzer
+            OnDiskCorpus::new(options.output.clone()).unwrap(),
+            &mut feedback,
+            &mut objective,
+        )
+        .unwrap()
+    });
 
     // Setup a basic mutator with a mutational stage
     let mutator = StdScheduledMutator::new(havoc_mutations().merge(tokens_mutations()));
@@ -304,8 +319,7 @@ where
     // A fuzzer with feedbacks and a corpus scheduler
     let mut fuzzer = StdFuzzer::new(scheduler, feedback, objective);
 
-    // let observers = tuple_list!(edges_observer, time_observer,);
-    let observers = tuple_list!(time_observer,);
+    let observers = tuple_list!(edges_observer, time_observer,);
 
     // Create the executor for an in-process function with just one observer for edge coverage
     let mut executor = FridaInProcessExecutor::new(
@@ -320,17 +334,28 @@ where
         &mut frida_helper,
     );
 
-    // In case the corpus is empty (on first run), reset
+    // In case the corpus is empty (on first run)
     if state.must_load_initial_inputs() {
         if options.input.is_empty() {
             let mut generator = RandPrintablesGenerator::new(32);
-            let _ = state.generate_initial_inputs_forced(
-                &mut fuzzer,
-                &mut executor,
-                &mut generator,
-                &mut mgr,
-                8,
-            );
+            let nb_initial_inputs = 1;
+            for _ in 0..nb_initial_inputs {
+                let input = generator
+                    .generate(&mut state)
+                    .expect("Failed to generate random input");
+                // let testcase = Testcase::<BytesInput>::new(input);
+                let testcase = Testcase::new(input);
+                let _idx = state.corpus_mut().add(testcase)?;
+            }
+
+            // // Force execution of the fuzzer with generated inputs to have initial corpus
+            // let _ = state.generate_initial_inputs_forced(
+            //     &mut fuzzer,
+            //     &mut executor,
+            //     &mut generator,
+            //     &mut mgr,
+            //     8,
+            // );
         } else {
             state
                 .load_initial_inputs(&mut fuzzer, &mut executor, &mut mgr, &options.input)
@@ -342,18 +367,20 @@ where
     }
 
     // Create an observation channel using cmplog map
-    // let cmplog_observer = CmpLogObserver::new("cmplog", true);
+    let cmplog_observer = CmpLogObserver::new("cmplog", true);
 
-    // let mut executor = ShadowExecutor::new(executor, tuple_list!(cmplog_observer));
-    let mut executor = ShadowExecutor::new(executor, tuple_list!());
+    let mut executor = ShadowExecutor::new(executor, tuple_list!(cmplog_observer));
 
     let tracing = ShadowTracingStage::new(&mut executor);
+
+    // Setup a randomic Input2State stage
+    let i2s = StdMutationalStage::new(StdScheduledMutator::new(tuple_list!(I2SRandReplace::new())));
 
     // Setup a basic mutator
     let mutational = StdMutationalStage::new(mutator);
 
     // The order of the stages matter!
-    let mut stages = tuple_list!(tracing, mutational);
+    let mut stages = tuple_list!(tracing, i2s, mutational);
 
     // fuzzer.fuzz_loop(&mut stages, &mut executor, &mut state, &mut mgr)?;
     fuzzer.fuzz_one(&mut stages, &mut executor, &mut state, &mut mgr)?;

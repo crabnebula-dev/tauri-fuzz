@@ -13,7 +13,7 @@ color-backtrace = "0.5"
 libloading = "0.7"
 clap = { version = "4.0" }
 tauri = { workspace = true }
-mini-app = { path = ".."}
+mini-app = { path = ".." }
 tauri_fuzz_tools = { path = "../../../tauri_fuzz_tools" }
 libafl = { workspace = true }
 libafl_bolts = { workspace = true }
