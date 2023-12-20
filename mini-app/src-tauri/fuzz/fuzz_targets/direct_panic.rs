@@ -11,12 +11,12 @@ const COMMAND_NAME: &str = "direct_panic";
 
 fn setup_tauri_mock() -> Result<TauriApp<MockRuntime>, tauri::Error> {
     mock_builder()
-        .invoke_handler(tauri::generate_handler![mini_app::direct_panic])
+        .invoke_handler(tauri::generate_handler![mini_app::basic::direct_panic])
         .build(mock_context(noop_assets()))
 }
 
 pub fn main() {
-    let addr = mini_app::direct_panic as *const () as usize;
+    let addr = mini_app::basic::direct_panic as *const () as usize;
     let fuzz_dir = std::path::PathBuf::from(std::env!("CARGO_MANIFEST_DIR"));
     let options = get_options(COMMAND_NAME, fuzz_dir);
     let harness = |input: &BytesInput| {
@@ -46,7 +46,7 @@ mod test {
             return;
         }));
 
-        let addr = mini_app::direct_panic as *const ();
+        let addr = mini_app::basic::direct_panic as *const ();
         let fuzz_dir = std::path::PathBuf::from(std::env!("CARGO_MANIFEST_DIR"));
         let options = get_options(COMMAND_NAME, fuzz_dir);
         let harness = |input: &BytesInput| {

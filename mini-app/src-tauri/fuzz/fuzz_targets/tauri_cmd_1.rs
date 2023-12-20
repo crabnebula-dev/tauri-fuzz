@@ -10,7 +10,7 @@ use tauri_fuzz_tools::{
 const COMMAND_NAME: &str = "tauri_cmd_1";
 
 pub fn main() {
-    let ptr = mini_app::tauri_cmd_1 as *const ();
+    let ptr = mini_app::basic::tauri_cmd_1 as *const ();
     let fuzz_dir = std::path::PathBuf::from(std::env!("CARGO_MANIFEST_DIR"));
     let options = get_options(COMMAND_NAME, fuzz_dir);
     let harness = |input: &BytesInput| {
@@ -24,7 +24,7 @@ pub fn main() {
 
 fn setup_tauri_mock() -> Result<TauriApp<MockRuntime>, tauri::Error> {
     mock_builder()
-        .invoke_handler(tauri::generate_handler![mini_app::tauri_cmd_1])
+        .invoke_handler(tauri::generate_handler![mini_app::basic::tauri_cmd_1])
         .build(mock_context(noop_assets()))
 }
 

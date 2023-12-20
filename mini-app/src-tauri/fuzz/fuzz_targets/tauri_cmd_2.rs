@@ -11,12 +11,12 @@ const COMMAND_NAME: &str = "tauri_cmd_2";
 
 fn setup_tauri_mock() -> Result<TauriApp<MockRuntime>, tauri::Error> {
     mock_builder()
-        .invoke_handler(tauri::generate_handler![mini_app::tauri_cmd_2])
+        .invoke_handler(tauri::generate_handler![mini_app::basic::tauri_cmd_2])
         .build(mock_context(noop_assets()))
 }
 
 pub fn main() {
-    let addr = mini_app::tauri_cmd_2 as *const ();
+    let addr = mini_app::basic::tauri_cmd_2 as *const ();
     let fuzz_dir = std::path::PathBuf::from(std::env!("CARGO_MANIFEST_DIR"));
     let options = get_options(COMMAND_NAME, fuzz_dir);
     let harness = |input: &BytesInput| {
@@ -51,7 +51,7 @@ mod test {
 
     #[test]
     fn test_tauri_cmd_2() {
-        let addr = mini_app::tauri_cmd_2 as *const ();
+        let addr = mini_app::basic::tauri_cmd_2 as *const ();
         let fuzz_dir = std::path::PathBuf::from(std::env!("CARGO_MANIFEST_DIR"));
         let options = get_options(COMMAND_NAME, fuzz_dir);
         let harness = |input: &BytesInput| {
