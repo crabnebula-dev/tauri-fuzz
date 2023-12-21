@@ -36,3 +36,23 @@ fn create_payload(bytes: &[u8]) -> InvokePayload {
     args.insert(arg_name, input);
     create_invoke_payload(COMMAND_NAME, args)
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_tauri_cmd_1() {
+        let addr = mini_app::basic::tauri_cmd_1 as *const ();
+        let fuzz_dir = std::path::PathBuf::from(std::env!("CARGO_MANIFEST_DIR"));
+        let options = get_options(COMMAND_NAME, fuzz_dir);
+        let harness = |input: &BytesInput| {
+            let app = setup_tauri_mock().expect("Failed to init Tauri app");
+            let _res = invoke_command_minimal(app, create_payload(input.bytes()));
+            ExitKind::Ok
+        };
+        unsafe {
+            assert!(fuzzer::fuzz_test(harness, &options, addr as usize).is_ok());
+        }
+    }
+}

@@ -37,13 +37,11 @@ debug = true
 [[bin]]
 name = "tauri_cmd_1"
 path = "fuzz_targets/tauri_cmd_1.rs"
-test = false
 doc = false
 
 [[bin]]
 name = "tauri_cmd_2"
 path = "fuzz_targets/tauri_cmd_2.rs"
-test = false
 doc = false
 
 [[bin]]
@@ -55,23 +53,19 @@ doc = false
 [[bin]]
 name = "fopen"
 path = "fuzz_targets/fopen.rs"
-test = false
 doc = false
 
 [[bin]]
-name = "write_read_tmp_file"
-path = "fuzz_targets/write_read_tmp_file.rs"
-test = false
+name = "write_foo_file"
+path = "fuzz_targets/write_foo_file.rs"
 doc = false
 
 [[bin]]
 name = "read_foo_file"
 path = "fuzz_targets/read_foo_file.rs"
-test = false
 doc = false
 
 [[bin]]
 name = "direct_panic"
 path = "fuzz_targets/direct_panic.rs"
-test = false
 doc = false
