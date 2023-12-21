@@ -85,12 +85,8 @@ where
             let coverage = CoverageRuntime::new();
             let cmplog = CmpLogRuntime::new();
             // TODO Change the way to pass the tauri app lib name
-            let syscall_blocker = SyscallIsolationRuntime::new(
-                options.harness_function.clone(),
-                LIBC_BLOCKED_FUNCTIONS,
-                tauri_cmd_address,
-            )
-            .unwrap();
+            let syscall_blocker =
+                SyscallIsolationRuntime::new(LIBC_BLOCKED_FUNCTIONS, tauri_cmd_address).unwrap();
 
             let mut frida_helper = FridaInstrumentationHelper::new(
                 &gum,
@@ -255,12 +251,8 @@ where
     let coverage = CoverageRuntime::new();
     let cmplog = CmpLogRuntime::new();
     // TODO Change the way to pass the tauri app lib name
-    let syscall_blocker = SyscallIsolationRuntime::new(
-        options.harness_function.clone(),
-        LIBC_BLOCKED_FUNCTIONS,
-        tauri_cmd_address,
-    )
-    .unwrap();
+    let syscall_blocker =
+        SyscallIsolationRuntime::new(LIBC_BLOCKED_FUNCTIONS, tauri_cmd_address).unwrap();
 
     let mut frida_helper = FridaInstrumentationHelper::new(
         &gum,

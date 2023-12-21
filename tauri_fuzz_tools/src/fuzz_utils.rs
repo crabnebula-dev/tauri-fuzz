@@ -154,7 +154,6 @@ pub fn invoke_command<F: FnMut(&AppHandle<MockRuntime>, RunEvent) + 'static>(
     let w = app.get_window("main").expect("Could not get main window");
 
     let (tx, _rx) = std::sync::mpsc::channel();
-
     let callback = payload.callback;
     let error = payload.error;
     let ipc = w.state::<Ipc>();
