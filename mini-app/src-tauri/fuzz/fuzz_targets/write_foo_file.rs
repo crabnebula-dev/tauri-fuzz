@@ -1,22 +1,25 @@
 use libafl::inputs::{BytesInput, HasBytesVec};
 use libafl::prelude::ExitKind;
-use tauri::test::{mock_builder, mock_context, noop_assets, MockRuntime};
+use tauri::test::{mock_context, noop_assets, MockRuntime};
 use tauri::App as TauriApp;
 use tauri::InvokePayload;
 use tauri_fuzz_tools::{
-    create_invoke_payload, fuzzer, get_options, invoke_command_minimal, CommandArgs,
+    create_invoke_payload, fuzzer, get_options, invoke_command_minimal, mock_builder_minimal,
+    CommandArgs,
 };
 
-const COMMAND_NAME: &str = "direct_panic";
+const COMMAND_NAME: &str = "write_foo_file";
 
 fn setup_tauri_mock() -> Result<TauriApp<MockRuntime>, tauri::Error> {
-    mock_builder()
-        .invoke_handler(tauri::generate_handler![mini_app::basic::direct_panic])
+    mock_builder_minimal()
+        .invoke_handler(tauri::generate_handler![
+            mini_app::tauri_commands::file_access::write_foo_file
+        ])
         .build(mock_context(noop_assets()))
 }
 
 pub fn main() {
-    let addr = mini_app::basic::direct_panic as *const () as usize;
+    let ptr = mini_app::tauri_commands::file_access::write_foo_file as *const ();
     let fuzz_dir = std::path::PathBuf::from(std::env!("CARGO_MANIFEST_DIR"));
     let options = get_options(COMMAND_NAME, fuzz_dir);
     let harness = |input: &BytesInput| {
@@ -24,12 +27,14 @@ pub fn main() {
         let _res = invoke_command_minimal(app, create_payload(input.bytes()));
         ExitKind::Ok
     };
-    fuzzer::main(harness, options, addr);
+    fuzzer::main(harness, options, ptr as usize);
 }
 
-#[allow(unused_variables)]
 fn create_payload(bytes: &[u8]) -> InvokePayload {
-    let args = CommandArgs::new();
+    let input = String::from_utf8_lossy(bytes).to_string();
+    let arg_name = String::from("input");
+    let mut args = CommandArgs::new();
+    args.insert(arg_name, input);
     create_invoke_payload(COMMAND_NAME, args)
 }
 
@@ -42,8 +47,8 @@ mod test {
     // This test will be started as a new process and its exit status will be captured.
     #[test]
     #[ignore]
-    fn real_test_direct_panic() {
-        let addr = mini_app::basic::direct_panic as *const ();
+    fn real_test_write_foo_file() {
+        let addr = mini_app::file_access::write_foo_file as *const ();
         let fuzz_dir = std::path::PathBuf::from(std::env!("CARGO_MANIFEST_DIR"));
         let options = get_options(COMMAND_NAME, fuzz_dir);
         let harness = |input: &BytesInput| {
@@ -58,10 +63,10 @@ mod test {
 
     // Start another process that will actually launch the fuzzer
     #[test]
-    fn test_direct_panic() {
+    fn test_write_foo_file() {
         let exe = std::env::current_exe().expect("Failed to extract current executable");
         let status = std::process::Command::new(exe)
-            .args(&["--ignored", "real_test_direct_panic"])
+            .args(&["--ignored", "real_test_write_foo_file"])
             .status()
             .expect("Unable to run program");
 

@@ -39,10 +39,12 @@ fn create_payload(_bytes: &[u8]) -> InvokePayload {
 mod test {
     use super::*;
 
-    // TODO: We are not able to catch crash yet because
-    // the fuzzer transform panic into `libc::exit`
-    // #[test]
-    fn test_direct_panic() {
+    // This is a trick to capture the fuzzer exit status code.
+    // The fuzzer exits the process with an error code rather than panicking.
+    // This test will be started as a new process and its exit status will be captured.
+    #[test]
+    #[ignore]
+    fn real_test_fopen() {
         let addr = mini_app::libc_calls::fopen as *const ();
         let fuzz_dir = std::path::PathBuf::from(std::env!("CARGO_MANIFEST_DIR"));
         let options = get_options(COMMAND_NAME, fuzz_dir);
@@ -54,5 +56,17 @@ mod test {
         unsafe {
             let _ = fuzzer::fuzz_test(harness, &options, addr as usize).is_ok();
         }
+    }
+
+    // Start another process that will actually launch the fuzzer
+    #[test]
+    fn test_fopen() {
+        let exe = std::env::current_exe().expect("Failed to extract current executable");
+        let status = std::process::Command::new(exe)
+            .args(&["--ignored", "real_test_fopen"])
+            .status()
+            .expect("Unable to run program");
+
+        assert_eq!(Some(134), status.code());
     }
 }

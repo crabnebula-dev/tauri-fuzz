@@ -32,12 +32,42 @@ pub fn main() {
 }
 
 fn create_payload(_bytes: &[u8]) -> InvokePayload {
-    let arg_name = String::from("path");
-    let mut args = CommandArgs::new();
-    let mut path = std::env::current_dir().unwrap();
-    path.pop();
-    path.push("test_assets");
-    path.push("foo.txt");
-    args.insert(arg_name, path.to_str().unwrap());
+    let args = CommandArgs::new();
     create_invoke_payload(COMMAND_NAME, args)
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    // This is a trick to capture the fuzzer exit status code.
+    // The fuzzer exits the process with an error code rather than panicking.
+    // This test will be started as a new process and its exit status will be captured.
+    #[test]
+    #[ignore]
+    fn real_test_read_foo_file() {
+        let addr = mini_app::file_access::read_foo_file as *const ();
+        let fuzz_dir = std::path::PathBuf::from(std::env!("CARGO_MANIFEST_DIR"));
+        let options = get_options(COMMAND_NAME, fuzz_dir);
+        let harness = |input: &BytesInput| {
+            let app = setup_tauri_mock().expect("Failed to init Tauri app");
+            let _res = invoke_command_minimal(app, create_payload(input.bytes()));
+            ExitKind::Ok
+        };
+        unsafe {
+            let _ = fuzzer::fuzz_test(harness, &options, addr as usize).is_ok();
+        }
+    }
+
+    // Start another process that will actually launch the fuzzer
+    #[test]
+    fn test_read_foo_file() {
+        let exe = std::env::current_exe().expect("Failed to extract current executable");
+        let status = std::process::Command::new(exe)
+            .args(&["--ignored", "real_test_read_foo_file"])
+            .status()
+            .expect("Unable to run program");
+
+        assert_eq!(Some(134), status.code());
+    }
 }
