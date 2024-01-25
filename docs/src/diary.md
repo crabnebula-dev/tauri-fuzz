@@ -424,4 +424,15 @@ Frida is a binary analyser with 2 main features
         - `#[should_panic]` this is not a panic so it does not work
         - `panic::setup_hook(panic!)` this is rewritten by the fuzzer =(
         - `uses abort rather than panic` does not work either
+    - Solved by wrapping the test in another process and using and self calling the binary
+    with `Command::new(std::env::current_exe())`
+
+
+## 29
+
+- Working on libc policy
+    - Need a more generic and flexible way to give a security policy, need the security team for their inputs
+- Restructure the project
+    - fuzzer and security policy code moved to the application being fuzzed `fuzz` directory
+    - user can now directly see the fuzzer and the policy used rather than looking at external crate
 

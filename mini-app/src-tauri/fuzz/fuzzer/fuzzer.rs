@@ -1,4 +1,5 @@
 //! A libfuzzer-like fuzzer with llmp-multithreading support and restarts
+
 //! The example harness is built for libpng.
 // use mimalloc::MiMalloc;
 // #[global_allocator]
@@ -34,7 +35,6 @@ use libafl_bolts::{
     tuples::{tuple_list, Merge},
 };
 
-use crate::libc_instrumented_functions::LIBC_BLOCKED_FUNCTIONS;
 use libafl_frida::{
     cmplog_rt::CmpLogRuntime,
     coverage_rt::{CoverageRuntime, MAP_SIZE},
@@ -51,7 +51,6 @@ where
 {
     color_backtrace::install();
     env_logger::init();
-
     unsafe {
         // match fuzz_test(harness, &options, tauri_cmd_address) {
         match fuzz(harness, &options, tauri_cmd_address) {
@@ -86,7 +85,8 @@ where
             let cmplog = CmpLogRuntime::new();
             // TODO Change the way to pass the tauri app lib name
             let syscall_blocker =
-                SyscallIsolationRuntime::new(LIBC_BLOCKED_FUNCTIONS, tauri_cmd_address).unwrap();
+                SyscallIsolationRuntime::new(crate::policies::get_fuzz_policy(), tauri_cmd_address)
+                    .unwrap();
 
             let mut frida_helper = FridaInstrumentationHelper::new(
                 &gum,
@@ -252,7 +252,8 @@ where
     let cmplog = CmpLogRuntime::new();
     // TODO Change the way to pass the tauri app lib name
     let syscall_blocker =
-        SyscallIsolationRuntime::new(LIBC_BLOCKED_FUNCTIONS, tauri_cmd_address).unwrap();
+        SyscallIsolationRuntime::new(crate::policies::get_fuzz_policy(), tauri_cmd_address)
+            .unwrap();
 
     let mut frida_helper = FridaInstrumentationHelper::new(
         &gum,
