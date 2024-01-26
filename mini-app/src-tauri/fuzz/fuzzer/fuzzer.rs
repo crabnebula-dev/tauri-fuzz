@@ -43,17 +43,18 @@ use libafl_frida::{
     syscall_isolation_rt::SyscallIsolationRuntime,
 };
 use libafl_targets::cmplog::CmpLogObserver;
+use tauri_fuzz_tools::policies::FuzzPolicy;
 
 /// The main fn, usually parsing parameters, and starting the fuzzer
-pub fn main<H>(harness: H, options: FuzzerOptions, tauri_cmd_address: usize)
+pub fn main<H>(harness: H, options: FuzzerOptions, tauri_cmd_address: usize, policy: FuzzPolicy)
 where
     H: FnMut(&BytesInput) -> ExitKind,
 {
     color_backtrace::install();
     env_logger::init();
     unsafe {
-        // match fuzz_test(harness, &options, tauri_cmd_address) {
-        match fuzz(harness, &options, tauri_cmd_address) {
+        // match fuzz_test(harness, &options, tauri_cmd_address, policy) {
+        match fuzz(harness, &options, tauri_cmd_address, policy) {
             Ok(()) | Err(Error::ShuttingDown) => println!("Finished fuzzing. Good bye."),
             Err(e) => panic!("Error during fuzzing: {e:?}"),
         }
@@ -66,6 +67,7 @@ unsafe fn fuzz<H>(
     mut frida_harness: H,
     options: &FuzzerOptions,
     tauri_cmd_address: usize,
+    policy: FuzzPolicy,
 ) -> Result<(), Error>
 where
     H: FnMut(&BytesInput) -> ExitKind,
@@ -85,8 +87,7 @@ where
             let cmplog = CmpLogRuntime::new();
             // TODO Change the way to pass the tauri app lib name
             let syscall_blocker =
-                SyscallIsolationRuntime::new(crate::policies::get_fuzz_policy(), tauri_cmd_address)
-                    .unwrap();
+                SyscallIsolationRuntime::new(policy.clone(), tauri_cmd_address).unwrap();
 
             let mut frida_helper = FridaInstrumentationHelper::new(
                 &gum,
@@ -238,6 +239,7 @@ pub unsafe fn fuzz_test<H>(
     mut frida_harness: H,
     options: &FuzzerOptions,
     tauri_cmd_address: usize,
+    policy: FuzzPolicy,
 ) -> Result<(), Error>
 where
     H: FnMut(&BytesInput) -> ExitKind,
@@ -251,9 +253,7 @@ where
     let coverage = CoverageRuntime::new();
     let cmplog = CmpLogRuntime::new();
     // TODO Change the way to pass the tauri app lib name
-    let syscall_blocker =
-        SyscallIsolationRuntime::new(crate::policies::get_fuzz_policy(), tauri_cmd_address)
-            .unwrap();
+    let syscall_blocker = SyscallIsolationRuntime::new(policy.clone(), tauri_cmd_address).unwrap();
 
     let mut frida_helper = FridaInstrumentationHelper::new(
         &gum,

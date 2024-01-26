@@ -165,10 +165,11 @@ mod test {
     use super::*;
     use tauri::test::{mock_builder, mock_context, noop_assets};
 
+    #[allow(dead_code)]
     #[tauri::command]
     fn test_command() {}
 
-    #[cfg(test)]
+    // #[test]
     fn invoke_1_command() {
         let app = mock_builder()
             .invoke_handler(tauri::generate_handler![test_command])

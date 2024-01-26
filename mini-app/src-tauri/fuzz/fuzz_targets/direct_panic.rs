@@ -22,7 +22,7 @@ pub fn main() {
         let _res = invoke_command_minimal(app, create_payload(input.bytes()));
         ExitKind::Ok
     };
-    fuzzer::main(harness, options, addr);
+    fuzzer::main(harness, options, addr, fuzzer::policies::no_policy());
 }
 
 #[allow(unused_variables)]
@@ -50,7 +50,13 @@ mod test {
             ExitKind::Ok
         };
         unsafe {
-            let _ = fuzzer::fuzz_test(harness, &options, addr as usize).is_ok();
+            let _ = fuzzer::fuzz_test(
+                harness,
+                &options,
+                addr as usize,
+                fuzzer::policies::no_policy(),
+            )
+            .is_ok();
         }
     }
 

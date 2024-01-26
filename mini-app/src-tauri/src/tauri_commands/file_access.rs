@@ -24,8 +24,7 @@ pub fn read_foo_file() -> String {
 
 fn get_foo_path() -> PathBuf {
     let mut file_path = std::path::PathBuf::from(std::env!("CARGO_MANIFEST_DIR"));
-    file_path.pop();
-    file_path.push("test_files");
+    file_path.push("assets");
     file_path.push("foo.txt");
     file_path
 }

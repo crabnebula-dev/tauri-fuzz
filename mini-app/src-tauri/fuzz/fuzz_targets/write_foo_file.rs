@@ -26,7 +26,12 @@ pub fn main() {
         let _res = invoke_command_minimal(app, create_payload(input.bytes()));
         ExitKind::Ok
     };
-    fuzzer::main(harness, options, ptr as usize);
+    fuzzer::main(
+        harness,
+        options,
+        ptr as usize,
+        fuzzer::policies::file_policy::no_write_access(),
+    );
 }
 
 fn create_payload(bytes: &[u8]) -> InvokePayload {
@@ -46,7 +51,7 @@ mod test {
     // This test will be started as a new process and its exit status will be captured.
     #[test]
     #[ignore]
-    fn real_test_write_foo_file() {
+    fn hidden_block_write_foo_file() {
         let addr = mini_app::file_access::write_foo_file as *const ();
         let fuzz_dir = std::path::PathBuf::from(std::env!("CARGO_MANIFEST_DIR"));
         let options = fuzzer::get_fuzzer_options(COMMAND_NAME, fuzz_dir);
@@ -56,16 +61,22 @@ mod test {
             ExitKind::Ok
         };
         unsafe {
-            let _ = fuzzer::fuzz_test(harness, &options, addr as usize).is_ok();
+            let _ = fuzzer::fuzz_test(
+                harness,
+                &options,
+                addr as usize,
+                fuzzer::policies::file_policy::no_write_access(),
+            )
+            .is_ok();
         }
     }
 
     // Start another process that will actually launch the fuzzer
     #[test]
-    fn test_write_foo_file() {
+    fn block_write_foo_file() {
         let exe = std::env::current_exe().expect("Failed to extract current executable");
         let status = std::process::Command::new(exe)
-            .args(&["--ignored", "real_test_write_foo_file"])
+            .args(&["--ignored", "hidden_block_write_foo_file"])
             .status()
             .expect("Unable to run program");
 

@@ -24,7 +24,12 @@ pub fn main() {
         let _res = invoke_command_minimal(app, create_payload(input.bytes()));
         ExitKind::Ok
     };
-    fuzzer::main(harness, options, addr as usize);
+    fuzzer::main(
+        harness,
+        options,
+        addr as usize,
+        fuzzer::policies::file_policy::no_file_access(),
+    );
 }
 
 fn create_payload(_bytes: &[u8]) -> InvokePayload {
@@ -53,7 +58,13 @@ mod test {
             ExitKind::Ok
         };
         unsafe {
-            let _ = fuzzer::fuzz_test(harness, &options, addr as usize).is_ok();
+            let _ = fuzzer::fuzz_test(
+                harness,
+                &options,
+                addr as usize,
+                fuzzer::policies::file_policy::no_file_access(),
+            )
+            .is_ok();
         }
     }
 

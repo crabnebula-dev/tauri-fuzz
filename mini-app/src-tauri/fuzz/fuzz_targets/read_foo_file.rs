@@ -27,7 +27,12 @@ pub fn main() {
         ExitKind::Ok
     };
 
-    fuzzer::main(harness, options, addr);
+    fuzzer::main(
+        harness,
+        options,
+        addr,
+        fuzzer::policies::file_policy::no_file_access(),
+    );
 }
 
 fn create_payload(_bytes: &[u8]) -> InvokePayload {
@@ -44,7 +49,7 @@ mod test {
     // This test will be started as a new process and its exit status will be captured.
     #[test]
     #[ignore]
-    fn real_test_read_foo_file() {
+    fn hidden_block_read_foo_file() {
         let addr = mini_app::file_access::read_foo_file as *const ();
         let fuzz_dir = std::path::PathBuf::from(std::env!("CARGO_MANIFEST_DIR"));
         let options = fuzzer::get_fuzzer_options(COMMAND_NAME, fuzz_dir);
@@ -54,19 +59,47 @@ mod test {
             ExitKind::Ok
         };
         unsafe {
-            let _ = fuzzer::fuzz_test(harness, &options, addr as usize).is_ok();
+            let _ = fuzzer::fuzz_test(
+                harness,
+                &options,
+                addr as usize,
+                fuzzer::policies::file_policy::no_file_access(),
+            )
+            .is_ok();
         }
     }
 
-    // Start another process that will actually launch the fuzzer
+    // Block reading a file with no file access policy
     #[test]
-    fn test_read_foo_file() {
+    fn block_read_foo_file() {
         let exe = std::env::current_exe().expect("Failed to extract current executable");
         let status = std::process::Command::new(exe)
-            .args(&["--ignored", "real_test_read_foo_file"])
+            .args(&["--ignored", "hidden_block_read_foo_file"])
             .status()
             .expect("Unable to run program");
 
         assert_eq!(Some(134), status.code());
+    }
+
+    // Allow reading a file with no write access policy
+    #[test]
+    fn allow_read_foo_file() {
+        let addr = mini_app::file_access::read_foo_file as *const ();
+        let fuzz_dir = std::path::PathBuf::from(std::env!("CARGO_MANIFEST_DIR"));
+        let options = fuzzer::get_fuzzer_options(COMMAND_NAME, fuzz_dir);
+        let harness = |input: &BytesInput| {
+            let app = setup_tauri_mock().expect("Failed to init Tauri app");
+            let _res = invoke_command_minimal(app, create_payload(input.bytes()));
+            ExitKind::Ok
+        };
+        unsafe {
+            let _ = fuzzer::fuzz_test(
+                harness,
+                &options,
+                addr as usize,
+                fuzzer::policies::file_policy::no_write_access(),
+            )
+            .is_ok();
+        }
     }
 }
