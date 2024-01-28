@@ -34,7 +34,7 @@ impl FunctionPolicy {
                 false
             }
             Err(e) => panic!(
-                "Error in policy evaluation: {}.\nRule: {:?}.\nContext: {:?}",
+                "Error in policy evaluation: {:?}.\nRule: {:?}.\nContext: {:?}",
                 e, self.rule, context
             ),
         }
@@ -48,126 +48,86 @@ impl FunctionPolicy {
     }
 }
 
+// TODO use closure rather than functions
+/// ConditionOnParameters is a closure on the parameters of a function
+type ConditionOnParameters = fn(&Vec<usize>) -> Result<bool, RuleError>;
+/// ConditionOnReturnValue is a closure on the return value of a function
+type ConditionOnReturnValue = fn(usize) -> Result<bool, RuleError>;
+
 /// Rule that the function has to adhere to respect the policy
+// TODO to improve perf we can separate entry rule and leave rule into two different types, the UX
+// is not as good then
 #[derive(Debug, Clone)]
 pub enum Rule {
-    /// Function is rejected on entry
-    OnEntry(),
+    /// Function is analysed on entry given its parameters
+    OnEntry(ConditionOnParameters),
 
-    /// Reject if parameter at the specified index does not fulfill the condition
-    /// Tuple first value corresponds to the parameter index
-    OnParameter(usize, ConditionOnValue),
+    /// Function is analysed after it's execution given its return value
+    OnLeave(ConditionOnReturnValue),
+}
 
-    /// Reject if return value does not fulfill the condition
-    OnReturnValue(ConditionOnValue),
-
-    /// Reject if the two rules are also rejected
-    And(Box<Self>, Box<Self>),
-
-    /// Reject if at least one of the two is rejected
-    Or(Box<Self>, Box<Self>),
+/// Errors that may happen when evaluating a rule given a context
+#[derive(Debug)]
+pub enum RuleError {
+    /// The number of parameters given in the context does not match the number of
+    /// parameters expected in the context
+    NumberOfParametersDontMatch(String),
+    /// Generic error that happened during the rule evaluation
+    EvaluationError(String),
 }
 
 /// Context when evaluating if a function is respecting the specified policy.
 /// TODO Check if parameters order always follow the function signature.
-/// Parameters are relevant when evaluating at the beginning of a function but no guarantees
-/// are given when using them at the end of the function.
+/// Parameters are None when the evaluating after the execution of the targeted function
 /// The return value is None when evaluating at the beginning of the function and Some when
 /// evaluating at the end of the function.
 #[derive(Debug)]
-pub struct Context {
-    pub parameters: Vec<usize>,
-    pub return_value: Option<usize>,
+pub enum Context {
+    EntryContext(Vec<usize>),
+    LeaveContext(usize),
 }
 
+use Context::*;
 use Rule::*;
 impl Rule {
     /// Evaluate if rule is true given a context
     /// If it returns true it means that the rule has been verified and does not respect the policy
-    fn is_respected(&self, context: &Context) -> Result<bool, String> {
+    /// We don't evaluate "entry" rules when given a "leave" context and vice-versa.
+    fn is_respected(&self, context: &Context) -> Result<bool, RuleError> {
         match self {
+            // Evaluate the function on entry
+            OnEntry(condition) => match context {
+                EntryContext(parameters) => condition(parameters),
+                LeaveContext(_) => Ok(true),
+            },
+
             // We block the function on entry
-            OnEntry() => Ok(false),
-
-            // Check the rule condition on parameters at index [`index`]
-            OnParameter(index, condition) => {
-                // Don't check if we're at the end of the function
-                if let Some(_) = context.return_value {
-                    return Ok(true);
-                }
-                if *index >= context.parameters.len() {
-                    Err(String::from(
-                        "Condition specified on a parameter that does not exist",
-                    ))
-                } else {
-                    Ok(condition(context.parameters[*index]))
-                }
-            }
-
-            // Check the rule condition on return value
-            OnReturnValue(condition) => {
-                if let Some(return_value) = context.return_value {
-                    Ok(condition(return_value))
-                } else {
-                    Err(String::from(
-                        "Confition specified on non-existing return value",
-                    ))
-                }
-            }
-
-            And(rule1, rule2) => {
-                let eval1 = rule1.is_respected(context);
-                let eval2 = rule2.is_respected(context);
-                match (eval1, eval2) {
-                    (Ok(e1), Ok(e2)) => Ok(e1 && e2),
-                    (Err(e), _) => Err(e),
-                    (_, Err(e)) => Err(e),
-                }
-            }
-
-            Or(rule1, rule2) => {
-                let eval1 = rule1.is_respected(context);
-                let eval2 = rule2.is_respected(context);
-                match (eval1, eval2) {
-                    (Ok(e1), Ok(e2)) => Ok(e1 || e2),
-                    (Err(e), _) => Err(e),
-                    (_, Err(e)) => Err(e),
-                }
-            }
+            OnLeave(condition) => match context {
+                EntryContext(_) => Ok(true),
+                LeaveContext(return_value) => condition(*return_value),
+            },
         }
     }
 }
 
 pub type FuzzPolicy = Vec<FunctionPolicy>;
 
-// ConditionOnValue is a closure that checks if a value contained in a register
-// match the specified condition
-// TODO use closure rather than functions
-type ConditionOnValue = fn(usize) -> bool;
-
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
-    fn rule_on_entry() {
-        let rule = Rule::OnEntry();
-        let context = Context {
-            parameters: vec![],
-            return_value: None,
-        };
-        assert!(!rule.is_respected(&context).unwrap());
-    }
-
-    #[test]
     fn rule_on_parameters() {
-        let rule1 = Rule::OnParameter(0, |v| v == 1);
-        let rule2 = Rule::OnParameter(1, |v| v % 2 == 0);
-        let rule3 = Rule::OnParameter(2, |v| v == 5);
-        let context = Context {
-            parameters: vec![1, 2, 3],
-            return_value: None,
-        };
+        // Block on function entry
+        let rule = Rule::OnEntry(|_| Ok(false));
+        let context = EntryContext(vec![]);
+        assert!(!rule.is_respected(&context).unwrap());
+
+        // Check parameters
+        let rule1 = Rule::OnEntry(|params| Ok(params[0] == 1));
+        let rule2 = Rule::OnEntry(|params| Ok(params[1] % 2 == 0));
+        let rule3 = Rule::OnEntry(|params| Ok(params[2] == 4));
+        let context = EntryContext(vec![1, 2, 3]);
         assert!(rule1.is_respected(&context).unwrap());
         assert!(rule2.is_respected(&context).unwrap());
         assert!(!rule3.is_respected(&context).unwrap());
@@ -175,45 +135,36 @@ mod tests {
 
     #[test]
     fn rule_on_return_value() {
-        let rule = Rule::OnReturnValue(|v| v == 1);
-        let rule2 = Rule::OnReturnValue(|v| v == 4);
-        let context = Context {
-            parameters: vec![],
-            return_value: Some(1),
-        };
+        let rule = Rule::OnLeave(|v| Ok(v == 1));
+        let rule2 = Rule::OnLeave(|v| Ok(v == 4));
+        let context = LeaveContext(1);
         assert!(rule.is_respected(&context).unwrap());
         assert!(!rule2.is_respected(&context).unwrap());
     }
 
     #[test]
-    fn rule_and() {
-        let context = Context {
-            parameters: vec![10, 3],
-            return_value: Some(101),
-        };
-        let rule1 = Rule::OnParameter(0, |v| v == 10);
-        let rule2 = Rule::OnReturnValue(|v| v == 4);
-        let rule = Rule::And(Box::new(rule1), Box::new(rule2));
-        assert!(!rule.is_respected(&context).unwrap());
-        let rule1 = Rule::OnParameter(0, |v| v == 10);
-        let rule2 = Rule::OnReturnValue(|v| v == 101);
-        let rule = Rule::And(Box::new(rule1), Box::new(rule2));
+    fn rule_wrong_context() {
+        // Entry context with leave rule
+        let context = EntryContext(vec![]);
+        let rule = Rule::OnLeave(|_| Ok(false));
         assert!(rule.is_respected(&context).unwrap());
-    }
 
-    #[test]
-    fn rule_or() {
-        let context = Context {
-            parameters: vec![10, 3],
-            return_value: Some(101),
-        };
-        let rule1 = Rule::OnParameter(0, |v| v == 2);
-        let rule2 = Rule::OnReturnValue(|v| v == 4);
-        let rule = Rule::Or(Box::new(rule1), Box::new(rule2));
-        assert!(!rule.is_respected(&context).unwrap());
-        let rule1 = Rule::OnParameter(0, |v| v == 2);
-        let rule2 = Rule::OnReturnValue(|v| v == 101);
-        let rule = Rule::Or(Box::new(rule1), Box::new(rule2));
+        // Leave context with entry rule
+        let context = LeaveContext(0);
+        let rule = Rule::OnEntry(|_| Ok(false));
         assert!(rule.is_respected(&context).unwrap());
+
+        // Entry context with not enough parameters
+        let rule = Rule::OnEntry(|params| {
+            if params.len() < 3 {
+                Err(RuleError::NumberOfParametersDontMatch(
+                    "Expecting 3 parameters".into(),
+                ))
+            } else {
+                Ok(params[2] == 4)
+            }
+        });
+        let context = EntryContext(vec![1, 2]);
+        assert!(rule.is_respected(&context).is_err());
     }
 }

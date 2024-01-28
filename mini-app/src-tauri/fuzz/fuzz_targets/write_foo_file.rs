@@ -30,7 +30,7 @@ pub fn main() {
         harness,
         options,
         ptr as usize,
-        fuzzer::policies::file_policy::no_write_access(),
+        fuzzer::policies::file_policy::read_only_access(),
     );
 }
 
@@ -65,7 +65,7 @@ mod test {
                 harness,
                 &options,
                 addr as usize,
-                fuzzer::policies::file_policy::no_write_access(),
+                fuzzer::policies::file_policy::read_only_access(),
             )
             .is_ok();
         }
