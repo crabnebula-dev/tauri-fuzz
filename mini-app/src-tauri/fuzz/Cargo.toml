@@ -14,7 +14,8 @@ libloading = "0.7"
 clap = { version = "4.0" }
 tauri = { workspace = true }
 mini-app = { path = ".." }
-tauri_fuzz_tools = { path = "../../../tauri_fuzz_tools" }
+# tauri_fuzz_tools = { path = "../../../tauri_fuzz_tools" }
+tauri_fuzz_tools = { git = "ssh://git@github.com/crabnebula-dev/tauri-fuzzer.git", branch = "fined_grained_interception" }
 libafl = { workspace = true }
 libafl_bolts = { workspace = true }
 libafl_frida = { workspace = true }

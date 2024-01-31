@@ -3,21 +3,31 @@ resolver = "2"
 members = ["tauri_fuzz_tools", "mini-app/src-tauri", "mini-app/src-tauri/fuzz"]
 
 [workspace.dependencies]
-# libafl = { git = "ssh://git@github.com/crabnebula-dev/LibAFL.git", features = [ "std", "llmp_compression", "llmp_bind_public", "frida_cli" ], branch = "tauri" } #,  "llmp_small_maps", "llmp_debug"]}
-# libafl_bolts = { git = "ssh://git@github.com/crabnebula-dev/LibAFL.git", branch = "tauri" }
-# libafl_frida = { git = "ssh://git@github.com/crabnebula-dev/LibAFL.git", features = ["cmplog"], branch = "tauri" }
-# libafl_targets = { git = "ssh://git@github.com/crabnebula-dev/LibAFL.git", features = ["sancov_cmplog"], branch = "tauri" }
-libafl = { path = "../LibAFL/libafl", features = [
+libafl = { git = "ssh://git@github.com/crabnebula-dev/LibAFL.git", features = [
   "std",
   "llmp_compression",
   "llmp_bind_public",
   "frida_cli",
-] } #,  "llmp_small_maps", "llmp_debug"]}
-libafl_bolts = { path = "../LibAFL/libafl_bolts" }
-libafl_frida = { path = "../LibAFL/libafl_frida", features = ["cmplog"] }
-libafl_targets = { path = "../LibAFL/libafl_targets", features = [
+], branch = "fined_grained_interception" } #,  "llmp_small_maps", "llmp_debug"]}
+libafl_bolts = { git = "ssh://git@github.com/crabnebula-dev/LibAFL.git", branch = "fined_grained_interception" }
+libafl_frida = { git = "ssh://git@github.com/crabnebula-dev/LibAFL.git", features = [
+  "cmplog",
+], branch = "fined_grained_interception" }
+libafl_targets = { git = "ssh://git@github.com/crabnebula-dev/LibAFL.git", features = [
   "sancov_cmplog",
-] }
+], branch = "fined_grained_interception" }
+# libafl = { path = "../LibAFL/libafl", features = [
+#   "std",
+#   "llmp_compression",
+#   "llmp_bind_public",
+#   "frida_cli",
+# ] } #,  "llmp_small_maps", "llmp_debug"]}
+# libafl_bolts = { path = "../LibAFL/libafl_bolts" }
+# libafl_frida = { path = "../LibAFL/libafl_frida", features = ["cmplog"] }
+# libafl_targets = { path = "../LibAFL/libafl_targets", features = [
+#   "sancov_cmplog",
+# ] }
+
 frida-gum = { version = "0.13.2", features = [
   "auto-download",
   "event-sink",
