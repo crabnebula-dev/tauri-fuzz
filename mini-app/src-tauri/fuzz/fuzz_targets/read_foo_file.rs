@@ -31,7 +31,7 @@ pub fn main() {
         harness,
         options,
         addr,
-        fuzzer::policies::file_policy::no_file_access(),
+        fuzzer::policies::file_policy::no_access_to_filenames(),
     );
 }
 
@@ -49,7 +49,7 @@ mod test {
     // This test will be started as a new process and its exit status will be captured.
     #[test]
     #[ignore]
-    fn hidden_block_read_foo_file() {
+    fn hidden_read_foo_block_all_file_access() {
         let addr = mini_app::file_access::read_foo_file as *const ();
         let fuzz_dir = std::path::PathBuf::from(std::env!("CARGO_MANIFEST_DIR"));
         let options = fuzzer::get_fuzzer_options(COMMAND_NAME, fuzz_dir);
@@ -69,21 +69,58 @@ mod test {
         }
     }
 
-    // Block reading a file with no file access policy
+    // This is a trick to capture the fuzzer exit status code.
+    // The fuzzer exits the process with an error code rather than panicking.
+    // This test will be started as a new process and its exit status will be captured.
     #[test]
-    fn block_read_foo_file() {
+    #[ignore]
+    fn hidden_read_foo_block_access_to_foo() {
+        let addr = mini_app::file_access::read_foo_file as *const ();
+        let fuzz_dir = std::path::PathBuf::from(std::env!("CARGO_MANIFEST_DIR"));
+        let options = fuzzer::get_fuzzer_options(COMMAND_NAME, fuzz_dir);
+        let harness = |input: &BytesInput| {
+            let app = setup_tauri_mock().expect("Failed to init Tauri app");
+            let _res = invoke_command_minimal(app, create_payload(input.bytes()));
+            ExitKind::Ok
+        };
+        unsafe {
+            let _ = fuzzer::fuzz_test(
+                harness,
+                &options,
+                addr as usize,
+                fuzzer::policies::file_policy::no_access_to_filenames(),
+            )
+            .is_ok();
+        }
+    }
+
+    // Block reading foo with no file access policy
+    #[test]
+    fn read_foo_block_all_file_access() {
         let exe = std::env::current_exe().expect("Failed to extract current executable");
         let status = std::process::Command::new(exe)
-            .args(&["--ignored", "hidden_block_read_foo_file"])
+            .args(&["--ignored", "hidden_read_foo_block_all_file_access"])
             .status()
             .expect("Unable to run program");
 
         assert_eq!(Some(134), status.code());
     }
 
-    // Allow reading a file with no write access policy
+    // Block reading foo with no access to files with name "foo.txt"
     #[test]
-    fn allow_read_foo_file() {
+    fn read_foo_block_access_to_foo() {
+        let exe = std::env::current_exe().expect("Failed to extract current executable");
+        let status = std::process::Command::new(exe)
+            .args(&["--ignored", "hidden_read_foo_block_access_to_foo"])
+            .status()
+            .expect("Unable to run program");
+
+        assert_eq!(Some(134), status.code());
+    }
+
+    // No write policy does not block read to foo
+    #[test]
+    fn read_foo_block_write_access() {
         let addr = mini_app::file_access::read_foo_file as *const ();
         let fuzz_dir = std::path::PathBuf::from(std::env!("CARGO_MANIFEST_DIR"));
         let options = fuzzer::get_fuzzer_options(COMMAND_NAME, fuzz_dir);

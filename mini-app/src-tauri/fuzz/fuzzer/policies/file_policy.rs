@@ -1,8 +1,7 @@
 #![allow(dead_code)]
 use crate::policies::{block_on_entry, LIBC};
-use tauri_fuzz_tools::policies::FunctionPolicy;
-use tauri_fuzz_tools::policies::Rule;
-use tauri_fuzz_tools::policies::RuleError;
+use std::ffi::CStr;
+use tauri_fuzz_tools::policies::{FunctionPolicy, Rule, RuleError};
 
 pub fn no_file_access() -> Vec<FunctionPolicy> {
     vec![
@@ -64,6 +63,47 @@ pub fn read_only_access() -> Vec<FunctionPolicy> {
             lib: LIBC.into(),
             rule: Rule::OnEntry(read_only_flag),
             description: "Access to [open64] with write access denied".into(),
+            nb_parameters: 2,
+        },
+    ]
+}
+
+// TODO make this a macro
+const BLOCKED_FILENAMES: [&'static str; 1] = ["foo.txt"];
+fn rule_no_access_to_filenames(params: &Vec<usize>) -> Result<bool, RuleError> {
+    let filename;
+    unsafe {
+        let name_ptr = params[0] as *const i8;
+        let c_str = CStr::from_ptr(name_ptr);
+        filename = c_str.to_str()?;
+    }
+    Ok(!BLOCKED_FILENAMES
+        .iter()
+        .any(|blocked_filename| filename.ends_with(blocked_filename)))
+}
+
+/// Block access to file with name [`filename`].
+pub fn no_access_to_filenames() -> Vec<FunctionPolicy> {
+    vec![
+        FunctionPolicy {
+            name: "fopen".into(),
+            lib: LIBC.into(),
+            rule: Rule::OnEntry(rule_no_access_to_filenames),
+            description: format!("Access to files {:?} denied", BLOCKED_FILENAMES),
+            nb_parameters: 2,
+        },
+        FunctionPolicy {
+            name: "open".into(),
+            lib: LIBC.into(),
+            rule: Rule::OnEntry(rule_no_access_to_filenames),
+            description: format!("Access to files {:?} denied", BLOCKED_FILENAMES),
+            nb_parameters: 2,
+        },
+        FunctionPolicy {
+            name: "open64".into(),
+            lib: LIBC.into(),
+            rule: Rule::OnEntry(rule_no_access_to_filenames),
+            description: format!("Access to files {:?} denied", BLOCKED_FILENAMES),
             nb_parameters: 2,
         },
     ]

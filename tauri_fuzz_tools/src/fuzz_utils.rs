@@ -170,6 +170,7 @@ mod test {
     fn test_command() {}
 
     // #[test]
+    #[allow(dead_code)]
     fn invoke_1_command() {
         let app = mock_builder()
             .invoke_handler(tauri::generate_handler![test_command])

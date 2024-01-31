@@ -2,6 +2,7 @@
 //! Taken from subcategores of https://en.wikipedia.org/wiki/C_standard_library
 
 use std::fmt::Debug;
+use thiserror::Error;
 
 /// Policy set around a function
 #[derive(Debug, Clone)]
@@ -50,9 +51,9 @@ impl FunctionPolicy {
 
 // TODO use closure rather than functions
 /// ConditionOnParameters is a closure on the parameters of a function
-type ConditionOnParameters = fn(&Vec<usize>) -> Result<bool, RuleError>;
+pub type ConditionOnParameters = fn(&Vec<usize>) -> Result<bool, RuleError>;
 /// ConditionOnReturnValue is a closure on the return value of a function
-type ConditionOnReturnValue = fn(usize) -> Result<bool, RuleError>;
+pub type ConditionOnReturnValue = fn(usize) -> Result<bool, RuleError>;
 
 /// Rule that the function has to adhere to respect the policy
 // TODO to improve perf we can separate entry rule and leave rule into two different types, the UX
@@ -67,12 +68,20 @@ pub enum Rule {
 }
 
 /// Errors that may happen when evaluating a rule given a context
-#[derive(Debug)]
+#[derive(Debug, Error)]
 pub enum RuleError {
     /// The number of parameters given in the context does not match the number of
     /// parameters expected in the context
-    NumberOfParametersDontMatch(String),
+    #[error(
+        "`{0:?}` of parameters given in the context doesn't match the number expected by the rule"
+    )]
+    NumberOfParametersDontMatch(usize),
+
+    #[error("Error while converting a string")]
+    StringConversionError(#[from] std::str::Utf8Error),
+
     /// Generic error that happened during the rule evaluation
+    #[error("Error during evaluation: `{0}`")]
     EvaluationError(String),
 }
 
@@ -157,9 +166,7 @@ mod tests {
         // Entry context with not enough parameters
         let rule = Rule::OnEntry(|params| {
             if params.len() < 3 {
-                Err(RuleError::NumberOfParametersDontMatch(
-                    "Expecting 3 parameters".into(),
-                ))
+                Err(RuleError::NumberOfParametersDontMatch(params.len()))
             } else {
                 Ok(params[2] == 4)
             }
