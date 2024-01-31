@@ -3,7 +3,7 @@ use log::trace;
 #[allow(unused_imports)]
 use mini_app::*;
 use tauri::test::{mock_builder, mock_context, noop_assets};
-use tauri_fuzz_tools::{create_invoke_payload, invoke_command_and_stop, CommandArgs};
+use tauri_fuzz_tools::{create_invoke_payload, invoke_command, CommandArgs};
 
 fn main() {
     env_logger::init();
@@ -28,6 +28,6 @@ fn main() {
 
     let payload = create_invoke_payload("read_foo_file", args);
 
-    let res = invoke_command_and_stop::<String>(app, payload);
+    let res = invoke_command::<String>(app, payload);
     println!("{:?}", res);
 }
