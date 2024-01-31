@@ -12,15 +12,8 @@ log = "0.4"
 env_logger = "*"
 tauri = { workspace = true }
 color-backtrace = "0.5"
-
-
-frida-gum = { version = "0.13.2", features = [ "auto-download", "event-sink", "invocation-listener"] }
-# Not available on Windows
-# mimalloc = { version = "*", default-features = false }
-libafl = { workspace = true }
-libafl_bolts = { workspace = true }
-libafl_frida = { workspace = true }
-libafl_targets = { workspace = true }
+regex = "1.1"
+thiserror = "1.0"
 
 [features]
 # by default Tauri runs in production mode
@@ -29,4 +22,3 @@ default = ["custom-protocol"]
 # this feature is used used for production builds where `devPath` points to the filesystem
 # DO NOT remove this
 custom-protocol = ["tauri/custom-protocol"]
-

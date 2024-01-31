@@ -14,11 +14,13 @@ libloading = "0.7"
 clap = { version = "4.0" }
 tauri = { workspace = true }
 mini-app = { path = ".." }
-tauri_fuzz_tools = { path = "../../../tauri_fuzz_tools" }
+# tauri_fuzz_tools = { path = "../../../tauri_fuzz_tools" }
+tauri_fuzz_tools = { workspace = true }
 libafl = { workspace = true }
 libafl_bolts = { workspace = true }
 libafl_frida = { workspace = true }
 libafl_targets = { workspace = true }
+frida-gum = { workspace = true }
 
 [features]
 # by default Tauri runs in production mode
@@ -33,6 +35,10 @@ lto = true
 codegen-units = 1
 opt-level = 3
 debug = true
+
+[lib]
+name = "fuzzer"
+path = "fuzzer/lib.rs"
 
 [[bin]]
 name = "tauri_cmd_1"

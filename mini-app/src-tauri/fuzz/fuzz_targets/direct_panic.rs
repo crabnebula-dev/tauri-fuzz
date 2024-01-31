@@ -3,9 +3,7 @@ use libafl::prelude::ExitKind;
 use tauri::test::{mock_builder, mock_context, noop_assets, MockRuntime};
 use tauri::App as TauriApp;
 use tauri::InvokePayload;
-use tauri_fuzz_tools::{
-    create_invoke_payload, fuzzer, get_options, invoke_command_minimal, CommandArgs,
-};
+use tauri_fuzz_tools::{create_invoke_payload, invoke_command_minimal, CommandArgs};
 
 const COMMAND_NAME: &str = "direct_panic";
 
@@ -18,13 +16,13 @@ fn setup_tauri_mock() -> Result<TauriApp<MockRuntime>, tauri::Error> {
 pub fn main() {
     let addr = mini_app::basic::direct_panic as *const () as usize;
     let fuzz_dir = std::path::PathBuf::from(std::env!("CARGO_MANIFEST_DIR"));
-    let options = get_options(COMMAND_NAME, fuzz_dir);
+    let options = fuzzer::get_fuzzer_options(COMMAND_NAME, fuzz_dir);
     let harness = |input: &BytesInput| {
         let app = setup_tauri_mock().expect("Failed to init Tauri app");
         let _res = invoke_command_minimal(app, create_payload(input.bytes()));
         ExitKind::Ok
     };
-    fuzzer::main(harness, options, addr);
+    fuzzer::main(harness, options, addr, fuzzer::policies::no_policy());
 }
 
 #[allow(unused_variables)]
@@ -45,14 +43,20 @@ mod test {
     fn real_test_direct_panic() {
         let addr = mini_app::basic::direct_panic as *const ();
         let fuzz_dir = std::path::PathBuf::from(std::env!("CARGO_MANIFEST_DIR"));
-        let options = get_options(COMMAND_NAME, fuzz_dir);
+        let options = fuzzer::get_fuzzer_options(COMMAND_NAME, fuzz_dir);
         let harness = |input: &BytesInput| {
             let app = setup_tauri_mock().expect("Failed to init Tauri app");
             let _res = invoke_command_minimal(app, create_payload(input.bytes()));
             ExitKind::Ok
         };
         unsafe {
-            let _ = fuzzer::fuzz_test(harness, &options, addr as usize).is_ok();
+            let _ = fuzzer::fuzz_test(
+                harness,
+                &options,
+                addr as usize,
+                fuzzer::policies::no_policy(),
+            )
+            .is_ok();
         }
     }
 

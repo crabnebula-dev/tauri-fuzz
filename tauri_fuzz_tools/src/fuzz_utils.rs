@@ -1,165 +1,25 @@
-#![allow(dead_code)]
-use libafl_bolts::bolts_prelude::Cores;
-use libafl_bolts::cli::FuzzerOptions;
 use serde::de::DeserializeOwned;
-use serde_json::Value as JsonValue;
 use std::collections::HashMap;
 use std::fmt::Debug;
-use std::path::PathBuf;
-use std::str::FromStr;
 use tauri::api::ipc::CallbackFn;
 use tauri::test::MockRuntime;
-use tauri::test::{Ipc, IpcKey};
 use tauri::App;
-use tauri::AppHandle;
 use tauri::Builder;
 use tauri::InvokePayload;
 use tauri::Manager;
-use tauri::RunEvent;
-
-pub fn get_options(tauri_command: &str, fuzz_dir: PathBuf) -> FuzzerOptions {
-    let mut solutions_dir = fuzz_dir.clone();
-    solutions_dir.push("fuzz_solutions");
-    solutions_dir.push(tauri_command);
-
-    FuzzerOptions {
-        timeout: std::time::Duration::from_secs(5),
-        verbose: true,
-        stdout: String::from("/dev/stdout"),
-        configuration: String::from("default configuration"),
-        asan: false,
-        asan_cores: Cores::from_cmdline("1").unwrap(),
-        iterations: 0,
-        harness: Some(PathBuf::from_str(tauri_command).unwrap()),
-        harness_args: vec![],
-        harness_function: tauri_command.into(),
-        libs_to_instrument: vec![],
-        cmplog: true,
-        cmplog_cores: Cores::from_cmdline("1").unwrap(),
-        detect_leaks: false,
-        continue_on_error: false,
-        allocation_backtraces: true,
-        max_allocation: 1073741824,
-        max_total_allocation: 4294967296,
-        max_allocation_panics: true,
-        disable_coverage: false,
-        drcov: true,
-        disable_excludes: true,
-        dont_instrument: vec![],
-        tokens: vec![], // check
-        // input: vec![PathBuf::from_str("tauri_cmd_2_fuzz/corpus").unwrap()],
-        input: vec![],
-        output: solutions_dir,
-        // Doesn't work on MacOS
-        // cores: Cores::from_cmdline("0").unwrap(),
-        cores: Cores::from_cmdline("1-4").unwrap(),
-        // cores: Cores::from_cmdline("1").unwrap(),
-        broker_port: 8888,
-        remote_broker_addr: None,
-        replay: None,
-        repeat: None,
-    }
-}
 
 /// Minimal builder for a Tauri application using the `MockRuntime`
 pub fn mock_builder_minimal() -> Builder<MockRuntime> {
     Builder::<MockRuntime>::new()
 }
 
-/// Invoke a Tauri command given an `InvokePayload`.
-///
-/// The application processes the command and stops.
-///
-/// # Examples
-///
-/// ```rust
-///
-/// #[tauri::command]
-/// fn ping() -> &'static str {
-///   "pong"
-/// }
-///
-/// use tauri_fuzz_tools::*;
-/// use tauri::test::*;
-/// fn create_app<R: tauri::Runtime>(mut builder: tauri::Builder<R>) -> tauri::App<R> {
-///   builder
-///     .invoke_handler(tauri::generate_handler![ping])
-///     // remove the string argument on your app
-///     .build(mock_context(noop_assets()))
-///     .expect("failed to build app")
-/// }
-///
-/// let app = create_app(mock_builder());
-/// let payload = create_invoke_payload("ping".into(), CommandArgs::new());
-/// let res: Result<String, String> = invoke_command_and_stop(app, payload);
-/// assert_eq!(res, Ok("pong".into()));
-/// ```
-pub fn invoke_command_and_stop<T: DeserializeOwned + Debug>(
-    mut app: App<MockRuntime>,
-    payload: InvokePayload,
-) -> Result<T, T> {
-    let (tx, rx) = std::sync::mpsc::channel();
-    let w = app.get_window("main").expect("Could not get main window");
-    let callback = payload.callback;
-    let error = payload.error;
-
-    let ipc = w.state::<Ipc>();
-    ipc.insert_ipc(IpcKey { callback, error }, tx);
-    w.on_message(payload).unwrap();
-
-    app.run_iteration();
-    let res: Result<JsonValue, JsonValue> =
-        rx.recv().expect("Failed to receive result from command");
-    res.map(|v| serde_json::from_value(v).unwrap())
-        .map_err(|e| serde_json::from_value(e).unwrap())
-}
-
-/// Invoke a Tauri command given an `InvokePayload`.
-///
-/// A callback can be provided to interact with future events.
-///
-/// # Examples
-///
-/// ```rust
-/// #[tauri::command]
-/// fn ping() -> &'static str {
-///   "pong"
-/// }
-///
-/// use tauri_fuzz_tools::*;
-/// use tauri::test::*;
-/// fn create_app<R: tauri::Runtime>(mut builder: tauri::Builder<R>) -> tauri::App<R> {
-///   builder
-///     .invoke_handler(tauri::generate_handler![ping])
-///     // remove the string argument on your app
-///     .build(mock_context(noop_assets()))
-///     .expect("failed to build app")
-/// }
-///
-/// let app = create_app(mock_builder());
-/// let payload = create_invoke_payload("ping".into(), CommandArgs::new());
-/// // Exit the application after processing the command
-/// invoke_command(app, payload, move |app_handle, event| {
-///   match event {
-///      tauri::RunEvent::Ready => app_handle.exit(0),
-///      _ => (),
-///   }
-/// });
-/// ```
-pub fn invoke_command<F: FnMut(&AppHandle<MockRuntime>, RunEvent) + 'static>(
+/// Invoke a command and get the Tauri command returned value
+pub fn invoke_command<T: DeserializeOwned + Debug>(
     app: App<MockRuntime>,
     payload: InvokePayload,
-    event_callback: F,
-) {
+) -> Result<T, T> {
     let w = app.get_window("main").expect("Could not get main window");
-
-    let (tx, _rx) = std::sync::mpsc::channel();
-    let callback = payload.callback;
-    let error = payload.error;
-    let ipc = w.state::<Ipc>();
-    ipc.insert_ipc(IpcKey { callback, error }, tx);
-    w.on_message(payload).unwrap();
-    app.run(event_callback);
+    tauri::test::get_ipc_response::<T>(&w, payload)
 }
 
 /// Invoke a command but does not try to get the command return value
@@ -214,17 +74,33 @@ mod test {
     use super::*;
     use tauri::test::{mock_builder, mock_context, noop_assets};
 
+    #[allow(dead_code)]
     #[tauri::command]
-    fn test_command() {}
+    fn test_command() -> String {
+        String::from("foo")
+    }
 
-    #[cfg(test)]
-    fn invoke_1_command() {
+    #[test]
+    fn test_invoke_command() {
         let app = mock_builder()
             .invoke_handler(tauri::generate_handler![test_command])
             .build(mock_context(noop_assets()))
             .unwrap();
         let payload = create_invoke_payload("test_command", CommandArgs::new());
-        let res = invoke_command_and_stop::<String>(app, payload);
+        let res = invoke_command::<String>(app, payload);
         assert!(res.is_ok());
+        assert_eq!(&res.unwrap(), "foo");
+    }
+
+    #[test]
+    fn test_invoke_minimal() {
+        let app = mock_builder_minimal()
+            .invoke_handler(tauri::generate_handler![test_command])
+            .build(mock_context(noop_assets()))
+            .unwrap();
+        let payload = create_invoke_payload("test_command", CommandArgs::new());
+        invoke_command_minimal(app, payload);
+        // The goal is just to reach this point
+        assert!(true);
     }
 }

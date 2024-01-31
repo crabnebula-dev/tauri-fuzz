@@ -3,7 +3,6 @@ name = "mini-app"
 version = "0.0.0"
 description = "A Tauri App"
 authors = ["you"]
-license = ""
 repository = ""
 edition = "2021"
 rust-version = "1.57"
@@ -18,10 +17,5 @@ tauri-build = { workspace = true }
 log = "0.4"
 env_logger = "*"
 tauri = { workspace = true }
-tauri_fuzz_tools = { path = "../../tauri_fuzz_tools" }
+tauri_fuzz_tools = { workspace = true }
 libc = "*"
-
-# [dependencies.tauri-runtime]
-# # path = "../../../cn-tauri/core/tauri-runtime"
-# git = "ssh://git@github.com/crabnebula-dev/tauri.git"
-# branch = "feat/fuzz"
