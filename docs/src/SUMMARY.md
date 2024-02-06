@@ -1,8 +1,9 @@
 # Summary
 
 - [Introduction](../../README.md)
-- [Principle](./principle.md)
-- [Guide to fuzz my Tauri app](./guide_fuzz_my_app.md)
+<!-- - [Principle](./principle.md) -->
+<!-- - [Guide to fuzz my Tauri app](./guide_fuzz_my_app.md) -->
+- [Presentation](./presentation.md)
 - [Bibliography](./biblio/biblio.md)
     - [Fuzzers](./biblio/fuzzers.md)
     - [Webapp Fuzzers](./biblio/webapp_fuzzing.md)

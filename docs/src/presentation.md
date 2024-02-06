@@ -104,16 +104,18 @@ This is usually written by the app developer since it requires knowledge about t
 
 ## Conclusion and summary
 
-Goal: popularize the usage of fuzzers for applications
+__Goal__ popularize the usage of fuzzers for applications
 - Make fuzzing useful for applications by testing their security policy
 - Make fuzzing Tauri application as easy as possible
     - two default security policies
     - automatic generation of fuzz targets
 
-- Biggest issue: this has not been battle tested yet
-- Future work
-    - Code generation
-    - Port to other platforms
-    - Testing
+__Biggest issue__
+This work is a prototype and has not been tested thoroughly
+
+__Future work__
+- Code generation
+- Port to other platforms
+- Testing
 
 ## Demo
