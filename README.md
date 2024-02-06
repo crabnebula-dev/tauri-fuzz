@@ -13,7 +13,7 @@ The goal is to test your software by executing it with a large set of pseudo-ran
 - Code is fuzzed against a security policy
     - Some default ones are provided
     - Users can provide custom policies
-- Build on top of [LibAFL]() and [Frida]()
+- Built on top of [LibAFL](https://github.com/AFLplusplus/LibAFL) and [Frida](https://frida.re/)
     - Portable on Windows, MacOS, Android, iOS
 
 Additional information can be found in the mdbook in `/docs`.
@@ -30,8 +30,10 @@ Technical documentation, research and thoughts process that happened during the 
 
 Requires `mdbook` and `mdbook-toc`
 
-> cargo install mdbook
-> cargo install mdbook-toc
+```bash
+$ cargo install mdbook
+$ cargo install mdbook-toc
+```
 
 ## Installation
 
@@ -111,7 +113,3 @@ LibAFL:
 - https://www.youtube.com/watch?v=L7BaCIciFEM (orginal video)
 - https://media.ccc.de/v/37c3-12102-fuzz_everything_everywhere_all_at_once (more recent video, with topics close to us)
 - https://www.s3.eurecom.fr/docs/ccs22_fioraldi.pdf (research paper)
-
-Web Fuzzing:
--
-
