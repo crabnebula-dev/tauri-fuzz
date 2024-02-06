@@ -36,7 +36,7 @@ frida-gum = { version = "0.13.2", features = [
 
 
 # tauri_fuzz_tools = { path = "./tauri_fuzz_tools" }
-tauri_fuzz_tools = { git = "ssh://git@github.com/crabnebula-dev/tauri-fuzzer.git" }
+tauri_fuzz_tools = { git = "ssh://git@github.com/crabnebula-dev/tauri-fuzzer.git", branch = "main" }
 [workspace.dependencies.tauri]
 # path = "../tauri/core/tauri"
 # git = "ssh://git@github.com/crabnebula-dev/tauri.git"

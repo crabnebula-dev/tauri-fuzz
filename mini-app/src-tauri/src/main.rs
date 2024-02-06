@@ -13,7 +13,6 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             mini_app::file_access::write_foo_file,
             mini_app::file_access::read_foo_file,
-            mini_app::direct_syscalls::write_to_stdout,
             mini_app::basic::tauri_cmd_2
         ])
         .build(mock_context(noop_assets()))
