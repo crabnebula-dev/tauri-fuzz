@@ -3,11 +3,13 @@ use std::ffi::CString;
 
 #[cfg(unix)]
 #[tauri::command]
+/// Calls libc function `geteuid`
 pub fn geteuid() -> u32 {
     unsafe { libc::geteuid() }
 }
 
 #[tauri::command]
+/// Calls libc function `fopen`
 pub fn fopen(filename: &str, mode: &str) {
     let filename = CString::new(filename).expect("Cstring failed");
     let mode = CString::new(mode).expect("Cstring failed");

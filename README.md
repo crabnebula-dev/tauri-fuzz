@@ -1,23 +1,58 @@
 # Tauri-Fuzzer
 
-Tauri-Fuzzer is used to fuzz Tauri applications
+## The fuzzer
 
-## Architecture
+### What is a fuzzer
 
-- `mini-app` a minimal Tauri application which is the fuzz target
-- `fuzzer` directory containing the custom fuzzer
-- `docs` contains information about bibliography and advancement of project
+A fuzzer is an automatic testing tool commonly used for softwares.
+The goal is to test your software by executing it with a large set of pseudo-randomly generated inputs.
+
+### What's special about this fuzzer
+
+- Specializes in testing a system security boundaries rather that looking for memory errors
+- Code is fuzzed against a security policy
+    - Some default ones are provided
+    - Users can provide custom policies
+- Build on top of [LibAFL]() and [Frida]()
+    - Portable on Windows, MacOS, Android, iOS
+
+Additional information can be found in the mdbook in `/docs`.
+
+## Repository Architecture
+
+- `mini-app` is a minimal Tauri application used to test and demonstrate the fuzzer
+- `tauri-fuzz-tools` is a crate providing utilities
+- `docs` contains technical information and thoughts process behind the project
 
 ## Biblio on fuzzing
 
-In the mdbook in `docs`.
+Technical documentation, research and thoughts process that happened during the development of this project are documented in the mdbook in `docs`.
 
 Requires `mdbook` and `mdbook-toc`
 
 > cargo install mdbook
 > cargo install mdbook-toc
 
-## Testing the fuzzer
+## Installation
+
+### Requirements
+
+Tauri dependencies:
+- libwebkit2gtk-4.0-dev
+- build-essential
+- curl
+- wget
+- file
+- libssl-dev
+- libgtk-3-dev
+- libayatana-appindicator3-dev
+- librsvg2-dev
+
+Fuzzer dependencies:
+- libc++-15-dev
+- libc++abi-15-dev
+- clang-15
+
 
 ### Setup a VM for fuzzing
 
@@ -26,7 +61,7 @@ Especially in this case where the fuzzer try to shell execution, file system cor
 
 We provide a Debian VM in [virtual-machines repo](https://github.com/crabnebula-dev/virtual-machines) in the `feat/tauri-fuzz` branch.
 
-#### Generate and connect to the VM: 
+#### Generate and connect to the VM:
 - Go to the `virtual-machines/01_tauri_fuzz/debian` directory
 - Build and start the VM with `make run`
 - You can connect to the VM using SSH using port 2222
@@ -43,51 +78,33 @@ After connecting to the VM using SSH
     - having SSH key port forwarding for Github private CN repo
 - Execute the script at `/home/user/setup_fuzz_tools.sh`
 - This will download and compile:
-    - `cargo-tauri-fuzz` tools to fuzz programs
     - `tauri-fuzzer` this repo
+    - CN private fork of `LibAFL`
 
-### Test the fuzzer on `mini-app`
+## Test the fuzzer on `mini-app`
 
-We recommend using a VM for testing. 
+We recommend using a VM for testing.
 Instructions to get one are above.
 
 Go to the `mini-app/src-tauri/fuzz` directory.
 
-#### Fuzzing targets
+### Running the test
 
-Fuzz targets are in the `fuzz_targets directory`.
-They can also be listed with 
-
-```
-cargo-tauri-fuzz list
-```
-
-#### Fuzz a target 
+At the root of `tauri-fuzzer`.
 
 ```
-cargo-tauri-fuzz run {target name}
+cargo test
 ```
 
-## Tips
+### Running specific fuzz targets
 
-### Avoiding wear and tear of physical disk
+Fuzz targets are in the `mini-app/src-tauri/fuzz/fuzz_targets` directory.
+Any of the fuzz targets can be executed in this directory with
+```
+cargo r --bin <fuzz target name>
+```
 
-When using afl, you can transfer the heavy writing to RAM
->  docker run -ti --mount type=tmpfs,destination=/ramdisk -e AFL_TMPDIR=/ramdisk aflplusplus/aflplusplus
-
-### Improving fuzzing speed
-
-Section 3.i of
-[AFL Guide to Fuzzing in Depth](https://github.com/AFLplusplus/AFLplusplus/blob/stable/docs/fuzzing_in_depth.md)
-
-- Use persistent mode (x2-x20 speed increase).
-- If you do not use shmem persistent mode, use AFL_TMPDIR to point the input file on a tempfs location, see /docs/env_variables/.
-- Linux: Improve kernel performance: modify /etc/default/grub, set GRUB_CMDLINE_LINUX_DEFAULT="ibpb=off ibrs=off kpti=off l1tf=off mds=off mitigations=off no_stf_barrier noibpb noibrs nopcid nopti nospec_store_bypass_disable nospectre_v1 nospectre_v2 pcid=off pti=off spec_store_bypass_disable=off spectre_v2=off stf_barrier=off"; then update-grub and reboot (warning: makes the system more insecure) - you can also just run sudo afl-persistent-config.
-- Linux: Running on an ext2 filesystem with noatime mount option will be a bit faster than on any other journaling filesystem.
-- Use your cores! See 3c) Using multiple cores.
-- Run sudo afl-system-config before starting the first afl-fuzz instance after a reboot.
-
-## Resources about the fuzzer 
+## Resources about the fuzzer
 
 LibAFL:
 - https://aflplus.plus/libafl-book/baby_fuzzer.html (book)
@@ -96,5 +113,5 @@ LibAFL:
 - https://www.s3.eurecom.fr/docs/ccs22_fioraldi.pdf (research paper)
 
 Web Fuzzing:
-- 
+-
 

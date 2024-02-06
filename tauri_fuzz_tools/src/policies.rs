@@ -1,5 +1,4 @@
-//! Enumeration of libc functions the fuzzer should analyze
-//! Taken from subcategores of https://en.wikipedia.org/wiki/C_standard_library
+//! Definition of a security policy for our fuzzer
 
 use std::fmt::Debug;
 use thiserror::Error;

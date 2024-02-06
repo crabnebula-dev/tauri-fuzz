@@ -4,6 +4,7 @@ use std::io::{Read, Write};
 use std::path::PathBuf;
 
 #[tauri::command]
+/// Write to the file `assets/foo.txt`
 pub fn write_foo_file(input: &str) {
     trace!("[write_foo_file] Entering with input: {}", input);
     let file_path = get_foo_path();
@@ -13,6 +14,7 @@ pub fn write_foo_file(input: &str) {
 }
 
 #[tauri::command]
+/// Read the file `assets/foo.txt`
 pub fn read_foo_file() -> String {
     trace!("[read_foo_file] Entering");
     let path = get_foo_path();
@@ -22,6 +24,7 @@ pub fn read_foo_file() -> String {
     content
 }
 
+/// Get the path to `assets/foo.txt`
 fn get_foo_path() -> PathBuf {
     let mut file_path = std::path::PathBuf::from(std::env!("CARGO_MANIFEST_DIR"));
     file_path.push("assets");

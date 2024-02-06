@@ -1,3 +1,4 @@
+/// Collection of helper functions that connects the fuzzer and Tauri
 use serde::de::DeserializeOwned;
 use std::collections::HashMap;
 use std::fmt::Debug;
