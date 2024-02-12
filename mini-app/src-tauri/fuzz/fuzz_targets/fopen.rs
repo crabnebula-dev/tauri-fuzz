@@ -36,7 +36,7 @@ fn create_payload(_bytes: &[u8]) -> InvokePayload {
     let mut args = CommandArgs::new();
     args.insert("filename", "/tmp/foo");
     args.insert("mode", "w");
-    create_invoke_payload(COMMAND_NAME, args)
+    create_invoke_payload(None, COMMAND_NAME, args)
 }
 
 #[cfg(test)]

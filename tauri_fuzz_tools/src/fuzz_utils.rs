@@ -1,5 +1,6 @@
 /// Collection of helper functions that connects the fuzzer and Tauri
 use serde::de::DeserializeOwned;
+use serde::ser::Serialize;
 use std::collections::HashMap;
 use std::fmt::Debug;
 use tauri::api::ipc::CallbackFn;
@@ -10,6 +11,7 @@ use tauri::InvokePayload;
 use tauri::Manager;
 
 /// Minimal builder for a Tauri application using the `MockRuntime`
+/// NOTE: if your Tauri command uses a state this won't work since it does manage any state
 pub fn mock_builder_minimal() -> Builder<MockRuntime> {
     Builder::<MockRuntime>::new()
 }
@@ -30,7 +32,11 @@ pub fn invoke_command_minimal(app: App<MockRuntime>, payload: InvokePayload) {
 }
 
 /// Helper function to create a Tauri `InvokePayload`.
-pub fn create_invoke_payload(cmd_name: &str, command_args: CommandArgs) -> InvokePayload {
+pub fn create_invoke_payload(
+    tauri_module: Option<String>,
+    cmd_name: &str,
+    command_args: CommandArgs,
+) -> InvokePayload {
     let mut json_map = serde_json::map::Map::new();
     for (k, v) in command_args.inner {
         json_map.insert(k, v);
@@ -38,7 +44,7 @@ pub fn create_invoke_payload(cmd_name: &str, command_args: CommandArgs) -> Invok
 
     InvokePayload {
         cmd: cmd_name.into(),
-        tauri_module: None,
+        tauri_module: tauri_module,
         callback: CallbackFn(0),
         error: CallbackFn(1),
         inner: serde_json::Value::Object(json_map),
@@ -64,9 +70,15 @@ impl CommandArgs {
     pub fn insert(
         &mut self,
         key: impl Into<String>,
-        value: impl Into<serde_json::Value>,
+        value: impl Serialize,
     ) -> Option<serde_json::Value> {
-        self.inner.insert(key.into(), value.into())
+        let key = key.into();
+        self.inner.insert(
+            key.clone(),
+            serde_json::to_value(value).unwrap_or_else(|_| {
+                panic!("Failed conversion to json value for parameter {}", key,)
+            }),
+        )
     }
 }
 
@@ -87,7 +99,7 @@ mod test {
             .invoke_handler(tauri::generate_handler![test_command])
             .build(mock_context(noop_assets()))
             .unwrap();
-        let payload = create_invoke_payload("test_command", CommandArgs::new());
+        let payload = create_invoke_payload(None, "test_command", CommandArgs::new());
         let res = invoke_command::<String>(app, payload);
         assert!(res.is_ok());
         assert_eq!(&res.unwrap(), "foo");
@@ -99,7 +111,7 @@ mod test {
             .invoke_handler(tauri::generate_handler![test_command])
             .build(mock_context(noop_assets()))
             .unwrap();
-        let payload = create_invoke_payload("test_command", CommandArgs::new());
+        let payload = create_invoke_payload(None, "test_command", CommandArgs::new());
         invoke_command_minimal(app, payload);
         // The goal is just to reach this point
         assert!(true);
