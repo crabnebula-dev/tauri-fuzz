@@ -28,7 +28,7 @@ pub fn main() {
 #[allow(unused_variables)]
 fn create_payload(bytes: &[u8]) -> InvokePayload {
     let args = CommandArgs::new();
-    create_invoke_payload(COMMAND_NAME, args)
+    create_invoke_payload(None, COMMAND_NAME, args)
 }
 
 #[cfg(test)]

@@ -38,7 +38,7 @@ pub fn get_fuzzer_options(tauri_command: &str, fuzz_dir: PathBuf) -> FuzzerOptio
         output: solutions_dir,
         // Doesn't work on MacOS
         // cores: Cores::from_cmdline("0").unwrap(),
-        cores: Cores::from_cmdline("1-4").unwrap(),
+        cores: Cores::from_cmdline("1").unwrap(),
         // cores: Cores::from_cmdline("1").unwrap(),
         broker_port: 8888,
         remote_broker_addr: None,

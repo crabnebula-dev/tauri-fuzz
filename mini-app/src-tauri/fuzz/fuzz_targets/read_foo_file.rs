@@ -37,7 +37,7 @@ pub fn main() {
 
 fn create_payload(_bytes: &[u8]) -> InvokePayload {
     let args = CommandArgs::new();
-    create_invoke_payload(COMMAND_NAME, args)
+    create_invoke_payload(None, COMMAND_NAME, args)
 }
 
 #[cfg(test)]

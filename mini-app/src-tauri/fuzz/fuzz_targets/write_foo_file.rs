@@ -39,7 +39,7 @@ fn create_payload(bytes: &[u8]) -> InvokePayload {
     let arg_name = String::from("input");
     let mut args = CommandArgs::new();
     args.insert(arg_name, input);
-    create_invoke_payload(COMMAND_NAME, args)
+    create_invoke_payload(None, COMMAND_NAME, args)
 }
 
 #[cfg(test)]

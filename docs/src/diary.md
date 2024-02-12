@@ -441,3 +441,28 @@ Frida is a binary analyser with 2 main features
 - For conditions we're curretnly using functions rather than closures
     - this is to avoid any rust issue with trait object
     - this should be improved in the future
+
+## Call Tauri inbuilt command such as fs_readFile
+
+- Extend the fuzz tools function `create_invoke_payload` to allow an argument specifying the module invoked
+- These commands requires a shared state to be managed by the Tauri mock runtime
+    - error message triggered is `state() called before manage() for given type`
+    - we can't use our helper function `mock_builder_minimal`
+    - use `mock_builder` instead
+- The `InvokePayload` looks like
+```
+InvokePayload {
+    cmd: "tauri",
+    tauri_module: Some("Fs"),           // module name
+    callback: CallbackFn(0),
+    error: CallbackFn(1),
+    inner: Object {
+        "message": Object {
+            "cmd": String("readFile"),  // command name
+            "path": String("..."),      // command parameter
+            "options": Object {},       // command parameter
+        },
+    },
+}
+```
+- Don't forget to configure the `allowlist` to allow the scope

@@ -16,6 +16,6 @@ tauri-build = { workspace = true }
 [dependencies]
 log = "0.4"
 env_logger = "*"
-tauri = { workspace = true }
+tauri = { workspace = true, features = ["api-all", "wry"] }
 tauri_fuzz_tools = { workspace = true }
 libc = "*"

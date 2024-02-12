@@ -1,0 +1,114 @@
+#![allow(non_snake_case)]
+/// We fuzz the Tauri command `readFile` in the `Fs` module
+/// The calling convention for the `InvokePayload` are different from custom Tauri commands
+use libafl::inputs::BytesInput;
+use libafl::prelude::ExitKind;
+use std::path::PathBuf;
+use tauri::test::{mock_builder, mock_context, noop_assets, MockRuntime};
+use tauri::App as TauriApp;
+use tauri::InvokePayload;
+use tauri_fuzz_tools::{create_invoke_payload, invoke_command_minimal, CommandArgs};
+use tauri_utils::config::FsAllowlistScope;
+
+const COMMAND_NAME: &str = "readFile";
+
+/// Generate a Tauri mock runtime
+fn setup_tauri_mock() -> Result<TauriApp<MockRuntime>, tauri::Error> {
+    let mut context = mock_context(noop_assets());
+    // Allow the module to read in "../assets/" directory
+    context.config_mut().tauri.allowlist.fs.scope =
+        FsAllowlistScope::AllowedPaths(vec![path_to_foo()]);
+
+    // We're not using the usual `mock_builder_minimal` since the function we're fuzzing uses a
+    // state
+    mock_builder()
+        .invoke_handler(tauri::generate_handler![])
+        .build(context)
+}
+
+fn path_to_foo() -> PathBuf {
+    let mut assets_dir = std::path::PathBuf::from(std::env!("CARGO_MANIFEST_DIR"));
+    assets_dir.pop();
+    assets_dir.push("assets");
+    assets_dir.push("foo.txt");
+    assets_dir
+}
+
+/// The harness that we are going to fuzz
+fn harness(_input: &BytesInput) -> ExitKind {
+    let app = setup_tauri_mock().expect("Failed to init Tauri app");
+    let foo_path = path_to_foo().to_string_lossy().into_owned();
+    let _res = invoke_command_minimal(app, create_module_payload(foo_path.as_bytes()));
+    ExitKind::Ok
+}
+
+pub fn main() {
+    // The function in which the fuzzer analysis will be applied
+    let fuzzed_function = crate::harness as *const ();
+    let fuzz_dir = std::path::PathBuf::from(std::env!("CARGO_MANIFEST_DIR"));
+    let options = fuzzer::get_fuzzer_options(COMMAND_NAME, fuzz_dir);
+
+    fuzzer::main(
+        harness,
+        options,
+        fuzzed_function as usize,
+        fuzzer::policies::file_policy::no_file_access(),
+    );
+}
+
+use serde_json::value::Value;
+use serde_json::Map;
+/// Create an `InvokePayload` for a Tauri module command
+fn create_module_payload(bytes: &[u8]) -> InvokePayload {
+    let mut args = CommandArgs::new();
+    let mut read_file_args = Map::new();
+    // We want the `readFile` command from the Fs module
+    read_file_args.insert("cmd".into(), Value::String("readFile".into()));
+    // We specify the path we want to read to
+    read_file_args.insert(
+        "path".into(),
+        Value::String(String::from_utf8_lossy(bytes).into_owned()),
+    );
+    // We don't set any options
+    let read_file_options = Map::new();
+    read_file_args.insert("options".into(), Value::Object(read_file_options));
+    args.insert("message", read_file_args);
+    create_invoke_payload(Some("Fs".into()), "tauri", args)
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    // This is a trick to capture the fuzzer exit status code when finding a crash.
+    // The fuzzer exits the process with an error code rather than panicking.
+    // This test will be started as a new process and its exit status will be captured.
+    #[test]
+    #[ignore]
+    fn real_test_fs_readFile() {
+        let addr = crate::harness as *const ();
+        let fuzz_dir = std::path::PathBuf::from(std::env!("CARGO_MANIFEST_DIR"));
+        let options = fuzzer::get_fuzzer_options(COMMAND_NAME, fuzz_dir);
+        unsafe {
+            let _ = fuzzer::fuzz_test(
+                crate::harness,
+                &options,
+                addr as usize,
+                fuzzer::policies::file_policy::no_file_access(),
+            )
+            .is_ok();
+        }
+    }
+
+    /// Start another process that will actually launch the fuzzer
+    #[test]
+    fn test_fs_readFile() {
+        let exe = std::env::current_exe().expect("Failed to extract current executable");
+        let status = std::process::Command::new(exe)
+            .args(&["--ignored", "real_test_fs_readFile"])
+            .status()
+            .expect("Unable to run program");
+        // Check that fuzzer process launched exit with status error 134
+        assert_eq!(Some(134), status.code());
+    }
+}
