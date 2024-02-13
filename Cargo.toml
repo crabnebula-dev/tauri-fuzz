@@ -3,6 +3,12 @@ resolver = "2"
 members = ["tauri_fuzz_tools", "mini-app/src-tauri", "mini-app/src-tauri/fuzz"]
 
 [workspace.dependencies]
+frida-gum = { version = "0.13.2", features = [
+  "auto-download",
+  "event-sink",
+  "invocation-listener",
+] }
+### Production depencies
 libafl = { git = "ssh://git@github.com/crabnebula-dev/LibAFL.git", features = [
   "std",
   "llmp_compression",
@@ -16,12 +22,6 @@ libafl_frida = { git = "ssh://git@github.com/crabnebula-dev/LibAFL.git", feature
 libafl_targets = { git = "ssh://git@github.com/crabnebula-dev/LibAFL.git", features = [
   "sancov_cmplog",
 ], branch = "tauri" }
-
-frida-gum = { version = "0.13.2", features = [
-  "auto-download",
-  "event-sink",
-  "invocation-listener",
-] }
 tauri_fuzz_tools = { git = "ssh://git@github.com/crabnebula-dev/tauri-fuzzer.git", branch = "main" }
 tauri = { version = "1.5", default-features = false, features = ["test"] }
 tauri-runtime = "1.5"

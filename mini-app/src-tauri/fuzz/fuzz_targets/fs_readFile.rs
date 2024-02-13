@@ -38,7 +38,7 @@ fn path_to_foo() -> PathBuf {
 fn harness(_input: &BytesInput) -> ExitKind {
     let app = setup_tauri_mock().expect("Failed to init Tauri app");
     let foo_path = path_to_foo().to_string_lossy().into_owned();
-    let _res = invoke_command_minimal(app, create_module_payload(foo_path.as_bytes()));
+    let _res = invoke_command_minimal(app, create_payload(foo_path.as_bytes()));
     ExitKind::Ok
 }
 
@@ -56,24 +56,12 @@ pub fn main() {
     );
 }
 
-use serde_json::value::Value;
-use serde_json::Map;
 /// Create an `InvokePayload` for a Tauri module command
-fn create_module_payload(bytes: &[u8]) -> InvokePayload {
+fn create_payload(bytes: &[u8]) -> InvokePayload {
     let mut args = CommandArgs::new();
-    let mut read_file_args = Map::new();
-    // We want the `readFile` command from the Fs module
-    read_file_args.insert("cmd".into(), Value::String("readFile".into()));
-    // We specify the path we want to read to
-    read_file_args.insert(
-        "path".into(),
-        Value::String(String::from_utf8_lossy(bytes).into_owned()),
-    );
-    // We don't set any options
-    let read_file_options = Map::new();
-    read_file_args.insert("options".into(), Value::Object(read_file_options));
-    args.insert("message", read_file_args);
-    create_invoke_payload(Some("Fs".into()), "tauri", args)
+    args.insert("path", String::from_utf8_lossy(bytes).into_owned());
+    let payload = create_invoke_payload(Some("Fs".into()), COMMAND_NAME, args);
+    payload
 }
 
 #[cfg(test)]

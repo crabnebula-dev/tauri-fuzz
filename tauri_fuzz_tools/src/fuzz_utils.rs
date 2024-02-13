@@ -32,22 +32,77 @@ pub fn invoke_command_minimal(app: App<MockRuntime>, payload: InvokePayload) {
 }
 
 /// Helper function to create a Tauri `InvokePayload`.
+///
+/// # Arguments
+///
+/// * `tauri_module` the module the invoked command is part of. Use `None` for a custom Tauri
+/// command
+/// * `cmd_name` name of the Tauri command invoked
+/// * `command_args` arguments that are used for the Tauri command invocation
 pub fn create_invoke_payload(
     tauri_module: Option<String>,
     cmd_name: &str,
     command_args: CommandArgs,
 ) -> InvokePayload {
-    let mut json_map = serde_json::map::Map::new();
+    let mut json_command_args = serde_json::map::Map::new();
     for (k, v) in command_args.inner {
-        json_map.insert(k, v);
+        json_command_args.insert(k, v);
     }
+    match tauri_module {
+        // The Tauri command invoked is a custom command
+        None => InvokePayload {
+            // The Tauri command invoked is a Tauri builtin command and looks like this
+            // InvokePayload {
+            //     cmd: "<command name>",
+            //     tauri_module: None,                 // module name
+            //     callback: CallbackFn(0),
+            //     error: CallbackFn(1),
+            //     inner: Object {
+            //         "path": String("..."),          // command parameter
+            //         "options": Object {},           // command parameter
+            //     },
+            // }
+            cmd: cmd_name.into(),
+            tauri_module: None,
+            callback: CallbackFn(0),
+            error: CallbackFn(1),
+            inner: serde_json::Value::Object(json_command_args),
+        },
 
-    InvokePayload {
-        cmd: cmd_name.into(),
-        tauri_module: tauri_module,
-        callback: CallbackFn(0),
-        error: CallbackFn(1),
-        inner: serde_json::Value::Object(json_map),
+        Some(module) => {
+            // The Tauri command invoked is a Tauri builtin command and looks like this
+            // InvokePayload {
+            //     cmd: "tauri",
+            //     tauri_module: Some("Fs"),           // module name
+            //     callback: CallbackFn(0),
+            //     error: CallbackFn(1),
+            //     inner: Object {
+            //         "message": Object {
+            //             "cmd": String("readFile"),  // command name
+            //             "path": String("..."),      // command parameter
+            //             "options": Object {},       // command parameter
+            //         },
+            //     },
+            // }
+
+            json_command_args.insert(
+                String::from("cmd"),
+                serde_json::Value::String(cmd_name.into()),
+            );
+            let mut inner_map = serde_json::map::Map::new();
+            inner_map.insert(
+                "message".into(),
+                serde_json::Value::Object(json_command_args),
+            );
+
+            InvokePayload {
+                cmd: "tauri".into(),
+                tauri_module: Some(module),
+                callback: CallbackFn(0),
+                error: CallbackFn(1),
+                inner: serde_json::Value::Object(inner_map),
+            }
+        }
     }
 }
 
