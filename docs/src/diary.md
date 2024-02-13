@@ -444,7 +444,9 @@ Frida is a binary analyser with 2 main features
 
 ## Call Tauri inbuilt command such as fs_readFile
 
-- Extend the fuzz tools function `create_invoke_payload` to allow an argument specifying the module invoked
+- Improve `create_invoke_payload`
+    - allow to have an argument specifying a module
+    - distinguish between an invocation between a custom command and an inbuilt one
 - These commands requires a shared state to be managed by the Tauri mock runtime
     - error message triggered is `state() called before manage() for given type`
     - we can't use our helper function `mock_builder_minimal`

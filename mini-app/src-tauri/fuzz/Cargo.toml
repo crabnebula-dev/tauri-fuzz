@@ -8,8 +8,6 @@ edition = "2021"
 tauri-build = { workspace = true }
 
 [dependencies]
-serde_json = { version = "1.0" }
-serde = "1.0"
 log = "0.4"
 env_logger = "*"
 color-backtrace = "0.5"
