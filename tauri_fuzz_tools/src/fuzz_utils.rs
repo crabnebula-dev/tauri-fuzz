@@ -50,8 +50,8 @@ pub fn create_invoke_payload(
     }
     match tauri_module {
         // The Tauri command invoked is a custom command
-        None => InvokePayload {
-            // The Tauri command invoked is a Tauri builtin command and looks like this
+        None => {
+            // The Tauri command invoked is a Tauri custom command and looks like this
             // InvokePayload {
             //     cmd: "<command name>",
             //     tauri_module: None,                 // module name
@@ -62,12 +62,15 @@ pub fn create_invoke_payload(
             //         "options": Object {},           // command parameter
             //     },
             // }
-            cmd: cmd_name.into(),
-            tauri_module: None,
-            callback: CallbackFn(0),
-            error: CallbackFn(1),
-            inner: serde_json::Value::Object(json_command_args),
-        },
+
+            InvokePayload {
+                cmd: cmd_name.into(),
+                tauri_module: None,
+                callback: CallbackFn(0),
+                error: CallbackFn(1),
+                inner: serde_json::Value::Object(json_command_args),
+            }
+        }
 
         Some(module) => {
             // The Tauri command invoked is a Tauri builtin command and looks like this

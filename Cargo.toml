@@ -22,11 +22,14 @@ libafl_frida = { git = "ssh://git@github.com/crabnebula-dev/LibAFL.git", feature
 libafl_targets = { git = "ssh://git@github.com/crabnebula-dev/LibAFL.git", features = [
   "sancov_cmplog",
 ], branch = "tauri" }
-tauri_fuzz_tools = { git = "ssh://git@github.com/crabnebula-dev/tauri-fuzzer.git", branch = "main" }
-tauri = { version = "1.5", default-features = false, features = ["test"] }
+tauri = { version = "1.5", default-features = false, features = [
+  "test",
+  "tracing",
+] }
 tauri-runtime = "1.5"
 tauri-build = "1.5"
 tauri-utils = "1.5"
+tauri_fuzz_tools = { git = "ssh://git@github.com/crabnebula-dev/tauri-fuzzer.git", branch = "main" }
 
 ### Local development
 # libafl = { path = "../LibAFL/libafl", features = [
