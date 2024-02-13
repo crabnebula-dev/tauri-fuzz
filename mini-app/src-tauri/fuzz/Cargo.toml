@@ -82,3 +82,8 @@ doc = false
 [[bin]]
 name = "fs_readFile"
 path = "fuzz_targets/fs_readFile.rs"
+
+[[bin]]
+name = "sql_transaction"
+path = "fuzz_targets/sql_transaction.rs"
+doc = false
