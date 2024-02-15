@@ -3,6 +3,8 @@
 use std::fmt::Debug;
 use thiserror::Error;
 
+pub type FuzzPolicy = Vec<FunctionPolicy>;
+
 /// Policy set around a function
 #[derive(Debug, Clone)]
 pub struct FunctionPolicy {
@@ -117,8 +119,6 @@ impl Rule {
         }
     }
 }
-
-pub type FuzzPolicy = Vec<FunctionPolicy>;
 
 #[cfg(test)]
 mod tests {

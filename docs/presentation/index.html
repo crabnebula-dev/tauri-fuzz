@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>reveal.js – The HTML Presentation Framework</title>
+
+		<meta name="description" content="A framework for easily creating beautiful presentations using HTML">
+		<meta name="author" content="Hakim El Hattab">
+
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<link rel="stylesheet" href="dist/reset.css">
+		<link rel="stylesheet" href="dist/reveal.css">
+		<link rel="stylesheet" href="dist/theme/white-custom.css" id="theme">
+
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" href="plugin/highlight/monokai.css">
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+				
+				<section data-markdown>
+					<script type="text/template">
+						# `tauri-fuzzer`
+					</script>
+				</section>
+
+				<section>
+					  <h1>Bugs Bad</h1>
+						<img data-src="images/this is fine.drawio.svg" width="95%">
+				</section>
+
+				<section>
+					<section data-markdown>
+						<script type="text/template">
+						## How do we remove bugs in a software?
+
+						<p>&nbsp;</p>
+
+						- Writing tests
+						- Fuzzing
+						- Formal Verification
+						</script>
+					</section>
+					<section data-markdown>
+						<script type="text/template">
+						### Testing
+
+						<img data-src="images/testing.drawio.svg" width="95%">
+
+						- Setup: easy
+						- Usage: every software
+						</script>
+					</section>
+					<section>
+						<h3>Fuzzing</h3>
+						<img data-src="images/fuzzing.drawio.svg" width="95%">
+						<ul>
+							<li>Setup: moderate</li>
+							<li>Requires human intervention to fine tune</li>
+							<li>Usage: important libraries and critical software</li>
+						</ul>
+					</section>
+					<section>
+						<h3>Formal Verification</h3>
+						<img data-src="images/formal verification.drawio.svg" width="95%">
+						<ul>
+							<li>Setup: hard</li>
+							<li>Expert knowledge and expensive</li>
+							<li>Usage: critical software</li>
+						</ul>
+
+					</section>
+				</section>
+
+				<section>
+					<section data-markdown>
+						<script type="text/template">
+						## Current State of Fuzzers
+						</script>
+					</section>
+					<section data-markdown>
+						<script type="text/template">
+							### Fuzzer challenge: checking an execution
+
+							<img data-src="images/fuzzer verifier.drawio.svg" width="95%">
+
+							##### How do we detect if an execution failed?
+
+							- Write a __checker__ specialized to the fuzzed program
+							- Use a generic __checker__ (_crashes_, _memory corruption_)
+						</script>
+					</section>
+
+					<section data-markdown>
+						<script type="text/template">
+						### Fuzzing in the Application World
+
+						#### Fuzzing is rarely used for application development:
+
+						- Writing a dedicated checker is costly
+						- Crashes are less critical
+						- Memory corruption is rare
+						</script>
+					</section>
+				</section>
+
+
+				<section data-markdown>
+					<script type="text/template">
+					###  Goal of the `tauri-fuzzer`
+
+					> Bridging the gap between application devs and fuzzers
+
+					<p>&nbsp;</p>
+
+					- Provide a __security policies engine__ as checker
+					- Make fuzzing an application as easy as possible
+					</script>
+				</section>
+
+				<section>
+					<section data-markdown>
+						<script type="text/template">
+							## Tauri App Security Model
+						</script>
+					</section>
+
+					<section>
+						<div class="r-stack">
+							<h3 class="fragment fade-out" data-fragment-index="0">Tauri App</h3>
+							<h3 class="fragment current-visible" data-fragment-index="0">Security Model of a Tauri App</h3>
+							<h3 class="fragment" data-fragment-index="2">Threat Model of a Tauri App</h3>
+						</div>
+						<div class="r-stack">
+							<img data-src="images/tauri-app.drawio.svg" width="95%" class="fragment fade-out" data-fragment-index="0">
+							<img data-src="images/tauri-app security 1.drawio.svg" width="95%" class="fragment current-visible" data-fragment-index="0">
+							<img data-src="images/tauri-app security 2.drawio.svg" width="95%" class="fragment"
+																																								 data-fragment-index="2"
+																																								 >
+						</div>
+					</section>
+				</section>
+
+
+				<section>
+					<section data-markdown>
+						<script type="text/template">
+							## Fuzzing security policies with `tauri-fuzzer`
+						</script>
+					</section>
+
+					<section>
+						<div class="r-stack">
+							<h3 class="fragment fade-out" data-fragment-index="0"><code>tauri-fuzzer</code></h3>
+							<h3 class="fragment current-visible" data-fragment-index="0">1. Define a security policy </h3>
+							<h3 class="fragment current-visible" data-fragment-index="1">2. Frida install resource monitors </h3>
+							<h3 class="fragment current-visible" data-fragment-index="2">3. LibAFL fuzz the Tauri App backend</h3>
+							<h3 class="fragment current-visible" data-fragment-index="3">4. Illegal access to the resources are intercepted</h3>
+							<h3 class="fragment" data-fragment-index="4">5. Vulnerability is found and recorded</h3>
+						</div>
+						<div class="r-stack">
+							<img class="fragment fade-out"  data-fragment-index="0" data-src="images/fuzzer-architecture.drawio.svg" width="95%">
+							<img class="fragment current-visible"  data-fragment-index="0" data-src="images/define security policy.drawio.svg" width="95%">
+							<img class="fragment current-visible"  data-fragment-index="1" data-src="images/install ressource monitors.drawio.svg" width="95%">
+							<img class="fragment current-visible"  data-fragment-index="2" data-src="images/fuzz the tauri backend.drawio.svg" width="95%">
+							<img class="fragment current-visible"  data-fragment-index="3" data-src="images/intercept illegal calls.drawio.svg" width="95%">
+							<img class="fragment"  data-fragment-index="4" data-src="images/bug is found.drawio.svg" width="95%">
+						</div>
+					</section>
+				</section>
+
+				<section>
+					<section data-markdown>
+						<script type="text/template">
+						## `tauri-fuzzer` components
+						</script>
+					</section>
+				<section>
+					<h3>
+						<a href="https://github.com/AFLplusplus/LibAFL">
+					 		LibAFL
+							<img style="vertical-align:middle" data-src="images/libafl_logo.svg" width="10%">
+						</a>
+					</h3>
+
+					<ul>
+						<li>State of the art fuzzer framework with active research</li>
+						<li>Generate inputs, record solutions, manage multi-cores...  </li>
+					</ul>
+
+					<img data-src="images/fuzz the tauri backend.drawio.svg" width="95%">
+				</section>
+
+				<section>
+					<h3>
+					 	<a href="https://frida.re/">
+							<img style="vertical-align:middle" data-src="images/frida.svg" width="25%">
+						</a>
+					</h3>
+					<ul>
+						<li>Dynamic binary rewriter</li>
+						<li>Monitor the code accessing the resources</li>
+						<li>Portable to all major platforms</li>
+					</ul>
+					<img data-src="images/install ressource monitors.drawio.svg" width="95%">
+				</section>
+
+				<section data-markdown>
+					<script type="text/template">
+					## Policy Engine
+
+					- API to easily write a security policy (_TODO_)
+					- Check at runtime if security policy is enforced
+
+					<img data-src="images/define security policy.drawio.svg" width="95%">
+					</script>
+				</section>
+				</section>
+
+				<section>
+					<section data-markdown>
+						<script type="text/template">
+						## Fuzzing a Tauri app made as easy as possible
+						</script>
+					</section>
+
+					<section data-markdown>
+						<script type="text/template">
+						### Automatic setup of fuzzing environment (_TODO_)
+
+
+						1. Create a _fuzz_ directory in Tauri app project
+						2. Parse the Tauri project and look for Tauri commands
+						```
+#[tauri::command]
+fn foo_command(...) {}
+						```
+						3. Generate fuzzer scripts to fuzz these Tauri commands
+						</script>
+					</section>
+
+					<section>
+						<h3> Default Security Policies</h3>
+						<div class="r-stack">
+							<div class="fragment fade-out" data-fragment-index="0">
+								<ul>
+									<li style="margin-bottom:2em">Security Policies can be cumbersome to write<br></li>
+									<li >2 available default security policies (<i>TODO</i>)
+										<ol style="margin-top:0.5em">
+											<li>Access to resources can't return an error</li>
+											<li>Derive a security policy from the Tauri allowlist configuration</li>
+										</ol>
+									</li>
+								</ul>
+							</div>					
+							<div class="fragment current-visible" data-fragment-index="0">
+								<blockquote>
+									<p>Access to resources can't return an error</p>
+								</blockquote>
+								<img data-src="images/no error policy.drawio.svg" width="100%">
+								<p>Efficient for input validation vulnerability</p>
+							</div>					
+							<div class="fragment" data-fragment-index="1">
+								<blockquote>
+								<p>Derive a security policy from the Tauri allowlist configuration</p>
+								</blockquote>
+								<pre>
+								tauri.conf.json
+								<code>
+"tauri": {
+  "allowlist": {
+    "fs": {
+      "readFile": true,
+      "writeFile": false,
+    },
+  },
+  ...
+  							</code>
+								</pre>
+								<p>Security policy specific to the Tauri app</p>
+							</div>					
+						</div>
+					</section>
+				</section>
+
+<style>
+table, th, td {
+  border: none!important;
+  vertical-align: middle;
+}
+.reveal table tr {
+	margin: 4em auto;
+}
+
+.reveal table td {
+	text-align: center;
+}
+.reveal table td p {
+	font-style: italic;
+	margin: 1em auto;
+}
+
+</style>
+				<section >
+					<h2> What should you remember from this presentation? </h2>
+
+					<table>
+						<tr>
+							<td>Problem</td>
+							<td><p>Fuzzing is not used enough for app development</p></td>
+						</tr>
+						<tr>
+							<td>Goal</td>
+							<td><p>Facilitate fuzzing for app development</p></td>
+						</tr>
+						<tr>
+							<td>How?</td>
+							<td>
+								<p>
+								Provide a security policy checker suited to app fuzzing
+								<br>
+								Make fuzzing Tauri app as easy as possible
+								</p>
+							</td>
+						</tr>
+					</table>
+				</section>
+			</div>
+		</div>
+
+		<script src="dist/reveal.js"></script>
+		<script src="plugin/zoom/zoom.js"></script>
+		<script src="plugin/notes/notes.js"></script>
+		<script src="plugin/search/search.js"></script>
+		<script src="plugin/markdown/markdown.js"></script>
+		<script src="plugin/highlight/highlight.js"></script>
+		<script>
+
+			// Also available as an ES module, see:
+			// https://revealjs.com/initialization/
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				center: true,
+				hash: true,
+				keyboard: true,
+
+				// Learn about plugins: https://revealjs.com/plugins/
+				plugins: [ RevealZoom, RevealNotes, RevealSearch, RevealMarkdown, RevealHighlight ]
+			});
+
+		</script>
+
+	</body>
+</html>
