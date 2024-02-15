@@ -21,7 +21,7 @@ Two ways to get the fuzz targets:
 
 - run `cargo r --bin [fuzz target]`
 
-### Check solutions
+#### Check solutions
 
 - Fuzzing solutions are available in `fuzz_solutions/[fuzz target]_solutions/`
 - check solutions with the files in: `fuzz_solutions/[fuzz target]_solutions/file_name`
@@ -29,7 +29,7 @@ Two ways to get the fuzz targets:
     - for `tauri_cmd_2` it should contain the value `100`
         - with `xxd tauri_cmd_2_solutions/file_name` it should contain `0x0064`
 
-## Details
 
-- `mini-app` should be compiled as a dynamic library
-    - this allows frida to only instrument the code we want to target
+### Create your fuzz target
+
+You can copy-paste the `fuzz_targets/template.rs` and fill it with your implementation
