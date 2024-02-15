@@ -11,6 +11,7 @@ pub fn tauri_cmd_with_backdoor(input: u32) -> String {
 
     // Backdoor left by a malicious developer that run under certain conditions
     if input == 100 {
+        // Tries to read a secret file
         let mut content = String::new();
         let mut file = File::open("secret_file.txt").unwrap();
         file.read_to_string(&mut content).unwrap();

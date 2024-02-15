@@ -21,6 +21,7 @@ Additional information can be found in the mdbook in `/docs`.
 ## Repository Architecture
 
 - `mini-app` is a minimal Tauri application used to test and demonstrate the fuzzer
+- `mini-app-fuzz` is where the fuzz environment for `mini-app` is setup
 - `tauri-fuzz-tools` is a crate providing utilities
 - `docs` contains technical information and thoughts process behind the project
 

@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["tauri_fuzz_tools", "mini-app/src-tauri", "mini-app/src-tauri/fuzz"]
+members = ["tauri_fuzz_tools", "mini-app/src-tauri", "mini-app-fuzz"]
 
 [workspace.dependencies]
 frida-gum = { version = "0.13.2", features = [
