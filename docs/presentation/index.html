@@ -38,7 +38,7 @@
 				<section>
 					<section data-markdown>
 						<script type="text/template">
-						### How do we test a software?  
+						### How do we test a software?
 
 						<p>&nbsp;</p>
 
@@ -70,7 +70,7 @@
 						<h3>Formal Verification</h3>
 						<img data-src="images/formal verification.drawio.svg" width="95%">
 						<ul>
-							<li>Setup: hard</li> 
+							<li>Setup: hard</li>
 							<li>Expert knowledge and expensive</li>
 							<li>Usage: critical software</li>
 						</ul>
@@ -142,7 +142,7 @@
 							<img data-src="images/tauri-app security 1.drawio.svg" width="95%" class="fragment current-visible" data-fragment-index="0">
 							<img data-src="images/tauri-app security 2.drawio.svg" width="95%" class="fragment"
 																																								 data-fragment-index="2"
-																																								 > 
+																																								 >
 						</div>
 					</section>
 				</section>
@@ -151,7 +151,7 @@
 				<section>
 					<section data-markdown>
 						<script type="text/template">
-							## Fuzzing security policies with `tauri-fuzzer` 
+							## Fuzzing security policies with `tauri-fuzzer`
 						</script>
 					</section>
 
@@ -215,7 +215,7 @@
 					<script type="text/template">
 					## Policy Engine
 
-					- API to easily write a security policy (_todo_)
+					- API to easily write a security policy (_TODO_)
 					- Check at runtime if security policy is enforced
 
 					<img data-src="images/define security policy.drawio.svg" width="95%">
@@ -232,16 +232,16 @@
 
 					<section data-markdown>
 						<script type="text/template">
-						### Automatic Generation of Fuzz Targets (TODO)
+						### Automatic setup of fuzzing environment (_TODO_)
 
 
-						1. Parse a Tauri project and look for Tauri commands 
+						1. Create a _fuzz_ directory in Tauri app project
+						2. Parse the Tauri project and look for Tauri commands
 						```
 #[tauri::command]
 fn foo_command(...) {}
 						```
-
-						2. Generate fuzzer scripts to fuzz these Tauri commands
+						3. Generate fuzzer scripts to fuzz these Tauri commands
 						</script>
 					</section>
 
@@ -251,7 +251,7 @@ fn foo_command(...) {}
 							<div class="fragment fade-out" data-fragment-index="0">
 								<ul>
 									<li style="margin-bottom:2em">Security Policies can be cumbersome to write<br></li>
-									<li >2 available default security policies (TODO)
+									<li >2 available default security policies (<i>TODO</i>)
 										<ol style="margin-top:0.5em">
 											<li>Access to resources can't return an error</li>
 											<li>Derive a security policy from the Tauri allowlist configuration</li>
@@ -261,9 +261,10 @@ fn foo_command(...) {}
 							</div>					
 							<div class="fragment current-visible" data-fragment-index="0">
 								<blockquote>
-								<p>Access to resources can't return an error</p>
+									<p>Access to resources can't return an error</p>
 								</blockquote>
 								<img data-src="images/no error policy.drawio.svg" width="100%">
+								<p>Efficient for input validation vulnerability</p>
 							</div>					
 							<div class="fragment" data-fragment-index="1">
 								<blockquote>
@@ -282,6 +283,7 @@ fn foo_command(...) {}
   ...
   							</code>
 								</pre>
+								<p>Security policy specific to the Tauri app</p>
 							</div>					
 						</div>
 					</section>
