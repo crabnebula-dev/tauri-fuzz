@@ -87,3 +87,11 @@ path = "fuzz_targets/fs_readFile.rs"
 name = "sql_transaction"
 path = "fuzz_targets/sql_transaction.rs"
 doc = false
+
+[[bin]]
+name = "demo_backdoor"
+path = "fuzz_targets/demo_backdoor.rs"
+
+[[bin]]
+name = "demo_sql_injection"
+path = "fuzz_targets/demo_sql_injection.rs"

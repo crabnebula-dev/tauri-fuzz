@@ -1,39 +1,33 @@
-#![cfg_attr(
-    all(not(debug_assertions), target_os = "windows"),
-    windows_subsystem = "windows"
-)]
+/// Tauri commands that can be fuzzed for a demo
+use std::fs::File;
+use std::io::Read;
+/// This command has a backdoor that reads a secret file if the given input is 100
+#[tauri::command]
+pub fn tauri_cmd_with_backdoor(input: u32) -> String {
+    // Normal function
+    {
+        // println!("Doing computation stuff...")
+    }
+
+    // Backdoor left by a malicious developer that run under certain conditions
+    if input == 100 {
+        let mut content = String::new();
+        let mut file = File::open("secret_file.txt").unwrap();
+        file.read_to_string(&mut content).unwrap();
+
+        // Send secret over network
+        {
+            println!("Sending secret content to my server")
+        }
+    }
+    return "Finished computations".into();
+}
 
 use mysql::{prelude::Queryable, Pool};
-
-/// Create a Database with some data first
-/// ```sql
-/// -- Create the database
-/// CREATE DATABASE SchoolDatabase;
-
-/// -- Switch to the newly created database
-/// USE SchoolDatabase;
-
-/// -- Create the Students table
-/// CREATE TABLE Students (
-///     student_id INT PRIMARY KEY AUTO_INCREMENT,
-///     first_name VARCHAR(50),
-///     last_name VARCHAR(50),
-///     date_of_birth DATE,
-///     email VARCHAR(100)
-/// );
-
-/// -- Insert data into the Students table
-/// INSERT INTO Students (first_name, last_name, date_of_birth, email) VALUES
-/// ('John', 'Doe', '2000-05-10', 'john.doe@example.com'),
-/// ('Jane', 'Smith', '2001-08-15', 'jane.smith@example.com'),
-/// ('Michael', 'Johnson', '1999-12-20', 'michael.johnson@example.com'),
-/// ('Emily', 'Brown', '2002-03-25', 'emily.brown@example.com'),
-/// ('Daniel', 'Martinez', '2000-11-05', 'daniel.martinez@example.com');
-/// ```
-
+/// Tauri command that is vulnerable to SQL injection
+/// This finds a student information in the database given it's email address
 #[tauri::command]
-/// Crash on input `abc`
-pub fn sql_transaction(input: &str) -> String {
+pub fn sql_injection_vulnerability(input: &str) -> String {
     // We assume that student name will be taken as input
     log::debug!("[sql_transaction] Entering with input: {}", input);
 

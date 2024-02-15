@@ -3,4 +3,5 @@ pub use tauri_commands::basic;
 pub use tauri_commands::file_access;
 pub use tauri_commands::libc_calls;
 // pub use tauri_commands::shell::*;
+pub use tauri_commands::demo;
 pub use tauri_commands::sql;
