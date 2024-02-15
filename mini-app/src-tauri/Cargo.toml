@@ -19,3 +19,4 @@ env_logger = "*"
 tauri = { workspace = true, features = ["api-all", "wry"] }
 tauri_fuzz_tools = { workspace = true }
 libc = "*"
+mysql = "*"
