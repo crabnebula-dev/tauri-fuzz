@@ -43,13 +43,14 @@
 				<section>
 					<section data-markdown>
 						<script type="text/template">
-						## How do we remove bugs in a software?
+						## How do we remove bugs in programs?
 
 						<p>&nbsp;</p>
 
 						- Writing tests
 						- Fuzzing
 						- Formal Verification
+
 						</script>
 					</section>
 					<section data-markdown>
@@ -58,6 +59,7 @@
 
 						<img data-src="images/testing.drawio.svg" width="95%">
 
+						- Manual process
 						- Setup: easy
 						- Usage: every software
 						</script>
@@ -66,10 +68,15 @@
 						<h3>Fuzzing</h3>
 						<img data-src="images/fuzzing.drawio.svg" width="95%">
 						<ul>
+							<li>Automatic testing</li>
 							<li>Setup: moderate</li>
-							<li>Requires human intervention to fine tune</li>
 							<li>Usage: important libraries and critical software</li>
 						</ul>
+						<aside class="notes">
+						- Manually setup the fuzzer and autmatically tests a maximum number of inputs <br>	
+						- crypto or components of a browser <br>
+						- critical: automatic driving in planes, space
+						</aside>
 					</section>
 					<section>
 						<h3>Formal Verification</h3>
@@ -79,6 +86,11 @@
 							<li>Expert knowledge and expensive</li>
 							<li>Usage: critical software</li>
 						</ul>
+						<aside class="notes">
+							- Formal model of your program  <br>
+							- Mathetically prove in your model that a category on inputs act correctly or do not contain bugs <br>
+							- critical: automatic driving in planes, space
+						</aside>
 
 					</section>
 				</section>
@@ -99,6 +111,10 @@
 
 							- Write a __checker__ specialized to the fuzzed program
 							- Use a generic __checker__ (_crashes_, _memory corruption_)
+
+							Note:
+							- checker only works for your program
+							- generic checker focus on a condition that are usually bad for all programs
 						</script>
 					</section>
 
@@ -106,15 +122,19 @@
 						<script type="text/template">
 						### Fuzzing in the Application World
 
-						#### Fuzzing is rarely used for application development:
+						#### Fuzzing is rarely used for application development
 
 						- Writing a dedicated checker is costly
 						- Crashes are less critical
 						- Memory corruption is rare
+            
+						Note:
+						- You don't want a dedicated checker for your application
+						- Generic checker such that crash, memory corruption are irrelevant for apps
+						- ex: Tauri app
 						</script>
 					</section>
 				</section>
-
 
 				<section data-markdown>
 					<script type="text/template">
@@ -124,8 +144,11 @@
 
 					<p>&nbsp;</p>
 
-					- Provide a __security policies engine__ as checker
-					- Make fuzzing an application as easy as possible
+					- Provide a __security policies engine__ as generic checker
+					- Make fuzzing a Tauri app as easy as possible
+
+					Note:
+					- Relevant security conditions relevant to applications
 					</script>
 				</section>
 
@@ -232,12 +255,16 @@
 					<section data-markdown>
 						<script type="text/template">
 						## Fuzzing a Tauri app made as easy as possible
+
+						Note:
+						- Fuzzing security policies is not specific to Tauri application and can be extended to binaries in general
+						- Only this part is Tauri specific
 						</script>
 					</section>
 
 					<section data-markdown>
 						<script type="text/template">
-						### Automatic setup of fuzzing environment (_TODO_)
+						### Setup fuzzing with one command (_TODO_)
 
 
 						1. Create a _fuzz_ directory in Tauri app project
@@ -255,7 +282,7 @@ fn foo_command(...) {}
 						<div class="r-stack">
 							<div class="fragment fade-out" data-fragment-index="0">
 								<ul>
-									<li style="margin-bottom:2em">Security Policies can be cumbersome to write<br></li>
+									<li style="margin-bottom:2em">Security policies can be cumbersome to write<br></li>
 									<li >2 available default security policies (<i>TODO</i>)
 										<ol style="margin-top:0.5em">
 											<li>Access to resources can't return an error</li>
@@ -288,10 +315,28 @@ fn foo_command(...) {}
   ...
   							</code>
 								</pre>
-								<p>Security policy specific to the Tauri app</p>
+								<p>Automatically generated security policy specific to the Tauri app</p>
 							</div>					
 						</div>
+					<aside class="notes">
+						<ul>
+							<li>Generic security policy that is good to enforce for all applications</li>
+							<li>Weak input validation can escate to exploitations like sql injection or shell exploits</li>
+							<li>Automatically generated policy specific to the Tauri application being fuzzed</li>-
+						</ul>
+					</aside>
 					</section>
+				</section>
+
+				<section data-markdown>
+						<script type="text/template">
+						## Check out the work
+						
+						- Repository: [https://github.com/crabnebula-dev/tauri-fuzzer](https://github.com/crabnebula-dev/tauri-fuzzer)
+						- Documentation
+							- mdbook: [https://github.com/crabnebula-dev/tauri-fuzzer/tree/main/docs](https://github.com/crabnebula-dev/tauri-fuzzer/tree/main/docs)
+							- Outline (soon)
+						</script>
 				</section>
 
 <style>

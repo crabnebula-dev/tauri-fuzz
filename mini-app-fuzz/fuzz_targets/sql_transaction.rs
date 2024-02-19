@@ -45,6 +45,8 @@ mod test {
     use super::*;
 
     #[test]
+    #[ignore] // We currently ignore the test since it requires an initialization of the SQL
+              // database TODO
     fn no_crash_sql_transaction() {
         let addr = mini_app::sql::sql_transaction as *const ();
         let fuzz_dir = std::path::PathBuf::from(std::env!("CARGO_MANIFEST_DIR"));
@@ -91,6 +93,8 @@ mod test {
     }
 
     #[test]
+    #[ignore] // We currently ignore the test since it requires an initialization of the SQL
+              // database TODO
     fn crash_sql_transaction() {
         let exe = std::env::current_exe().expect("Failed to extract current executable");
         let status = std::process::Command::new(exe)

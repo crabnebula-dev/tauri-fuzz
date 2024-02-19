@@ -16,7 +16,7 @@ pub fn mock_builder_minimal() -> Builder<MockRuntime> {
     Builder::<MockRuntime>::new()
 }
 
-/// Invoke a command and get the Tauri command returned value
+/// Invoke a command and get the Tauri command return value
 pub fn invoke_command<T: DeserializeOwned + Debug>(
     app: App<MockRuntime>,
     payload: InvokePayload,
@@ -39,6 +39,7 @@ pub fn invoke_command_minimal(app: App<MockRuntime>, payload: InvokePayload) {
 /// command
 /// * `cmd_name` name of the Tauri command invoked
 /// * `command_args` arguments that are used for the Tauri command invocation
+///
 pub fn create_invoke_payload(
     tauri_module: Option<String>,
     cmd_name: &str,

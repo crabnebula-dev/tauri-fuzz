@@ -13,7 +13,7 @@ env_logger = "*"
 color-backtrace = "0.5"
 tauri = { workspace = true, features = ["api-all"] }
 tauri-utils = { workspace = true }
-mini-app = { path = ".." }
+mini-app = { path = "../mini-app/src-tauri" }
 # tauri_fuzz_tools = { path = "../../../tauri_fuzz_tools" }
 tauri_fuzz_tools = { workspace = true }
 libafl = { workspace = true }
