@@ -1,9 +1,9 @@
 #![allow(dead_code)]
 use crate::policies::{block_on_entry, LIBC};
 use std::ffi::CStr;
-use tauri_fuzz_tools::policies::{FunctionPolicy, Rule, RuleError};
+use tauri_fuzz_tools::policies::{FunctionPolicy, FuzzPolicy, Rule, RuleError};
 
-pub fn no_file_access() -> Vec<FunctionPolicy> {
+pub fn no_file_access() -> FuzzPolicy {
     vec![
         FunctionPolicy {
             name: "fopen".into(),
@@ -42,7 +42,7 @@ fn read_only_flag(params: &Vec<usize>) -> Result<bool, RuleError> {
     Ok(res)
 }
 
-pub fn read_only_access() -> Vec<FunctionPolicy> {
+pub fn read_only_access() -> FuzzPolicy {
     vec![
         FunctionPolicy {
             name: "fopen".into(),
@@ -70,10 +70,11 @@ pub fn read_only_access() -> Vec<FunctionPolicy> {
 
 // TODO make this a macro
 const BLOCKED_FILENAMES: [&'static str; 1] = ["foo.txt"];
-fn rule_no_access_to_filenames(params: &Vec<usize>) -> Result<bool, RuleError> {
+fn rule_no_access_to_filenames(registers: &Vec<usize>) -> Result<bool, RuleError> {
     let filename;
     unsafe {
-        let name_ptr = params[0] as *const i8;
+        // the first register should contain a pointer to the name of the file being accessed
+        let name_ptr = registers[0] as *const i8;
         let c_str = CStr::from_ptr(name_ptr);
         filename = c_str.to_str()?;
     }
@@ -83,7 +84,7 @@ fn rule_no_access_to_filenames(params: &Vec<usize>) -> Result<bool, RuleError> {
 }
 
 /// Block access to file with name [`filename`].
-pub fn no_access_to_filenames() -> Vec<FunctionPolicy> {
+pub fn no_access_to_filenames() -> FuzzPolicy {
     vec![
         FunctionPolicy {
             name: "fopen".into(),
