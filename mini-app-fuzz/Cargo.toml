@@ -4,9 +4,6 @@ version = "0.0.0"
 publish = false
 edition = "2021"
 
-[build-dependencies]
-tauri-build = { workspace = true }
-
 [dependencies]
 log = "0.4"
 env_logger = "*"
@@ -22,21 +19,6 @@ libafl_targets = { workspace = true }
 frida-gum = { workspace = true }
 tracing = "0.1.37"
 tracing-subscriber = "0.3.17"
-
-
-[features]
-# by default Tauri runs in production mode
-# when `tauri dev` runs it is executed with `cargo run --no-default-features` if `devPath` is an URL
-default = ["custom-protocol"]
-# this feature is used used for production builds where `devPath` points to the filesystem
-# DO NOT remove this
-custom-protocol = ["tauri/custom-protocol"]
-
-[profile.release]
-lto = true
-codegen-units = 1
-opt-level = 3
-debug = true
 
 [lib]
 name = "fuzzer"
