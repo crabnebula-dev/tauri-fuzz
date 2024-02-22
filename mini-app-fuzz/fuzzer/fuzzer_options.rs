@@ -11,8 +11,10 @@ pub fn get_fuzzer_options(tauri_command: &str, fuzz_dir: PathBuf) -> FuzzerOptio
     FuzzerOptions {
         timeout: std::time::Duration::from_secs(5),
         verbose: true,
+        // The file where outputs are redirected
         stdout: String::from("/dev/stdout"),
         configuration: String::from("default configuration"),
+        // Memory sanitizer
         asan: false,
         asan_cores: Cores::from_cmdline("1").unwrap(),
         iterations: 0,
@@ -20,6 +22,8 @@ pub fn get_fuzzer_options(tauri_command: &str, fuzz_dir: PathBuf) -> FuzzerOptio
         harness_args: vec![],
         harness_function: tauri_command.into(),
         libs_to_instrument: vec![],
+        // Enables additional feature to improve code coverage by
+        // reasonning on branch encountered
         cmplog: true,
         cmplog_cores: Cores::from_cmdline("1").unwrap(),
         detect_leaks: false,
@@ -28,18 +32,18 @@ pub fn get_fuzzer_options(tauri_command: &str, fuzz_dir: PathBuf) -> FuzzerOptio
         max_allocation: 1073741824,
         max_total_allocation: 4294967296,
         max_allocation_panics: true,
+        // Enable tracking of code coverage
         disable_coverage: false,
         drcov: true,
         disable_excludes: true,
         dont_instrument: vec![],
         tokens: vec![], // check
-        // input: vec![PathBuf::from_str("tauri_cmd_2_fuzz/corpus").unwrap()],
         input: vec![],
         output: solutions_dir,
-        // Doesn't work on MacOS
-        // cores: Cores::from_cmdline("0").unwrap(),
+        // Core "0" does not work on MacOS
+        // Number of cores used
         cores: Cores::from_cmdline("1").unwrap(),
-        // cores: Cores::from_cmdline("1").unwrap(),
+        // cores: Cores::from_cmdline("1-4").unwrap(),
         broker_port: 8888,
         remote_broker_addr: None,
         replay: None,

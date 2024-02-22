@@ -51,9 +51,11 @@ impl FunctionPolicy {
 }
 
 // TODO use closure rather than functions
-/// ConditionOnParameters is a closure on the parameters of a function
+/// ConditionOnParameters is a closure on the registers containing the parameters of the function.
+/// This can contain a value but also a pointer depending on the type of the parameters.
 pub type ConditionOnParameters = fn(&Vec<usize>) -> Result<bool, RuleError>;
-/// ConditionOnReturnValue is a closure on the return value of a function
+/// ConditionOnReturnValue is a closure on the value contained in the return value register
+/// This can contain a value but also a pointer depending on the type of the return value.
 pub type ConditionOnReturnValue = fn(usize) -> Result<bool, RuleError>;
 
 /// Rule that the function has to adhere to respect the policy
@@ -61,10 +63,10 @@ pub type ConditionOnReturnValue = fn(usize) -> Result<bool, RuleError>;
 // is not as good then
 #[derive(Debug, Clone)]
 pub enum Rule {
-    /// Function is analysed on entry given its parameters
+    /// Rule is checked on function entry given a condition on parameters
     OnEntry(ConditionOnParameters),
 
-    /// Function is analysed after it's execution given its return value
+    /// Rule is checked on function exit given the return value
     OnLeave(ConditionOnReturnValue),
 }
 

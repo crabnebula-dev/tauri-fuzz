@@ -468,3 +468,18 @@ InvokePayload {
 }
 ```
 - Don't forget to configure the `allowlist` to allow the scope
+
+## 30
+
+- Move `mini-app/src-tauri/fuzz/` to `mini-app-fuzz`
+    - seamless transition, just had to change dependency in the workspace `Cargo.toml`
+- Writing a presentation with Reveal.js
+    - presentation added to the mdbook
+- Bump to Rust version 1.76
+    - Update VM to Rust 1.70 -> 1.76
+    - Unroll the `clap` package version in `libafl_bolts`: `~4.4` -> `4.0 (4.5)`
+        - We pinned it because it was not compatible with last version of Rust I was using
+- Make `LibAFL` a submodule
+    - `LibAFL` is also a Rust workspace itself so we had to `exclude = ["LibAFl"]` it from the root `Cargo.toml`
+    - `git config submodule.recurse = true` do not seem to work to pull recursively the last LibAFL commit
+- Writing user guide to

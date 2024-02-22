@@ -11,4 +11,8 @@
     - [Input Generation/Mutation](./biblio/input_generation_mutation.md)
     - [Benchmarks for Fuzzers](./biblio/benchmarks.md)
     - [System Calls Interception](./biblio/syscall_interception.md)
+- [User Guide](./user_guide/intro.md)
+    - [Fuzz your Tauri App](./user_guide/integrate_fuzzing_in_my_app.md)
+    - [Available Policies](./user_guide/available_policies.md)
+    - [Write your Custom Policy](./user_guide/write_custom_policy.md)
 - [Diary](./diary.md)

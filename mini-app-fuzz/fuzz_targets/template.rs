@@ -7,10 +7,12 @@ use tauri::InvokePayload;
 use tauri_fuzz_tools::{create_invoke_payload, invoke_command_minimal, CommandArgs};
 
 /// The name of Tauri command you want to fuzz
+/// #CUSTOMIZE
 const COMMAND_NAME: &str = "my_tauri_command";
 
 pub fn main() {
     // Take the function pointer to the harness and send it to the fuzzer
+    // The fuzzer will start its runtime analysis only while executing this harness
     let ptr = crate::harness as *const ();
     // Tell the fuzzer the path to this fuzz directory
     let fuzz_dir = std::path::PathBuf::from(std::env!("CARGO_MANIFEST_DIR"));
@@ -22,6 +24,8 @@ pub fn main() {
         harness,
         options,
         ptr as usize,
+        // The policy we want to apply
+        // #CUSTOMIZE
         fuzzer::policies::no_policy(),
     );
 }
@@ -32,6 +36,7 @@ fn harness(input: &BytesInput) -> ExitKind {
     // Setup a Tauri application `MockRuntime` with minimal features
     let app = mock_builder_minimal()
         // Init the Tauri application with the Tauri commands you want to invoke
+        /// #CUSTOMIZE
         .invoke_handler(tauri::generate_handler![crate_name::my_tauri_command])
         .build(mock_context(noop_assets()))
         .expect("Failed to init Tauri app");
@@ -52,12 +57,14 @@ fn harness(input: &BytesInput) -> ExitKind {
 }
 
 /// Helper code to create an `InvokePayload` to call your Tauri command
+/// #CUSTOMIZE
 fn create_payload(bytes: &[u8]) -> InvokePayload {
     let string_input = String::from_utf8_lossy(bytes).to_string();
 
     // Prepare the parameters of the Tauri command
     let mut params = CommandArgs::new();
-    // Do type conversion from bytes to the paramaters expected type, here a `String`
+    // Do type conversion from bytes to the paramaters expected type. 
+    // In this example the first parameter is a `String`
     let string_input = String::from_utf8_lossy(bytes).to_string();
     // The name of Tauri command parameter with its associated value
     params.insert("param1".into(), input);
