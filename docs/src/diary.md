@@ -483,3 +483,40 @@ InvokePayload {
     - `LibAFL` is also a Rust workspace itself so we had to `exclude = ["LibAFl"]` it from the root `Cargo.toml`
     - `git config submodule.recurse = true` do not seem to work to pull recursively the last LibAFL commit
 - Writing user guide to
+
+
+## 31
+
+- Troubles executing fuzzer for windows with LibAFL
+    - execution issue which does not appear when commenting calls to the LibAFL fuzzer
+    - using the `msvc` toolchain
+        - building works fine
+        - we get `(exit code: 0xc0000139, STATUS_ENTRYPOINT_NOT_FOUND)` when running the binary
+        - this happens when windows fails to load a dll
+            - [dependencywalker](https://www.dependencywalker.com/) to investigate can help but now is deprecated
+            - make sure that there is no discrepancy between loader version and compilation toolchain
+    - using the `windows-gnu` toolchain
+        - I need to install `gcc` for linking
+    - what toolchain should I use?
+        - depends on which dynamic library I need to link to
+        - look into libafl repo for hints
+            - in github action we see that they use the windows default stable toolchain
+            - that should be `msvc`
+    - Error found `TaskEntryDialog` entrypoint could not be found
+        - running the fuzzer from windows ui
+            - or using [cbc](https://ten0s.github.io/blog/2022/07/01/debugging-dll-loading-errors)
+        - Dependency walker shows the missing modules
+            - one of the main missing module is `API-MS-WIN-CORE`
+        - Using `ProcessMonitor` with a filter on `tauri_cmd_1.exe`
+            - run the executable and you get all the related events
+    - Big chances it is related to `tauri-build` which does a lot in windows
+        - reintroduce a `build.rs` file with `tauri_build::build()`
+        - Find a way to have a generic and minimal `tauri.conf.json` for the fuzz directory
+
+## Windows
+
+### Tools for debugging
+
+- `ProcessMonitor` to see all the events related to a process
+- `DependencyWalker` to investigate issue related to modules/dlls
+

@@ -1,0 +1,17 @@
+{
+  "package": {
+    "productName": "fuzz",
+    "version": "0.0.0"
+  },
+  "tauri": {
+    "allowlist": {
+      "all": true
+    },
+    "bundle": {
+      "icon": [
+        "../mini-app/src-tauri/icons/icon.ico"
+      ],
+      "identifier": "com.fuzz.dev"
+    }
+  }
+}
