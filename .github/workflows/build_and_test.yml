@@ -64,8 +64,8 @@ jobs:
       - name: Rust cache
         uses: Swatinem/rust-cache@v2
         with:
-          cache-all-crates: true
-          cache-on-failure: true
+          cache-all-crates: false
+          cache-on-failure: false
       
         ## Maybe use this instead https://github.com/actions/checkout/issues/287#issuecomment-1830291196
       - name: Checkout Submodule
