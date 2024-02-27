@@ -17,6 +17,9 @@ jobs:
           os: [ubuntu-latest] #[ubuntu-latest, windows-latest, macOS-latest]
     runs-on: ${{ matrix.os }}
     steps:
+      - name: Install libgtk-3-dev
+        run: sudo apt-get install -y libgtk-3-dev
+        
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
 
@@ -24,7 +27,7 @@ jobs:
         uses: Swatinem/rust-cache@v2
 
       - uses: actions/checkout@v4
-        name: Checkout repository and submodules
+        name: Checkout repository
         #with:
         # ssh-key: |
         #    ${{ secrets.REPO_READ_KEY }}
@@ -35,6 +38,8 @@ jobs:
         uses: webfactory/ssh-agent@v0.9.0
         with:
            ssh-private-key: ${{ secrets.LIBAFL_SUBMODULE_KEY }}
+      
+        ## Maybe use this instead https://github.com/actions/checkout/issues/287#issuecomment-1830291196
       - name: Checkout Submodule
         run: git submodule update --init --recursive
 
