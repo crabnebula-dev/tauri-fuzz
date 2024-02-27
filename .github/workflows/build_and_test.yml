@@ -11,7 +11,7 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  Build-mdbook:
+  Build-mdbook2:
     strategy:
         matrix:
             os: [ubuntu-latest]
@@ -39,7 +39,7 @@ jobs:
 #        # TODO: fix books test fail with updated windows-rs
 #        run: cd docs && mdbook test -L ../target/debug/deps
 
-  Build-Fuzzer:
+  Build-Fuzzer2:
     strategy:
       matrix:
           os: [ubuntu-latest] #[ubuntu-latest, windows-latest, macOS-latest]
