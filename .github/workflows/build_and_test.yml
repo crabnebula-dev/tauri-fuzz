@@ -1,0 +1,43 @@
+name: Build and test
+
+on: [pull_request]
+#on:
+  #push:
+  #  branches: [ main, 'pr/**' ]
+  #pull_request:
+  #  branches: [ main ]
+  #workflow_dispatch:
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  common:
+    strategy:
+      matrix:
+          os: [ubuntu-latest] #[ubuntu-latest, windows-latest, macOS-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+
+      - uses: actions/checkout@v4
+        name: Checkout repository and submodules
+        with:
+          submodules: recursive
+
+      - name: Install mdbook
+        run: cargo install mdbook mdbook-toc mdbook-linkcheck
+
+      - name: Build the book
+        run: cd docs && mdbook build
+
+      - name: Build debug
+        run: cargo build
+#      - name: Test the book
+#        # TODO: fix books test fail with updated windows-rs
+#        run: cd docs && mdbook test -L ../target/debug/deps
+      - name: Run tests
+        run: cargo test
