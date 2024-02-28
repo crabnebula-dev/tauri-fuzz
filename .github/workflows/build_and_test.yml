@@ -37,7 +37,7 @@ jobs:
 
       - name: Test the book
 #        # TODO: fix books test fail with updated windows-rs
-        run: cd docs && mdbook test -L ../target/debug/deps
+        run: cd docs && mdbook test
 
   Build-Fuzzer:
     strategy:
