@@ -30,14 +30,14 @@ jobs:
           cache-on-failure: true
 
       - name: Install mdbook
-        run: sudo cargo install mdbook mdbook-toc mdbook-linkcheck
+        run: cargo install mdbook mdbook-toc mdbook-linkcheck
   
       - name: Build the book
-        run: cd docs && sudo mdbook build
+        run: cd docs && mdbook build
 
       - name: Test the book
 #        # TODO: fix books test fail with updated windows-rs
-        run: cd docs && sudo mdbook test
+        run: cd docs && mdbook test
 
   Build-Fuzzer:
     strategy:
@@ -74,5 +74,7 @@ jobs:
       #- name: Build debug
       #  run: cargo build
 
+      - run: cargo clean
+
       - name: Run tests
-        run: sudo cargo test
+        run: cargo test
