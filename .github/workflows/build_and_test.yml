@@ -30,10 +30,10 @@ jobs:
           cache-on-failure: true
 
       - name: Install mdbook
-        run: cargo install mdbook mdbook-toc mdbook-linkcheck
+        run: sudo cargo install mdbook mdbook-toc mdbook-linkcheck
   
       - name: Build the book
-        run: cd docs && mdbook build
+        run: cd docs && sudo mdbook build
 
       - name: Test the book
 #        # TODO: fix books test fail with updated windows-rs
