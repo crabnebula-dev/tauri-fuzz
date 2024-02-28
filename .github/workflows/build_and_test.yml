@@ -61,11 +61,11 @@ jobs:
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
 
-#      - name: Rust cache
-#        uses: Swatinem/rust-cache@v2
-#        with:
-#          cache-all-crates: false
-#          cache-on-failure: false
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          cache-all-crates: false
+          cache-on-failure: false
       
         ## Maybe use this instead https://github.com/actions/checkout/issues/287#issuecomment-1830291196
       - name: Checkout Submodule
@@ -73,6 +73,8 @@ jobs:
 
       #- name: Build debug
       #  run: cargo build
+
+      - run: rm -rf target/debug/deps/direct_panic-8e58bb89a45434f3
 
       - name: Run tests
         run: cargo test
