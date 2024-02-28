@@ -68,6 +68,14 @@ mod test {
             .args(&["--ignored", "real_test_direct_panic"])
             .status()
             .expect("Unable to run program");
+        
+        let mut pwd = Command::new("pwd");
+        let mut ls = Command::new("ls");
+
+        let out1 = pwd.output().expect("failed to execute process");
+        let out2 = ls.output().expect("failed to execute process");
+
+        println!("{out1} \n {out2}");
 
         assert_eq!(Some(134), status.code());
     }
