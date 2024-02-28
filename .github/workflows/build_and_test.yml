@@ -64,22 +64,22 @@ jobs:
       - name: Rust cache
         uses: Swatinem/rust-cache@v2
         with:
-          cache-all-crates: false
-          cache-on-failure: false
+          cache-all-crates: true
+          cache-on-failure: true
       
         ## Maybe use this instead https://github.com/actions/checkout/issues/287#issuecomment-1830291196
       - name: Checkout Submodule
         run: git submodule update --init --recursive
 
-      #- name: Build debug
-      #  run: cargo build
+      - name: Build debug
+        run: cargo build
 
       - name: Run tests
         run: cargo test
 
-      - name: tmate session if tests fail
-        if: failure()
-        uses: mxschmitt/action-tmate@v3
-        with:
-          limit-access-to-actor: false
+#      - name: tmate session if tests fail
+#        if: failure()
+#        uses: mxschmitt/action-tmate@v3
+#        with:
+#          limit-access-to-actor: false
   
