@@ -1,0 +1,48 @@
+name: Deploy book
+on:
+    push:
+      branches:
+        - main
+
+jobs:
+  build:
+    name: Build and deploy book
+    runs-on: ubuntu-latest
+    permissions:
+        contents: write  # To push a branch 
+        pages: write  # To push to a GitHub Pages site
+        id-token: write # To update the deployment status
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+            cache-all-crates: true
+
+      - name: Install mdbook
+        run: (test -x $HOME/.cargo/bin/mdbook || cargo install mdbook --no-default-features --features search --vers "^0.4" --locked)
+
+      - name: Install mdbook-toc and mdbook-linkcheck
+        run: cargo install mdbook-toc mdbook-linkcheck
+  
+      - name: Build book
+        run: | 
+            cd docs
+            mdbook build
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v2
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v1
+        with:
+            path: 'docs/book'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v1
