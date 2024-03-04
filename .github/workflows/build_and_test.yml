@@ -27,16 +27,18 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           cache-all-crates: true
-          cache-on-failure: true
+          cache-on-failure: false
 
       - name: Install mdbook
-        run: cargo install mdbook mdbook-toc mdbook-linkcheck
+        run: cargo install mdbook --no-default-features --features search --vers "^0.4" --locked
+
+      - name: Install mdbook-toc and mdbook-linkcheck
+        run: cargo install mdbook-toc mdbook-linkcheck
   
       - name: Build the book
         run: cd docs && mdbook build
 
       - name: Test the book
-#        # TODO: fix books test fail with updated windows-rs
         run: cd docs && mdbook test
 
   Build-Fuzzer:
@@ -65,7 +67,7 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           cache-all-crates: true
-          cache-on-failure: true
+          cache-on-failure: true # only enabled for faster debugging
       
         ## Maybe use this instead https://github.com/actions/checkout/issues/287#issuecomment-1830291196
       - name: Checkout Submodule
