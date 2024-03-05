@@ -1,2 +1,0 @@
-[files]
-extend-exclude = ["LibAFL/*", "docs/presentation/plugin/*", "docs/presentation/images/*.svg", "/docs/presentation/dist/*"]
