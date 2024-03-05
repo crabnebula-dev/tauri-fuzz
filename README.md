@@ -95,7 +95,7 @@ Go to the `mini-app/src-tauri/fuzz` directory.
 
 At the root of `tauri-fuzzer`.
 
-```
+```bash
 cargo test
 ```
 
@@ -103,7 +103,7 @@ cargo test
 
 Fuzz targets are in the `mini-app/src-tauri/fuzz/fuzz_targets` directory.
 Any of the fuzz targets can be executed in this directory with
-```
+```bash
 cargo r --bin <fuzz target name>
 ```
 

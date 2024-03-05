@@ -452,7 +452,7 @@ Frida is a binary analyser with 2 main features
     - we can't use our helper function `mock_builder_minimal`
     - use `mock_builder` instead
 - The `InvokePayload` looks like
-```
+```rust,ignore
 InvokePayload {
     cmd: "tauri",
     tauri_module: Some("Fs"),           // module name
