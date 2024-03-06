@@ -11,7 +11,37 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  Build-Fuzzer:
+  clippy:
+    name: Clippy
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install native dependecies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y webkit2gtk-4.1
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo clippy --workspace -- -Dclippy::all -Dclippy::pedantic
+
+  rustfmt:
+    name: Rustfmt
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install rustfmt with nightly toolchain
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          components: rustfmt
+      - run: cargo fmt --all -- --check
+      
+  Build-and-test-Fuzzer:
     strategy:
       matrix:
           os: [ubuntu-latest] #[ubuntu-latest, windows-latest, macOS-latest]
