@@ -40,7 +40,7 @@ jobs:
         with:
           components: rustfmt
       - run: cargo fmt --all -- --check
-      
+
   Build-and-test-Fuzzer:
     strategy:
       matrix:
@@ -77,7 +77,7 @@ jobs:
         run: cargo build
 
       - name: Run tests
-        run: cargo test --no-fail-fast flag
+        run: cargo test --no-fail-fast
 
 #      - name: tmate session if tests fail
 #        if: failure()
