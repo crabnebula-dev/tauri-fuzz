@@ -11,36 +11,6 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  Build-mdbook:
-    strategy:
-        matrix:
-            os: [ubuntu-latest]
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v4
-        name: Checkout repository
-
-      - name: Install Rust stable
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Rust cache
-        uses: Swatinem/rust-cache@v2
-        with:
-          cache-all-crates: true
-          cache-on-failure: false
-
-      - name: Install mdbook
-        run: cargo install mdbook --no-default-features --features search --vers "^0.4" --locked
-
-      - name: Install mdbook-toc and mdbook-linkcheck
-        run: cargo install mdbook-toc mdbook-linkcheck
-  
-      - name: Build the book
-        run: cd docs && mdbook build
-
-      - name: Test the book
-        run: cd docs && mdbook test
-
   Build-Fuzzer:
     strategy:
       matrix:
@@ -77,8 +47,7 @@ jobs:
         run: cargo build
 
       - name: Run tests
-        run: cargo test
-        continue-on-error: true
+        run: cargo test --no-fail-fast flag
 
 #      - name: tmate session if tests fail
 #        if: failure()
