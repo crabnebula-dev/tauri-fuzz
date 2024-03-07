@@ -4,7 +4,7 @@
 
 ### What is a fuzzer
 
-A fuzzer is an automatic testing tool commonly used for softwares.
+A fuzzer is an automatic testing tool commonly used for software.
 The goal is to test your software by executing it with a large set of pseudo-randomly generated inputs.
 
 ### What's special about this fuzzer

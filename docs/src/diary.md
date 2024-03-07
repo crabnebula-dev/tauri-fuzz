@@ -20,7 +20,7 @@ Playing with the Tauri mock runtime
 
 ## 2
 
-- try to trigger a command programatically
+- try to trigger a command programmatically
 - `PendingWindow` has fields
     - `js_event_listeners`
     - `ipc_handler`
@@ -311,7 +311,7 @@ Frida is a binary analyser with 2 main features
 - intercept all libc and `syscall` instruction
 
 #### Preventing too many false positive
-- SET a flag every time you change of running environement (disable flag when running fuzzer code)
+- SET a flag every time you change of running environment (disable flag when running fuzzer code)
     - needs to be run single-threaded
 - Check for stack trace to see if it came from the Tauri app
     - can be costly
@@ -383,7 +383,7 @@ Frida is a binary analyser with 2 main features
     - change visibility for the different modules
     - make sure that given paths are portable
 - Noticed that when opening a file `fopen` is not called but `open`
-- Another issue is that interceptor do not distinguish between calls from the crates and the code we are targetting
+- Another issue is that interceptor do not distinguish between calls from the crates and the code we are targeting
     - we need to have an interceptor that sets up a flag on the tauri command we are fuzzing (then it's single threaded?)
 
 ## 26
@@ -438,7 +438,7 @@ Frida is a binary analyser with 2 main features
     - user can now directly see the fuzzer and the policy used rather than looking at external crate
 - Another race condition happened
     - __be sure to drop the harness flag before calling any function that might panic__
-- For conditions we're curretnly using functions rather than closures
+- For conditions we're currently using functions rather than closures
     - this is to avoid any rust issue with trait object
     - this should be improved in the future
 
