@@ -172,7 +172,7 @@ HTTP requests or parameters
 
 Witcher’s HTTP harnesses translates fuzzer generated inputs into valid requests
 - CGI requests are used for PHP and CGI binaries
-- HTTP requests are used for Python, Jave, Node.js and Qemu-based binaries
+- HTTP requests are used for Python, Java, Node.js and Qemu-based binaries
 
 #### Translating fuzzer input into a Request
 
@@ -208,7 +208,7 @@ Add two HTTP-specific mutations stages to AFL
     - endpoints usually serve multiple purposes hence an endpoint
     may have several requests that use different HTTP variables
     - for a given endpoint, `Witcher` places all the HTTP variables
-    discoverd by `Reqr` into the fuzzing dictionary
+    discovered by `Reqr` into the fuzzing dictionary
 
 ### Evaluation
 

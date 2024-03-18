@@ -8,7 +8,7 @@ The backend containing Tauri runtime and the application rust code.
 ### Attacker model selected
 
 We are fuzzing from the position of an attacker who is able to manipulate the frontend.
-His goal is to illegally access any ressource that may be on the system which could be command shell,
+His goal is to illegally access any resource that may be on the system which could be command shell,
 file system, SQL database, sockets...
 
 Therefore our fuzzer will call Tauri applications entrypoints directly.
