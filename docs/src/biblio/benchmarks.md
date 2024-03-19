@@ -23,8 +23,8 @@ From [Unifuzz](https://www.usenix.org/system/files/sec21summer_li-yuwei.pdf) pap
 - Magma: real-world vulnerabilities with their ground truth to verify genuine software defects
 - [Unifuzz](https://www.usenix.org/system/files/sec21summer_li-yuwei.pdf):
     real-world vulnerabilities with their ground truth to verify genuine software defects
-- LAVA-M: benchs of programs with synctatically injected memory errors
-- Cyber Grand Challenge: benchs of binaries with synthetic bugs
+- LAVA-M: benches of programs with synctatically injected memory errors
+- Cyber Grand Challenge: benches of binaries with synthetic bugs
 - Fuzzer Test Suite (FTS): real-world programs and vulnerabilities
 - FuzzBench: improvement of FTS with a frontend for easier integration
 

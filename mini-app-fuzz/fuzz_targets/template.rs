@@ -63,7 +63,7 @@ fn create_payload(bytes: &[u8]) -> InvokePayload {
 
     // Prepare the parameters of the Tauri command
     let mut params = CommandArgs::new();
-    // Do type conversion from bytes to the paramaters expected type. 
+    // Do type conversion from bytes to the parameters expected type. 
     // In this example the first parameter is a `String`
     let string_input = String::from_utf8_lossy(bytes).to_string();
     // The name of Tauri command parameter with its associated value
