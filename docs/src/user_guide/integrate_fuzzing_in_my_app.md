@@ -1,7 +1,7 @@
 # How to integrate fuzzing in your Tauri app
 
 As an example we will show how we add fuzzing to the Tauri application `mini-app`.
-In this app we fuzz the tauri command `mini-app::tauri_commands::file_access::read_foo_file`.
+In this app we fuzz the Tauri command `mini-app::tauri_commands::file_access::read_foo_file`.
 
 ## Make your Tauri app both a binary and a crate
 
@@ -34,7 +34,6 @@ mini-app = { git = "ssh://git@github.com/crabnebula-dev/tauri-fuzzer.git", branc
 ### Write your fuzz target
 
 An example can be found in `mini-app-fuzz/fuzz_targets/read_foo_file.rs`.
-
 
 With the function `mini-app::tauri_commands::file_access::read_foo_file`:
 1. Copy the template from `mini-app-fuzz/fuzz_targets/template.rs`
