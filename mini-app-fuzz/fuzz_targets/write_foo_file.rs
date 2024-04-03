@@ -80,6 +80,12 @@ mod test {
             .status()
             .expect("Unable to run program");
 
-        assert_eq!(Some(134), status.code());
+        if cfg!(target_os = "windows") {
+            // Check that fuzzer process launched exit with status error 1
+            assert_eq!(Some(1), status.code());
+        } else {
+            // Check that fuzzer process launched exit with status error 134
+            assert_eq!(Some(134), status.code());
+        }
     }
 }

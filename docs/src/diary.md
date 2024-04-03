@@ -531,6 +531,10 @@ InvokePayload {
 - When running the fuzzer the crash happens but nothing is displayed
 - We change the panic hook order such that original panic hook is executed before the fuzzer panic hook
 
+#### Error status of crashed program in fuzzer
+
+- In windows the error status chosen by LibAFL is 1 instead of 134
+
 ### Tools for debugging
 
 - `ProcessMonitor` to see all the events related to a process
