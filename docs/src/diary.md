@@ -529,6 +529,7 @@ InvokePayload {
 #### No display from crash result
 
 - When running the fuzzer the crash happens but nothing is displayed
+- We change the panic hook order such that original panic hook is executed before the fuzzer panic hook
 
 ### Tools for debugging
 

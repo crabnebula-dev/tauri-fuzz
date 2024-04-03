@@ -10,7 +10,7 @@ tauri-build = { workspace = true }
 [dependencies]
 log = "0.4"
 env_logger = "*"
-color-backtrace = "0.5"
+color-backtrace = "0.6"
 tauri = { workspace = true, features = ["api-all"] }
 tauri-utils = { workspace = true }
 mini-app = { path = "../mini-app/src-tauri" }
