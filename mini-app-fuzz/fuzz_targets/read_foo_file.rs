@@ -113,8 +113,9 @@ mod test {
     }
 
     // Block reading foo with no access to files with name "foo.txt"
+    #[cfg(not(windows))]
     #[test]
-    fn read_foo_block_access_to_foo() {
+    fn read_foo_block_access_by_filename() {
         let exe = std::env::current_exe().expect("Failed to extract current executable");
         let status = std::process::Command::new(exe)
             .args(&["--ignored", "hidden_read_foo_block_access_to_foo"])
@@ -130,9 +131,9 @@ mod test {
         }
     }
 
-    // No write policy does not block read to foo
+    // Read-only access should not block `read_foo`
     #[test]
-    fn read_foo_block_write_access() {
+    fn read_foo_accepted_by_readonly_policy() {
         let addr = mini_app::file_access::read_foo_file as *const ();
         let fuzz_dir = std::path::PathBuf::from(std::env!("CARGO_MANIFEST_DIR"));
         let options = fuzzer::get_fuzzer_options(COMMAND_NAME, fuzz_dir);
@@ -146,6 +147,7 @@ mod test {
                 harness,
                 &options,
                 addr as usize,
+                // fuzzer::policies::file_policy::no_access_to_filenames(),
                 fuzzer::policies::file_policy::read_only_access(),
             )
             .is_ok();

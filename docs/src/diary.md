@@ -535,6 +535,34 @@ InvokePayload {
 
 - In windows the error status chosen by LibAFL is 1 instead of 134
 
+#### Find equivalent of libc functions 
+
+- Example with finding a CRT function that is used to open a file 
+- Debug a function that is opening a file with Visual Studio and tracks the execution
+    - fs.rs file needs to be provided.
+        - It's in `C:\Users\alex-cn\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\sys\windows\fs.rs`
+    - Find the function called `c::CreateFileW` used t
+    - in the `c` directory find that `CreateFileW` comes from the `kernel32` dll
+- Check Rust source code and finds the OS-specific implementation 
+
+#### Tests show `tauri_fuzz_tools-917323a62e294d07.exe write_foo (exit code: 0xc0000139, STATUS_ENTRYPOINT_NOT_FOUND)`
+
+- This is similar error message to previous issue which was missing `tauri_build::build()`
+    - checked that build script is executed to build the tests
+    - issue seems to come from the `tauri-fuzz-tools` crate
+- From experiments `tauri_fuzz_tools` tests 
+    - fails to run from workspace directory with `cargo t`
+        - executable produced is bigger than the succesful one
+    - run fine from workspace directory with `cargo t -p tauri_fuzz_tools`
+        - executable produced is smaller than the failing one
+    - run fine when executing `cargo t` from the crate directory
+    - runs fine when putting `tauri_fuzz_tools` as the sole default member of the workspace
+    - fails when putting `tauri_fuzz_tools` as default member with any other member
+
+#### Fetching values from register does not give expected value
+
+- the policy "block_file_by_names" does not work
+
 ### Tools for debugging
 
 - `ProcessMonitor` to see all the events related to a process
