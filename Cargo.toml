@@ -1,6 +1,11 @@
 [workspace]
 resolver = "2"
-members = ["tauri_fuzz_tools", "mini-app/src-tauri", "mini-app-fuzz"]
+members = [
+  "tauri_fuzz_tools",
+  "mini-app/src-tauri",
+  "mini-app-fuzz"
+]
+default-members = ["mini-app-fuzz", "tauri_fuzz_tools"]
 exclude = ["LibAFL"]
 
 [workspace.dependencies]
