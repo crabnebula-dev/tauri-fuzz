@@ -119,7 +119,7 @@ which uses LLVM's native, efficient coverage instrumentation to generate very pr
     - the only supported fuzzer is `libFuzzer` 
     - through the `libfuzzer-sys` crate
 - done on MIR
-- based on llvm souce-based code coverage
+- based on llvm source-based code coverage
 - `rustc -C instrument-coverage` does:
     - insert `llvm.instrprof.increment` at control-flows
     - add a map in each library and binary to keep track of coverage information
@@ -152,7 +152,7 @@ which uses LLVM's native, efficient coverage instrumentation to generate very pr
 
 ### LLVM options 
 
-LLVM has multiple options to intrument program during compilation
+LLVM has multiple options to instrument program during compilation
 - Source Based Coverage 
 - Sanitizer Coverage 
 - `gcov`: A GCC-compatible coverage implementation which operates on DebugInfo. This is enabled by `-ftest-coverage` or `--coverage`
@@ -169,7 +169,7 @@ Operates on AST and preprocessor information directly
 - `-fsanitize-coverage=trace-pc-guard` to trace with guards/closures
     - will insert a call to `__sanitizer_cov_trace_pc_guard(&guard_variable)` on every edge
     - `__sanitizer_cov_trace_pc_guard(&guard_variable)` can be
-        - implented by user
+        - implemented by user
         - defaulted to a counter with `-fsanitize-coverage=inline-8bit-counters` 
         - defualted to a boolean flag with `-fsanitize-coverage=inline-bool-flag `
 - partial instrumentation with `-fsanitize-coverage-allowlist=allowlist.txt` 

@@ -11,7 +11,7 @@ Tauri commands.
 
 1. Add a `lib.rs` file in `mini-app/src-tauri/src`
 2. In the `lib.rs` file make the Tauri commands you want to fuzz public
-```
+```rust,ignore
 pub use tauri_commands::file_access::read_foo_file;
 ```
 
@@ -24,7 +24,7 @@ Copy the directory `mini-app-fuzz`
 Dependencies in `Cargo.toml` file should look like this
 
 1. Add your Tauri app as a dependency
-```
+```toml
 [dependencies]
 // Your Tauri app
 mini-app = { git = "ssh://git@github.com/crabnebula-dev/tauri-fuzzer.git", branch = "main" }
@@ -49,7 +49,7 @@ With the function `mini-app::tauri_commands::file_access::read_foo_file`:
 
 In your `Cargo.toml` file add the fuzz target you created above as a binary.
 
-```
+```toml
 [[bin]]
 name = "fuzz_read_foo_file"
 path = "fuzz_targets/fuzz_read_foo_file.rs"
@@ -69,7 +69,7 @@ More information in the following sections.
 
 ## Example `Cargo.toml` in the fuzz directory
 
-```
+```toml
 [package]
 # Your package name
 name = "mini-app-fuzz"

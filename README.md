@@ -4,7 +4,7 @@
 
 ### What is a fuzzer
 
-A fuzzer is an automatic testing tool commonly used for softwares.
+A fuzzer is an automatic testing tool commonly used for software.
 The goal is to test your software by executing it with a large set of pseudo-randomly generated inputs.
 
 ### What's special about this fuzzer
@@ -95,7 +95,7 @@ Go to the `mini-app/src-tauri/fuzz` directory.
 
 At the root of `tauri-fuzzer`.
 
-```
+```bash
 cargo test
 ```
 
@@ -103,7 +103,7 @@ cargo test
 
 Fuzz targets are in the `mini-app/src-tauri/fuzz/fuzz_targets` directory.
 Any of the fuzz targets can be executed in this directory with
-```
+```bash
 cargo r --bin <fuzz target name>
 ```
 
@@ -111,6 +111,6 @@ cargo r --bin <fuzz target name>
 
 LibAFL:
 - https://aflplus.plus/libafl-book/baby_fuzzer.html (book)
-- https://www.youtube.com/watch?v=L7BaCIciFEM (orginal video)
+- https://www.youtube.com/watch?v=L7BaCIciFEM (original video)
 - https://media.ccc.de/v/37c3-12102-fuzz_everything_everywhere_all_at_once (more recent video, with topics close to us)
 - https://www.s3.eurecom.fr/docs/ccs22_fioraldi.pdf (research paper)
