@@ -113,7 +113,6 @@ mod test {
     }
 
     // Block reading foo with no access to files with name "foo.txt"
-    #[cfg(not(windows))]
     #[test]
     fn read_foo_block_access_by_filename() {
         let exe = std::env::current_exe().expect("Failed to extract current executable");

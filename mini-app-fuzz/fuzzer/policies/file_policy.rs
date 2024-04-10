@@ -1,8 +1,12 @@
 #![allow(dead_code)]
 pub use file_policy_impl::*;
 
+// TODO make this a macro
+const BLOCKED_FILENAMES: [&'static str; 1] = ["foo.txt"];
+
 #[cfg(not(target_env = "msvc"))]
 mod file_policy_impl {
+    use super::BLOCKED_FILENAMES;
     use crate::policies::{block_on_entry, LIBC};
     use std::ffi::CStr;
     use tauri_fuzz_tools::policies::{FunctionPolicy, FuzzPolicy, Rule, RuleError};
@@ -71,20 +75,37 @@ mod file_policy_impl {
             },
         ]
     }
+
+    /// Checks if the filename contained in the first register is part of the blocked files
+    fn rule_no_access_to_filenames(registers: &Vec<usize>) -> Result<bool, RuleError> {
+        let mut filename: &str = "toto";
+        // Pointers in registers are supposed to be valid since they're sent from frida_gum
+        unsafe {
+            // the first register should contain a pointer to the name of the file being accessed
+            let name_ptr = registers[0] as *const i8;
+            let c_str = CStr::from_ptr(name_ptr);
+            filename = c_str.to_str()?;
+        }
+
+        Ok(!BLOCKED_FILENAMES
+            .iter()
+            .any(|blocked_filename| filename.ends_with(blocked_filename)))
+    }
 }
 
 #[cfg(target_env = "msvc")]
 mod file_policy_impl {
+    use super::BLOCKED_FILENAMES;
     use crate::policies::block_on_entry;
-    use std::ffi::CStr;
     use tauri_fuzz_tools::policies::{FunctionPolicy, FuzzPolicy, Rule, RuleError};
+    use windows::core::PCWSTR;
     use windows_sys::Win32::Foundation::GENERIC_READ;
 
     const FILE_CRT: &str = "KERNEL32";
+    // Doc to CreateFileW: https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilew
     const OPEN_FILE: &str = "CreateFileW";
 
     pub fn no_file_access() -> FuzzPolicy {
-        // Doc to CreateFileW: https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilew
         vec![FunctionPolicy {
             name: OPEN_FILE.into(),
             lib: FILE_CRT.into(),
@@ -94,7 +115,7 @@ mod file_policy_impl {
         }]
     }
 
-    // Check if the flag is READ_ONLY
+    // Checks if the flag is READ_ONLY
     fn read_only_flag(params: &Vec<usize>) -> Result<bool, RuleError> {
         let flag = params[1];
         let res = flag == GENERIC_READ as usize;
@@ -102,7 +123,6 @@ mod file_policy_impl {
     }
 
     pub fn read_only_access() -> FuzzPolicy {
-        // Doc to CreateFileW: https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilew
         vec![FunctionPolicy {
             name: OPEN_FILE.into(),
             lib: FILE_CRT.into(),
@@ -112,29 +132,19 @@ mod file_policy_impl {
         }]
     }
 
-    // TODO make this a macro
-    const BLOCKED_FILENAMES: [&'static str; 1] = ["foo.txt"];
-
+    /// Checks if the filename contained in the first register is part of the blocked files
     fn rule_no_access_to_filenames(registers: &Vec<usize>) -> Result<bool, RuleError> {
-        let mut filename = "toto";
-        println!("registers count: {}", registers.len());
-        for reg in registers.iter() {
-            unsafe {
-                // the first register should contain a pointer to the name of the file being accessed
-                let name_ptr = *reg as *const i8;
-                let c_str = CStr::from_ptr(name_ptr);
-                filename = c_str.to_str()?;
-                println!("reg: {}", filename);
-            }
-        }
-        // unsafe {
-        //             // the first register should contain a pointer to the name of the file being accessed
-        //             let name_ptr = registers[0] as *const i8;
-        //             let c_str = CStr::from_ptr(name_ptr);
-        //             filename = c_str.to_str()?;
-        //         }
+        // the first register should contain a pointer to the name of the file being accessed
+        let name_ptr = registers[0] as *const u16;
 
-        // println!("jsfdkljfds: {}", filename);
+        let filename: String;
+        // This is unsafe because pointers stored in the first register needs to be valid
+        unsafe {
+            filename = PCWSTR::from_raw(name_ptr)
+                .to_string()
+                .expect("Failed filename conversion to String type");
+        }
+
         Ok(!BLOCKED_FILENAMES
             .iter()
             .any(|blocked_filename| filename.ends_with(blocked_filename)))

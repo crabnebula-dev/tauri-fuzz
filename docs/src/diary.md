@@ -558,6 +558,9 @@ InvokePayload {
     - run fine when executing `cargo t` from the crate directory
     - runs fine when putting `tauri_fuzz_tools` as the sole default member of the workspace
     - fails when putting `tauri_fuzz_tools` as default member with any other member
+- Adding a Windows Manifest file works to remove the error message
+    - https://github.com/tauri-apps/tauri/pull/4383/files
+    - Does not explain why the compilation worked in certain cases but not in other =(
 
 #### Fetching values from register does not give expected value
 
