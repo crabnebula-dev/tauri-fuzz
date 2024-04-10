@@ -565,6 +565,8 @@ InvokePayload {
 #### Fetching values from register does not give expected value
 
 - the policy "block_file_by_names" does not work
+- Windows do not use utf-8 encoding but utf-16 for strings
+    - use the `windows` crate to import correct windows type and do type conversion
 
 ### Tools for debugging
 
