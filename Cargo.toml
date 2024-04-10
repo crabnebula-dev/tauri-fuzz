@@ -1,6 +1,12 @@
 [workspace]
 resolver = "2"
-members = ["tauri_fuzz_tools", "mini-app/src-tauri", "mini-app-fuzz"]
+members = [
+  # Crates 
+  "crates/tauri_fuzz_tools",
+  # Examples
+  "examples/mini-app/src-tauri",
+  "examples/mini-app/src-tauri/fuzz",
+]
 exclude = ["LibAFL"]
 
 [workspace.dependencies]
@@ -21,7 +27,7 @@ libafl_frida = { path = "./LibAFL//libafl_frida", features = ["cmplog"] }
 libafl_targets = { path = "./LibAFL/libafl_targets", features = [
   "sancov_cmplog",
 ] }
-tauri_fuzz_tools = { path = "./tauri_fuzz_tools" }
+tauri_fuzz_tools = { path = "./crates/tauri_fuzz_tools" }
 
 tauri = { version = "1.5", default-features = false, features = [
   "test",
@@ -30,13 +36,3 @@ tauri = { version = "1.5", default-features = false, features = [
 tauri-runtime = "1.5"
 tauri-build = "1.5"
 tauri-utils = "1.5"
-
-### Local development
-# [patch.crates-io]
-# tauri = { path = "../tauri/core/tauri", default-features = false, features = [
-#   "test",
-#   "tracing",
-# ] }
-# tauri-runtime = { path = "../tauri/core/tauri-runtime" }
-# tauri-build = { path = "../tauri/core/tauri-build" }
-# tauri-utils = { path = "../tauri/core/tauri-utils" }
