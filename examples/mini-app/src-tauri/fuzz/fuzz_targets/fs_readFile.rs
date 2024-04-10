@@ -1,4 +1,5 @@
 #![allow(non_snake_case)]
+use fuzzer::tauri_utils::{create_invoke_payload, invoke_command_minimal, CommandArgs};
 /// We fuzz the Tauri command `readFile` in the `Fs` module
 /// The calling convention for the `InvokePayload` are different from custom Tauri commands
 use libafl::inputs::BytesInput;
@@ -7,7 +8,6 @@ use std::path::PathBuf;
 use tauri::test::{mock_builder, mock_context, noop_assets, MockRuntime};
 use tauri::App as TauriApp;
 use tauri::InvokePayload;
-use tauri_fuzz_tools::{create_invoke_payload, invoke_command_minimal, CommandArgs};
 use tauri_utils::config::FsAllowlistScope;
 
 const COMMAND_NAME: &str = "readFile";
@@ -48,11 +48,11 @@ pub fn main() {
     let fuzz_dir = std::path::PathBuf::from(std::env!("CARGO_MANIFEST_DIR"));
     let options = fuzzer::get_fuzzer_options(COMMAND_NAME, fuzz_dir);
 
-    fuzzer::main(
+    fuzzer::fuzz_main(
         harness,
         options,
         fuzzed_function as usize,
-        fuzzer::policies::file_policy::no_file_access(),
+        policies::file_policy::no_file_access(),
     );
 }
 
@@ -82,7 +82,7 @@ mod test {
                 crate::harness,
                 &options,
                 addr as usize,
-                fuzzer::policies::file_policy::no_file_access(),
+                policies::file_policy::no_file_access(),
             )
             .is_ok();
         }

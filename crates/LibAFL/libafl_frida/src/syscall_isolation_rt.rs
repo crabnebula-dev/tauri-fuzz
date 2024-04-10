@@ -20,8 +20,8 @@ use libafl::{
     inputs::{HasTargetBytes, Input},
     Error,
 };
+use policies::engine::{Context, FunctionPolicy, FuzzPolicy};
 use rangemap::RangeMap;
-use tauri_fuzz_tools::policies::{Context, FunctionPolicy, FuzzPolicy};
 
 use crate::helper::FridaRuntime;
 #[cfg(unix)]

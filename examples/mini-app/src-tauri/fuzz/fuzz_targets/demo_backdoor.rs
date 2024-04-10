@@ -1,11 +1,11 @@
+use fuzzer::tauri_utils::{
+    create_invoke_payload, invoke_command_minimal, mock_builder_minimal, CommandArgs,
+};
 use libafl::inputs::{BytesInput, HasBytesVec};
 use libafl::prelude::ExitKind;
 use tauri::test::{mock_context, noop_assets, MockRuntime};
 use tauri::App as TauriApp;
 use tauri::InvokePayload;
-use tauri_fuzz_tools::{
-    create_invoke_payload, invoke_command_minimal, mock_builder_minimal, CommandArgs,
-};
 
 const COMMAND_NAME: &str = "tauri_cmd_with_backdoor";
 
@@ -30,11 +30,11 @@ pub fn main() {
     };
 
     println!("Starting the fuzzer...");
-    fuzzer::main(
+    fuzzer::fuzz_main(
         harness,
         options,
         addr,
-        fuzzer::policies::file_policy::no_file_access(),
+        policies::file_policy::no_file_access(),
     );
 }
 

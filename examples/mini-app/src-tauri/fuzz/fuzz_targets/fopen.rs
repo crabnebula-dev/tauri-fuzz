@@ -1,11 +1,11 @@
+use fuzzer::tauri_utils::{
+    create_invoke_payload, invoke_command_minimal, mock_builder_minimal, CommandArgs,
+};
 use libafl::inputs::{BytesInput, HasBytesVec};
 use libafl::prelude::ExitKind;
 use tauri::test::{mock_context, noop_assets, MockRuntime};
 use tauri::App as TauriApp;
 use tauri::InvokePayload;
-use tauri_fuzz_tools::{
-    create_invoke_payload, invoke_command_minimal, mock_builder_minimal, CommandArgs,
-};
 
 const COMMAND_NAME: &str = "fopen";
 
@@ -24,11 +24,11 @@ pub fn main() {
         let _res = invoke_command_minimal(app, create_payload(input.bytes()));
         ExitKind::Ok
     };
-    fuzzer::main(
+    fuzzer::fuzz_main(
         harness,
         options,
         addr as usize,
-        fuzzer::policies::file_policy::no_file_access(),
+        policies::file_policy::no_file_access(),
     );
 }
 
@@ -62,7 +62,7 @@ mod test {
                 harness,
                 &options,
                 addr as usize,
-                fuzzer::policies::file_policy::no_file_access(),
+                policies::file_policy::no_file_access(),
             )
             .is_ok();
         }

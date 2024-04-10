@@ -11,18 +11,12 @@ color-backtrace = "0.5"
 tauri = { workspace = true, features = ["api-all"] }
 tauri-utils = { workspace = true }
 mini-app = { path = ".." }
-tauri_fuzz_tools = { workspace = true }
-libafl = { workspace = true }
-libafl_bolts = { workspace = true }
-libafl_frida = { workspace = true }
-libafl_targets = { workspace = true }
+policies = { workspace = true }
+fuzzer = { workspace = true, features = ["tauri"] }
 frida-gum = { workspace = true }
 tracing = "0.1.37"
 tracing-subscriber = "0.3.17"
-
-[lib]
-name = "fuzzer"
-path = "fuzzer/lib.rs"
+libafl = { workspace = true }
 
 [[bin]]
 name = "tauri_cmd_1"

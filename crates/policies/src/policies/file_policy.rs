@@ -1,7 +1,7 @@
 #![allow(dead_code)]
+use crate::engine::{FunctionPolicy, FuzzPolicy, Rule, RuleError};
 use crate::policies::{block_on_entry, LIBC};
 use std::ffi::CStr;
-use tauri_fuzz_tools::policies::{FunctionPolicy, FuzzPolicy, Rule, RuleError};
 
 pub fn no_file_access() -> FuzzPolicy {
     vec![

@@ -43,11 +43,15 @@ use libafl_frida::{
     syscall_isolation_rt::SyscallIsolationRuntime,
 };
 use libafl_targets::cmplog::CmpLogObserver;
-use tauri_fuzz_tools::policies::FuzzPolicy;
+use policies::engine::FuzzPolicy;
 
 /// The main fn, usually parsing parameters, and starting the fuzzer
-pub fn main<H>(harness: H, options: FuzzerOptions, tauri_cmd_address: usize, policy: FuzzPolicy)
-where
+pub fn fuzz_main<H>(
+    harness: H,
+    options: FuzzerOptions,
+    tauri_cmd_address: usize,
+    policy: FuzzPolicy,
+) where
     H: FnMut(&BytesInput) -> ExitKind,
 {
     color_backtrace::install();

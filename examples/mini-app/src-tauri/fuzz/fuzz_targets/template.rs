@@ -4,7 +4,7 @@ use libafl::prelude::ExitKind;
 use tauri::test::{mock_builder, mock_context, noop_assets, MockRuntime};
 use tauri::App as TauriApp;
 use tauri::InvokePayload;
-use tauri_fuzz_tools::{create_invoke_payload, invoke_command_minimal, CommandArgs};
+use fuzzer::tauri_utils::{create_invoke_payload, invoke_command_minimal, CommandArgs};
 
 /// The name of Tauri command you want to fuzz
 /// #CUSTOMIZE
@@ -20,13 +20,13 @@ pub fn main() {
     let options = fuzzer::get_fuzzer_options(COMMAND_NAME, fuzz_dir);
 
     // Start the fuzzer
-    fuzzer::main(
+    fuzzer::fuzz_main(
         harness,
         options,
         ptr as usize,
         // The policy we want to apply
         // #CUSTOMIZE
-        fuzzer::policies::no_policy(),
+        policies::no_policy(),
     );
 }
 

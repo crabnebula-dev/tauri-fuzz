@@ -1,9 +1,9 @@
 #![allow(unused_imports)]
 use env_logger;
+use fuzzer::tauri_utils::{create_invoke_payload, invoke_command, CommandArgs};
 use log::trace;
 use mini_app::*;
 use tauri::test::{mock_builder, mock_context, noop_assets};
-use tauri_fuzz_tools::{create_invoke_payload, invoke_command, CommandArgs};
 
 fn main() {
     env_logger::init();

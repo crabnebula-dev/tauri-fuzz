@@ -1,4 +1,4 @@
-use tauri_fuzz_tools::policies::{FuzzPolicy, RuleError};
+use crate::engine::{FuzzPolicy, RuleError};
 pub mod file_policy;
 
 #[cfg(unix)]
