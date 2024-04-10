@@ -38,7 +38,7 @@ jobs:
   Build-and-test-Fuzzer:
     strategy:
       matrix:
-          os: [ubuntu-latest] #[ubuntu-latest, windows-latest, macOS-latest]
+          os: [ubuntu-latest, windows-latest] #[ubuntu-latest, windows-latest, macOS-latest]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 45
     steps:
@@ -63,7 +63,7 @@ jobs:
         with:
           cache-all-crates: true
           cache-on-failure: false
-      
+
         ## Maybe use this instead https://github.com/actions/checkout/issues/287#issuecomment-1830291196
       - name: Checkout Submodule
         run: git submodule update --init --recursive

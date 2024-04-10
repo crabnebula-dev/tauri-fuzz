@@ -552,7 +552,7 @@ InvokePayload {
     - issue seems to come from the `tauri-fuzz-tools` crate
 - From experiments `tauri_fuzz_tools` tests 
     - fails to run from workspace directory with `cargo t`
-        - executable produced is bigger than the succesful one
+        - executable produced is bigger than the successful one
     - run fine from workspace directory with `cargo t -p tauri_fuzz_tools`
         - executable produced is smaller than the failing one
     - run fine when executing `cargo t` from the crate directory
