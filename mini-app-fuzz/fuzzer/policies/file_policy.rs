@@ -11,30 +11,24 @@ mod file_policy_impl {
     use std::ffi::CStr;
     use tauri_fuzz_tools::policies::{FunctionPolicy, FuzzPolicy, Rule, RuleError};
 
+    // Functions that are monitored when it comes to file system access
+    const MONITORED_FUNCTIONS: [&str; 3] = ["fopen", "open", "open64"];
+
     pub fn no_file_access() -> FuzzPolicy {
-        vec![
-            FunctionPolicy {
-                name: "fopen".into(),
-                lib: LIBC.into(),
-                rule: Rule::OnEntry(block_on_entry),
-                description: "Access to [fopen] denied".into(),
-                nb_parameters: 2,
-            },
-            FunctionPolicy {
-                name: "open".into(),
-                lib: LIBC.into(),
-                rule: Rule::OnEntry(block_on_entry),
-                description: "Access to [open] denied".into(),
-                nb_parameters: 2,
-            },
-            FunctionPolicy {
-                name: "open64".into(),
-                lib: LIBC.into(),
-                rule: Rule::OnEntry(block_on_entry),
-                description: "Access to [open64] denied".into(),
-                nb_parameters: 2,
-            },
-        ]
+        MONITORED_FUNCTIONS
+            .iter()
+            .map(|f| {
+                let name: String = (*f).into();
+                let description = format!("Access to [{}] denied", f);
+                FunctionPolicy {
+                    name,
+                    lib: LIBC.into(),
+                    rule: Rule::OnEntry(block_on_entry),
+                    description,
+                    nb_parameters: 2,
+                }
+            })
+            .collect()
     }
 
     // FLAGS value for the [open], [fopen] functions
@@ -51,34 +45,25 @@ mod file_policy_impl {
     }
 
     pub fn read_only_access() -> FuzzPolicy {
-        vec![
-            FunctionPolicy {
-                name: "fopen".into(),
-                lib: LIBC.into(),
-                rule: Rule::OnEntry(read_only_flag),
-                description: "Access to [fopen] with write access denied".into(),
-                nb_parameters: 2,
-            },
-            FunctionPolicy {
-                name: "open".into(),
-                lib: LIBC.into(),
-                rule: Rule::OnEntry(read_only_flag),
-                description: "Access to [open] with write access denied".into(),
-                nb_parameters: 2,
-            },
-            FunctionPolicy {
-                name: "open64".into(),
-                lib: LIBC.into(),
-                rule: Rule::OnEntry(read_only_flag),
-                description: "Access to [open64] with write access denied".into(),
-                nb_parameters: 2,
-            },
-        ]
+        MONITORED_FUNCTIONS
+            .iter()
+            .map(|f| {
+                let name: String = (*f).into();
+                let description = format!("Access to [{}] with write access is denied", f);
+                FunctionPolicy {
+                    name,
+                    lib: LIBC.into(),
+                    rule: Rule::OnEntry(read_only_flag),
+                    description,
+                    nb_parameters: 2,
+                }
+            })
+            .collect()
     }
 
     /// Checks if the filename contained in the first register is part of the blocked files
     fn rule_no_access_to_filenames(registers: &Vec<usize>) -> Result<bool, RuleError> {
-        let mut filename: &str = "toto";
+        let filename: &str;
         // Pointers in registers are supposed to be valid since they're sent from frida_gum
         unsafe {
             // the first register should contain a pointer to the name of the file being accessed
@@ -90,6 +75,27 @@ mod file_policy_impl {
         Ok(!BLOCKED_FILENAMES
             .iter()
             .any(|blocked_filename| filename.ends_with(blocked_filename)))
+    }
+
+    /// Block access to file with name [`filename`].
+    pub fn no_access_to_filenames() -> FuzzPolicy {
+        MONITORED_FUNCTIONS
+            .iter()
+            .map(|f| {
+                let name: String = (*f).into();
+                let description = format!(
+                    "Access to {} denied. Blocked files are {:?}",
+                    f, BLOCKED_FILENAMES
+                );
+                FunctionPolicy {
+                    name,
+                    lib: LIBC.into(),
+                    rule: Rule::OnEntry(rule_no_access_to_filenames),
+                    description,
+                    nb_parameters: 2,
+                }
+            })
+            .collect()
     }
 }
 
