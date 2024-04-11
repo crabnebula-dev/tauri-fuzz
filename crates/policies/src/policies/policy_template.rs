@@ -9,37 +9,35 @@ pub fn no_file_access() -> FuzzPolicy {
     vec![
         FunctionPolicy {
             // Name of the function monitored
-            name: "fopen".into(),
+            // Ex: "open".into()    // for filesystem access
+            name: todo!(),
 
             // Library in which the function monitored resides.
             // If it's a Rust crate, due to static linking the lib will
-            // corresponds to the binary
+            // corresponds to the binary name
             // If it's libc it's a dynamic library you can give the libc name directly
-            lib: LIBC.into(),
+            // Ex: "libc".into()   // "open" is in the libc library
+            lib: todo!(),
 
             // Rule that the function will need to follow to respect the `FunctionPolicy`
+            // Ex: Rule::OnEntry(block_on_entry)  // to block on function entry
             rule: Rule::OnEntry(block_on_entry),
 
             // Description used when an execution does not respect the rule specified above
-            description: "Access to [fopen] denied".into(),
+            // Ex: "Access to function [open] denied"
+            description: todo!(),
 
             // Number of parameters the function takes
-            nb_parameters: 2,
+            // Ex: 2    // The function "open" takes 2 parameters
+            nb_parameters: todo!(),
         },
-        // We also monitor a second function that can violate our security policy
+        // We can monitor any number of functions that can violate our security policy
         FunctionPolicy {
-            name: "open".into(),
-            lib: LIBC.into(),
-            rule: Rule::OnEntry(block_on_entry),
-            description: "Access to [open] denied".into(),
-            nb_parameters: 2,
-        },
-        FunctionPolicy {
-            name: "open64".into(),
-            lib: LIBC.into(),
-            rule: Rule::OnEntry(block_on_entry),
-            description: "Access to [open64] denied".into(),
-            nb_parameters: 2,
+            name: todo!(),
+            lib: todo!(),
+            rule: todo!(),
+            description: todo!(),
+            nb_parameters: todo!(),
         },
     ]
 }

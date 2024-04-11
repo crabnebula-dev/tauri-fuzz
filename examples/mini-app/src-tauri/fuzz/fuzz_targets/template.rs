@@ -7,8 +7,8 @@ use tauri::InvokePayload;
 use fuzzer::tauri_utils::{create_invoke_payload, invoke_command_minimal, CommandArgs};
 
 /// The name of Tauri command you want to fuzz
-/// #CUSTOMIZE
-const COMMAND_NAME: &str = "my_tauri_command";
+/// Ex: tauri_cmd_1
+const COMMAND_NAME: &str = todo!();
 
 pub fn main() {
     // Take the function pointer to the harness and send it to the fuzzer
@@ -25,8 +25,8 @@ pub fn main() {
         options,
         ptr as usize,
         // The policy we want to apply
-        // #CUSTOMIZE
-        policies::no_policy(),
+        // Ex: policies::no_policy()
+        todo!(),
     );
 }
 
@@ -57,8 +57,12 @@ fn harness(input: &BytesInput) -> ExitKind {
 }
 
 /// Helper code to create an `InvokePayload` to call your Tauri command
-/// #CUSTOMIZE
 fn create_payload(bytes: &[u8]) -> InvokePayload {
+    // This function needs to be customized depending on the tauri command invoked
+    // The code below is an example of a tauri command that takes a `String` parameter
+    // that is names "param1".
+    todo!(); 
+
     let string_input = String::from_utf8_lossy(bytes).to_string();
 
     // Prepare the parameters of the Tauri command
