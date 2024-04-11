@@ -34,6 +34,7 @@ pub fn no_file_access() -> FuzzPolicy {
             description: "Access to [open] denied".into(),
             nb_parameters: 2,
         },
+        // We also monitor a third function that can violate our security policy
         FunctionPolicy {
             name: "open64".into(),
             lib: LIBC.into(),
