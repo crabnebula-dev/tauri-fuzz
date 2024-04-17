@@ -15,6 +15,7 @@ policies = { workspace = true }
 serde = { version = "1.0.197", optional = true }
 serde_json = { version = "1.0.115", optional = true }
 tauri = { workspace = true, optional = true }
+log = "0.4"
 
 [features]
 tauri = ["dep:serde", "dep:serde_json", "dep:tauri"]

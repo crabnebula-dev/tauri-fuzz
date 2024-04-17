@@ -465,7 +465,7 @@ InvokePayload {
             "options": Object {},       // command parameter
         },
     },
-}
+}k
 ```
 - Don't forget to configure the `allowlist` to allow the scope
 
@@ -483,3 +483,93 @@ InvokePayload {
     - `LibAFL` is also a Rust workspace itself so we had to `exclude = ["LibAFl"]` it from the root `Cargo.toml`
     - `git config submodule.recurse = true` do not seem to work to pull recursively the last LibAFL commit
 - Writing user guide to
+
+
+
+## Windows
+
+### Issues
+
+#### Troubles building fuzzer for windows with LibAFL
+
+- execution issue which does not appear when commenting calls to the LibAFL fuzzer
+- using the `msvc` toolchain
+    - building works fine
+    - we get `(exit code: 0xc0000139, STATUS_ENTRYPOINT_NOT_FOUND)` when running the binary
+    - this happens when windows fails to load a dll
+        - [dependencywalker](https://www.dependencywalker.com/) to investigate can help but now is deprecated
+        - make sure that there is no discrepancy between loader version and compilation toolchain
+- using the `windows-gnu` toolchain
+    - I need to install `gcc` for linking
+- what toolchain should I use?
+    - depends on which dynamic library I need to link to
+    - look into libafl repo for hints
+        - in github action we see that they use the windows default stable toolchain
+        - that should be `msvc`
+- Error found `TaskEntryDialog` entrypoint could not be found
+    - running the fuzzer from windows ui
+        - or using [cbc](https://ten0s.github.io/blog/2022/07/01/debugging-dll-loading-errors)
+    - Dependency walker shows the missing modules
+        - one of the main missing module is `API-MS-WIN-CORE`
+    - Using `ProcessMonitor` with a filter on `tauri_cmd_1.exe`
+        - run the executable and you get all the related events
+- Big chances it is related to `tauri-build` which does a lot in windows
+    - reintroduce a `build.rs` file with `tauri_build::build()`
+    - Find a way to have a generic and minimal `tauri.conf.json` for the fuzz directory
+
+#### `frida_gum` does not find any symbol or export in the Rust binary
+
+- check symbols manually with equivalent of `nm` which is `dumpbin.exe`
+    - use developer terminal to use `dumpbin.exe` easily
+    - Windows executables are stripped of any export symbols
+- Our previous approach used debug symbols to find the native pointer to the harness
+    - debug symbols are not available on windows (in the file directly but separate ".pdb" file)
+    - We change so we use the raw address provided at the beginning to create the `NativePointer`
+
+#### No display from crash result
+
+- When running the fuzzer the crash happens but nothing is displayed
+- We change the panic hook order such that original panic hook is executed before the fuzzer panic hook
+
+#### Error status of crashed program in fuzzer
+
+- In windows the error status chosen by LibAFL is 1 instead of 134
+
+#### Find equivalent of libc functions 
+
+- Example with finding a CRT function that is used to open a file 
+- Debug a function that is opening a file with Visual Studio and tracks the execution
+    - fs.rs file needs to be provided.
+        - It's in `C:\Users\alex-cn\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib\rustlib\src\rust\library\std\src\sys\windows\fs.rs`
+    - Find the function called `c::CreateFileW` used t
+    - in the `c` directory find that `CreateFileW` comes from the `kernel32` dll
+- Check Rust source code and finds the OS-specific implementation 
+
+#### Tests show `tauri_fuzz_tools-917323a62e294d07.exe write_foo (exit code: 0xc0000139, STATUS_ENTRYPOINT_NOT_FOUND)`
+
+- This is similar error message to previous issue which was missing `tauri_build::build()`
+    - checked that build script is executed to build the tests
+    - issue seems to come from the `tauri-fuzz-tools` crate
+- From experiments `tauri_fuzz_tools` tests 
+    - fails to run from workspace directory with `cargo t`
+        - executable produced is bigger than the successful one
+    - run fine from workspace directory with `cargo t -p tauri_fuzz_tools`
+        - executable produced is smaller than the failing one
+    - run fine when executing `cargo t` from the crate directory
+    - runs fine when putting `tauri_fuzz_tools` as the sole default member of the workspace
+    - fails when putting `tauri_fuzz_tools` as default member with any other member
+- Adding a Windows Manifest file works to remove the error message
+    - https://github.com/tauri-apps/tauri/pull/4383/files
+    - Does not explain why the compilation worked in certain cases but not in other =(
+
+#### Fetching values from register does not give expected value
+
+- the policy "block_file_by_names" does not work
+- Windows do not use utf-8 encoding but utf-16 for strings
+    - use the `windows` crate to import correct windows type and do type conversion
+
+### Tools for debugging
+
+- `ProcessMonitor` to see all the events related to a process
+- `DependencyWalker` to investigate issue related to modules/dlls
+

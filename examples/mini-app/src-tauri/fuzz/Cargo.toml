@@ -4,10 +4,13 @@ version = "0.0.0"
 publish = false
 edition = "2021"
 
+[build-dependencies]
+tauri-build = { workspace = true }
+
 [dependencies]
 log = "0.4"
 env_logger = "*"
-color-backtrace = "0.5"
+color-backtrace = "0.6"
 tauri = { workspace = true, features = ["api-all"] }
 tauri-utils = { workspace = true }
 mini-app = { path = ".." }
@@ -60,7 +63,11 @@ doc = false
 [[bin]]
 name = "demo_backdoor"
 path = "fuzz_targets/demo_backdoor.rs"
+test = false
+doc = false
 
 [[bin]]
 name = "demo_sql_injection"
 path = "fuzz_targets/demo_sql_injection.rs"
+test = false
+doc = false
