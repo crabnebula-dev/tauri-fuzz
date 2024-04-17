@@ -52,6 +52,7 @@ where
 {
     color_backtrace::install();
     env_logger::init();
+    log::info!("Starting");
     unsafe {
         // match fuzz_test(harness, &options, tauri_cmd_address, policy) {
         match fuzz(harness, &options, tauri_cmd_address, policy) {
