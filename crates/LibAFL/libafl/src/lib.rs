@@ -5,6 +5,7 @@ Welcome to `LibAFL`
 /*! */
 #![cfg_attr(feature = "document-features", doc = document_features::document_features!())]
 #![allow(incomplete_features)]
+#![allow(static_mut_refs)]
 #![no_std]
 // For `type_eq`
 #![cfg_attr(nightly, feature(specialization))]

@@ -8,6 +8,7 @@ Additional documentation is available in [the `LibAFL` book](https://aflplus.plu
 #![deny(rustdoc::broken_intra_doc_links)]
 #![deny(clippy::all)]
 #![deny(clippy::pedantic)]
+#![allow(static_mut_refs)]
 #![allow(
     clippy::unreadable_literal,
     clippy::type_repetition_in_bounds,
