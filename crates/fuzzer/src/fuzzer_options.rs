@@ -57,7 +57,8 @@ impl From<SimpleFuzzerConfig> for FuzzerOptions {
             remote_broker_addr: None,
 
             // Settings for Frida stalker
-            harness: None,
+            harness: std::env::current_exe().ok(),
+            // harness: None,
             libs_to_instrument: vec![],
             disable_excludes: true,
             dont_instrument: vec![],

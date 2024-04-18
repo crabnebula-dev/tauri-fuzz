@@ -24,7 +24,7 @@ pub fn tauri_cmd_1(input: &str) -> String {
 #[tauri::command]
 /// Crash on input `100`
 pub fn tauri_cmd_2(input: u32) -> String {
-    log::debug!("[tauri_cmd_2] Entering with input: {}", input);
+    // log::debug!("[tauri_cmd_2] Entering with input: {}", input);
     if input == 100 {
         panic!("[mini-app] Crashing! =)");
     }

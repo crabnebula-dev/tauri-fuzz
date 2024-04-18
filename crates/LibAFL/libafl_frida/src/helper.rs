@@ -31,7 +31,6 @@ use rangemap::RangeMap;
 #[cfg(all(feature = "cmplog", target_arch = "aarch64"))]
 use crate::cmplog_rt::CmpLogRuntime;
 use crate::coverage_rt::CoverageRuntime;
-use crate::syscall_isolation_rt::SyscallIsolationRuntime;
 #[cfg(unix)]
 use crate::{asan::asan_rt::AsanRuntime, drcov_rt::DrCovRuntime};
 
@@ -167,7 +166,7 @@ impl FridaInstrumentationHelperBuilder {
     #[must_use]
     pub fn disable_excludes(self, disabled: bool) -> Self {
         Self {
-            disable_excludes: disabled,
+        disable_excludes: disabled,
             ..self
         }
     }
@@ -297,14 +296,7 @@ impl FridaInstrumentationHelperBuilder {
             runtimes
                 .borrow_mut()
                 .init_all(gum, &ranges.borrow(), &module_map);
-        } else {
-            // The SyscallIsolationRuntime does not use the stalker
-            let mut tmp_runtimes = (*runtimes).borrow_mut();
-            if let Some(rt) = tmp_runtimes.match_first_type_mut::<SyscallIsolationRuntime>() {
-                SyscallIsolationRuntime::init(rt, gum, &ranges.borrow(), &module_map);
-            }
         }
-
         let transformer = FridaInstrumentationHelper::build_transformer(gum, &ranges, &runtimes);
 
         #[cfg(unix)]
@@ -395,7 +387,7 @@ where
     let res = list.into_iter().any(|path| {
         let path = path.as_ref();
         log::trace!(
-            "path: {:?}\tmodule_path: {:?}\tpath_canon: {:?}\tmod_canon: {:?}",
+            "\npath: {:?}\nmodule_path: {:?}\npath_canon: {:?}\nmod_canon: {:?}",
             path,
             module_name,
             fs::canonicalize(path).ok(),
@@ -503,18 +495,17 @@ where
             #[cfg(unix)]
             let instr_size = instr.bytes().len();
             let address = instr.address();
-            // log::trace!("block @ {:x} transformed to {:x}", address, output.writer().pc());
-
+        // log::trace!("block @ {:x} transformed to {:x}", address, output.writer().pc());
             if ranges.borrow().contains_key(&(address as usize)) {
                 let mut runtimes = (*runtimes).borrow_mut();
                 // log::error!("runtimes: {:?}", runtimes);
                 if first {
                     first = false;
-                    // log::info!(
-                    //     "block @ {:x} transformed to {:x}",
-                    //     address,
-                    //     output.writer().pc()
-                    // );
+                    log::info!(
+                        "block @ {:x} transformed to {:x}",
+                        address,
+                        output.writer().pc()
+                    );
                     if let Some(rt) = runtimes.match_first_type_mut::<CoverageRuntime>() {
                         rt.emit_coverage_mapping(address, output);
                     }
@@ -524,13 +515,6 @@ where
                         basic_block_start = address;
                     }
                 }
-
-                // #[cfg(unix)]
-                // if let Some(rt) = runtimes.match_first_type_mut::<SyscallIsolationRuntime>() {
-                //     SyscallIsolationRuntime::is_interesting_instruction(
-                //         rt, capstone, address, instr,
-                //     );
-                // }
 
                 #[cfg(unix)]
                 let res = if let Some(_rt) = runtimes.match_first_type_mut::<AsanRuntime>() {

@@ -37,6 +37,7 @@ use libafl_bolts::{
 
 use libafl_frida::{
     cmplog_rt::CmpLogRuntime,
+    drcov_rt::DrCovRuntime,
     coverage_rt::{CoverageRuntime, MAP_SIZE},
     executor::FridaInProcessExecutor,
     helper::FridaInstrumentationHelper,
@@ -88,16 +89,16 @@ where
         (|state: Option<_>, mut mgr: LlmpRestartingEventManager<_, _>, _core_id| {
             let gum = Gum::obtain();
 
+             let syscall_blocker =
+            SyscallIsolationRuntime::new(policy.clone(), tauri_cmd_address).unwrap();
+
             let coverage = CoverageRuntime::new();
             let cmplog = CmpLogRuntime::new();
-            // TODO Change the way to pass the tauri app lib name
-            let syscall_blocker =
-                SyscallIsolationRuntime::new(policy.clone(), tauri_cmd_address).unwrap();
-
+            let drcov = DrCovRuntime::new();
             let mut frida_helper = FridaInstrumentationHelper::new(
                 &gum,
                 options,
-                tuple_list!(coverage, cmplog, syscall_blocker),
+                tuple_list!(coverage, cmplog, drcov, syscall_blocker),
             );
 
             // log::info!("Frida helper instantiated: {:#?}", frida_helper);

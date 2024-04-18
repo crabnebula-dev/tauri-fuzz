@@ -29,11 +29,10 @@ use crate::utils::frida_to_cs;
 
 /// `Frida`-based binary-only instrumentation that intercepts calls to system calls
 pub struct SyscallIsolationRuntime {
-    // libc_listeners: Vec<LibCListener>,
     /// A listener to the harness function we are fuzzing
     harness_listener: HarnessListener,
     /// Listeners to all the libc functions that are being monitored
-    libc_listeners: Vec<FunctionListener>,
+    function_listeners: Vec<FunctionListener>,
     /// Flag to indicate when the runtime is activated
     activated: Arc<Mutex<bool>>,
 }
@@ -169,11 +168,11 @@ impl FridaRuntime for SyscallIsolationRuntime {
             self.harness_listener.function_pointer,
             &mut self.harness_listener,
         );
-        for listener in self.libc_listeners.iter_mut() {
+        for listener in self.function_listeners.iter_mut() {
             interceptor.attach(listener.function_pointer, listener);
         }
 
-        // Activate the libc interceptors
+        // Activate the function listeners
         let flag = Arc::clone(&self.activated);
 
         // NOTE this is not the ideal way but seems to work
@@ -262,7 +261,7 @@ impl SyscallIsolationRuntime {
 
         let res = SyscallIsolationRuntime {
             harness_listener,
-            libc_listeners: listeners,
+            function_listeners: listeners,
             activated: flag,
         };
 
@@ -413,9 +412,9 @@ impl Debug for SyscallIsolationRuntime {
         let mut dbg_me = f.debug_struct("SyscallIsolationRuntime");
         dbg_me.field("harness_listener", &self.harness_listener);
         dbg_me.field(
-            "libc_listeners",
+            "function_listeners",
             &self
-                .libc_listeners
+            .function_listeners
                 .iter()
                 .map(|l| l.function_name.clone())
                 .collect::<Vec<String>>(),
