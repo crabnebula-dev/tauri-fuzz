@@ -7,12 +7,12 @@ use tauri::InvokePayload;
 mod utils;
 use utils::*;
 
-
 const COMMAND_NAME: &str = "sql_transaction";
 
 pub fn main() {
     let ptr = mini_app::sql::sql_transaction as *const ();
-    let options = fuzzer::SimpleFuzzerConfig::from_toml(fuzz_config(), COMMAND_NAME, fuzz_dir()).into();
+    let options =
+        fuzzer::SimpleFuzzerConfig::from_toml(fuzz_config(), COMMAND_NAME, fuzz_dir()).into();
     let harness = |input: &BytesInput| {
         let app = setup_tauri_mock().expect("Failed to init Tauri app");
         invoke_command_minimal(app, create_payload(input.bytes()));
@@ -43,10 +43,11 @@ mod test {
 
     #[test]
     #[ignore] // We currently ignore the test since it requires an initialization of the SQL
-    // database TODO
+              // database TODO
     fn no_crash_sql_transaction() {
         let addr = mini_app::sql::sql_transaction as *const ();
-        let options = fuzzer::SimpleFuzzerConfig::from_toml(fuzz_config(), COMMAND_NAME, fuzz_dir()).into();
+        let options =
+            fuzzer::SimpleFuzzerConfig::from_toml(fuzz_config(), COMMAND_NAME, fuzz_dir()).into();
         let harness = |_input: &BytesInput| {
             let app = setup_tauri_mock().expect("Failed to init Tauri app");
             invoke_command_minimal(app, create_payload("foo".as_bytes()));
@@ -54,8 +55,8 @@ mod test {
         };
         unsafe {
             assert!(
-            fuzzer::fuzz_test(harness, &options, addr as usize, policies::no_policy()).is_ok()
-        );
+                fuzzer::fuzz_test(harness, &options, addr as usize, policies::no_policy()).is_ok()
+            );
         }
     }
 
@@ -66,7 +67,8 @@ mod test {
     #[ignore]
     fn hidden_crash_sql_transaction() {
         let addr = mini_app::sql::sql_transaction as *const ();
-        let options = fuzzer::SimpleFuzzerConfig::from_toml(fuzz_config(), COMMAND_NAME, fuzz_dir()).into();
+        let options =
+            fuzzer::SimpleFuzzerConfig::from_toml(fuzz_config(), COMMAND_NAME, fuzz_dir()).into();
         let harness = |_input: &BytesInput| {
             let app = setup_tauri_mock().expect("Failed to init Tauri app");
             invoke_command_minimal(app, create_payload("a'".as_bytes()));
@@ -79,13 +81,13 @@ mod test {
                 addr as usize,
                 policies::file_policy::no_file_access(),
             )
-                .is_ok();
+            .is_ok();
         }
     }
 
     #[test]
     #[ignore] // We currently ignore the test since it requires an initialization of the SQL
-    // database TODO
+              // database TODO
     fn crash_sql_transaction() {
         let exe = std::env::current_exe().expect("Failed to extract current executable");
         let status = std::process::Command::new(exe)

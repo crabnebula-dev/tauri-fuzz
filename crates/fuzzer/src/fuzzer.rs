@@ -37,8 +37,8 @@ use libafl_bolts::{
 
 use libafl_frida::{
     cmplog_rt::CmpLogRuntime,
-    drcov_rt::DrCovRuntime,
     coverage_rt::{CoverageRuntime, MAP_SIZE},
+    drcov_rt::DrCovRuntime,
     executor::FridaInProcessExecutor,
     helper::FridaInstrumentationHelper,
     syscall_isolation_rt::SyscallIsolationRuntime,
@@ -89,8 +89,8 @@ where
         (|state: Option<_>, mut mgr: LlmpRestartingEventManager<_, _>, _core_id| {
             let gum = Gum::obtain();
 
-             let syscall_blocker =
-            SyscallIsolationRuntime::new(policy.clone(), tauri_cmd_address).unwrap();
+            let syscall_blocker =
+                SyscallIsolationRuntime::new(policy.clone(), tauri_cmd_address).unwrap();
 
             let coverage = CoverageRuntime::new();
             let cmplog = CmpLogRuntime::new();
@@ -239,7 +239,11 @@ where
     launcher.launch()
 }
 
-// Fuzz just a single iteration for testing
+/// Fuzz just a single iteration. This is used for testing
+/// # Safety
+///
+/// `frida_gum::Gum::obtain()` is unsafe but the docs does not specify the safety conditions so I
+/// don't really know
 #[allow(dead_code)]
 pub unsafe fn fuzz_test<H>(
     mut frida_harness: H,
@@ -252,8 +256,6 @@ where
 {
     let monitor = MultiMonitor::new(|s| println!("{s}"));
     let mut mgr = libafl::events::simple::SimpleEventManager::new(monitor);
-
-    let state = None;
 
     let gum = Gum::obtain();
     let coverage = CoverageRuntime::new();
@@ -294,20 +296,18 @@ where
     let mut corpus_path = options.output.clone();
     corpus_path.pop();
     corpus_path.push("./corpus_discovered");
-    let mut state = state.unwrap_or_else(|| {
-        StdState::new(
-            // RNG
-            StdRand::with_seed(current_nanos()),
-            // Corpus that will be evolved, we keep it in memory for performance
-            CachedOnDiskCorpus::no_meta(corpus_path, 64).unwrap(),
-            // Corpus in which we store solutions (crashes in this example),
-            // on disk so the user can get them after stopping the fuzzer
-            OnDiskCorpus::new(options.output.clone()).unwrap(),
-            &mut feedback,
-            &mut objective,
-        )
-        .unwrap()
-    });
+    let mut state = StdState::new(
+        // RNG
+        StdRand::with_seed(current_nanos()),
+        // Corpus that will be evolved, we keep it in memory for performance
+        CachedOnDiskCorpus::no_meta(corpus_path, 64).unwrap(),
+        // Corpus in which we store solutions (crashes in this example),
+        // on disk so the user can get them after stopping the fuzzer
+        OnDiskCorpus::new(options.output.clone()).unwrap(),
+        &mut feedback,
+        &mut objective,
+    )
+    .unwrap();
 
     // Setup a basic mutator with a mutational stage
     let mutator = StdScheduledMutator::new(havoc_mutations().merge(tokens_mutations()));

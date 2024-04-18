@@ -11,8 +11,8 @@ use capstone::{
     arch::{self, BuildsCapstone},
     Capstone,
 };
-use frida_gum::instruction_writer::InstructionWriter;
 use frida_gum::{
+    instruction_writer::InstructionWriter,
     stalker::{StalkerIterator, StalkerOutput, Transformer},
     Gum, Module, ModuleDetails, ModuleMap, PageProtection,
 };

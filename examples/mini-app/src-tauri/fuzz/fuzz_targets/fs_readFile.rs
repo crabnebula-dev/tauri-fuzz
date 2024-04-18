@@ -47,7 +47,8 @@ fn harness(_input: &BytesInput) -> ExitKind {
 pub fn main() {
     // The function in which the fuzzer analysis will be applied
     let fuzzed_function = crate::harness as *const ();
-    let options = fuzzer::SimpleFuzzerConfig::from_toml(fuzz_config(), COMMAND_NAME, fuzz_dir()).into();
+    let options =
+        fuzzer::SimpleFuzzerConfig::from_toml(fuzz_config(), COMMAND_NAME, fuzz_dir()).into();
     fuzzer::fuzz_main(
         harness,
         options,
@@ -74,7 +75,8 @@ mod test {
     #[ignore]
     fn real_test_fs_readFile() {
         let addr = crate::harness as *const ();
-        let options = fuzzer::SimpleFuzzerConfig::from_toml(fuzz_config(), COMMAND_NAME, fuzz_dir()).into();
+        let options =
+            fuzzer::SimpleFuzzerConfig::from_toml(fuzz_config(), COMMAND_NAME, fuzz_dir()).into();
         unsafe {
             let _ = fuzzer::fuzz_test(
                 crate::harness,
@@ -82,7 +84,7 @@ mod test {
                 addr as usize,
                 policies::file_policy::no_file_access(),
             )
-                .is_ok();
+            .is_ok();
         }
     }
 

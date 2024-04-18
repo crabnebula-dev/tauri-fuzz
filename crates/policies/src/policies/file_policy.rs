@@ -2,7 +2,7 @@
 pub use file_policy_impl::*;
 
 // TODO make this a macro
-const BLOCKED_FILENAMES: [&'static str; 1] = ["foo.txt"];
+const BLOCKED_FILENAMES: [&str; 1] = ["foo.txt"];
 
 #[cfg(not(target_env = "msvc"))]
 mod file_policy_impl {
@@ -38,7 +38,7 @@ mod file_policy_impl {
     const ACCESS_MODE_MASK: usize = 3;
 
     // Check if the flag is READ_ONLY
-    fn read_only_flag(params: &Vec<usize>) -> Result<bool, RuleError> {
+    fn read_only_flag(params: &[usize]) -> Result<bool, RuleError> {
         let flag = params[1];
         let res = (flag & ACCESS_MODE_MASK) == READ_ONLY_FLAG;
         Ok(res)
@@ -62,7 +62,7 @@ mod file_policy_impl {
     }
 
     /// Checks if the filename contained in the first register is part of the blocked files
-    fn rule_no_access_to_filenames(registers: &Vec<usize>) -> Result<bool, RuleError> {
+    fn rule_no_access_to_filenames(registers: &[usize]) -> Result<bool, RuleError> {
         let filename: &str;
         // Pointers in registers are supposed to be valid since they're sent from frida_gum
         unsafe {

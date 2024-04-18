@@ -53,7 +53,7 @@ impl FunctionPolicy {
 // TODO use closure rather than functions
 /// ConditionOnParameters is a closure on the registers containing the parameters of the function.
 /// This can contain a value but also a pointer depending on the type of the parameters.
-pub type ConditionOnParameters = fn(&Vec<usize>) -> Result<bool, RuleError>;
+pub type ConditionOnParameters = fn(&[usize]) -> Result<bool, RuleError>;
 /// ConditionOnReturnValue is a closure on the value contained in the return value register
 /// This can contain a value but also a pointer depending on the type of the return value.
 pub type ConditionOnReturnValue = fn(usize) -> Result<bool, RuleError>;

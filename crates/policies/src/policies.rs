@@ -8,6 +8,6 @@ pub fn no_policy() -> FuzzPolicy {
     vec![]
 }
 
-pub(crate) fn block_on_entry(_: &Vec<usize>) -> Result<bool, RuleError> {
+pub(crate) fn block_on_entry(_: &[usize]) -> Result<bool, RuleError> {
     Ok(false)
 }

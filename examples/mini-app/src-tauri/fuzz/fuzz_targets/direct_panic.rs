@@ -17,7 +17,8 @@ fn setup_tauri_mock() -> Result<TauriApp<MockRuntime>, tauri::Error> {
 
 pub fn main() {
     let addr = mini_app::basic::direct_panic as *const () as usize;
-    let options = fuzzer::SimpleFuzzerConfig::from_toml(fuzz_config(), COMMAND_NAME, fuzz_dir()).into();
+    let options =
+        fuzzer::SimpleFuzzerConfig::from_toml(fuzz_config(), COMMAND_NAME, fuzz_dir()).into();
     let harness = |input: &BytesInput| {
         let app = setup_tauri_mock().expect("Failed to init Tauri app");
         invoke_command_minimal(app, create_payload(input.bytes()));
@@ -43,7 +44,8 @@ mod test {
     #[ignore]
     fn real_test_direct_panic() {
         let addr = mini_app::basic::direct_panic as *const ();
-        let options = fuzzer::SimpleFuzzerConfig::from_toml(fuzz_config(), COMMAND_NAME, fuzz_dir()).into();
+        let options =
+            fuzzer::SimpleFuzzerConfig::from_toml(fuzz_config(), COMMAND_NAME, fuzz_dir()).into();
         let harness = |input: &BytesInput| {
             let app = setup_tauri_mock().expect("Failed to init Tauri app");
             invoke_command_minimal(app, create_payload(input.bytes()));
@@ -51,7 +53,7 @@ mod test {
         };
         unsafe {
             let _ =
-            fuzzer::fuzz_test(harness, &options, addr as usize, policies::no_policy()).is_ok();
+                fuzzer::fuzz_test(harness, &options, addr as usize, policies::no_policy()).is_ok();
         }
     }
 

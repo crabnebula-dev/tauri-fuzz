@@ -52,7 +52,8 @@ mod test {
     #[ignore]
     fn hidden_read_foo_block_all_file_access() {
         let addr = mini_app::file_access::read_foo_file as *const ();
-        let options = fuzzer::SimpleFuzzerConfig::from_toml(fuzz_config(), COMMAND_NAME, fuzz_dir());
+        let options =
+            fuzzer::SimpleFuzzerConfig::from_toml(fuzz_config(), COMMAND_NAME, fuzz_dir());
         let harness = |input: &BytesInput| {
             let app = setup_tauri_mock().expect("Failed to init Tauri app");
             let _res = invoke_command_minimal(app, create_payload(input.bytes()));
@@ -65,7 +66,7 @@ mod test {
                 addr as usize,
                 policies::file_policy::no_file_access(),
             )
-                .is_ok();
+            .is_ok();
         }
     }
 
@@ -76,7 +77,8 @@ mod test {
     #[ignore]
     fn hidden_read_foo_block_access_to_foo() {
         let addr = mini_app::file_access::read_foo_file as *const ();
-        let options = fuzzer::SimpleFuzzerConfig::from_toml(fuzz_config(), COMMAND_NAME, fuzz_dir());
+        let options =
+            fuzzer::SimpleFuzzerConfig::from_toml(fuzz_config(), COMMAND_NAME, fuzz_dir());
         let harness = |input: &BytesInput| {
             let app = setup_tauri_mock().expect("Failed to init Tauri app");
             let _res = invoke_command_minimal(app, create_payload(input.bytes()));
@@ -89,7 +91,7 @@ mod test {
                 addr as usize,
                 policies::file_policy::no_access_to_filenames(),
             )
-                .is_ok();
+            .is_ok();
         }
     }
 
@@ -133,7 +135,8 @@ mod test {
     #[test]
     fn read_foo_accepted_by_readonly_policy() {
         let addr = mini_app::file_access::read_foo_file as *const ();
-        let options = fuzzer::SimpleFuzzerConfig::from_toml(fuzz_config(), COMMAND_NAME, fuzz_dir());
+        let options =
+            fuzzer::SimpleFuzzerConfig::from_toml(fuzz_config(), COMMAND_NAME, fuzz_dir());
         let harness = |input: &BytesInput| {
             let app = setup_tauri_mock().expect("Failed to init Tauri app");
             let _res = invoke_command_minimal(app, create_payload(input.bytes()));
@@ -146,7 +149,7 @@ mod test {
                 addr as usize,
                 policies::file_policy::read_only_access(),
             )
-                .is_ok();
+            .is_ok();
         }
     }
 }

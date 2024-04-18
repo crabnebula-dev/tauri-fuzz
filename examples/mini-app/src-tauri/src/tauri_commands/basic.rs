@@ -11,12 +11,8 @@ use std::collections::HashMap;
 pub fn tauri_cmd_1(input: &str) -> String {
     log::debug!("[tauri_cmd_1] Entering with input: {}", input);
     let mut bytes = input.bytes();
-    if bytes.next() == Some(b'a') {
-        if bytes.next() == Some(b'b') {
-            if bytes.next() == Some(b'c') {
-                panic!("[mini-app] Crashing! =)");
-            }
-        }
+    if bytes.next() == Some(b'a') && bytes.next() == Some(b'b') && bytes.next() == Some(b'c') {
+        panic!("[mini-app] Crashing! =)");
     }
     format!("Hello, you wrote {}!", input)
 }

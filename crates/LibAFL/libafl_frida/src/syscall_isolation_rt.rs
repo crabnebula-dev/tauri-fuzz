@@ -414,7 +414,7 @@ impl Debug for SyscallIsolationRuntime {
         dbg_me.field(
             "function_listeners",
             &self
-            .function_listeners
+                .function_listeners
                 .iter()
                 .map(|l| l.function_name.clone())
                 .collect::<Vec<String>>(),

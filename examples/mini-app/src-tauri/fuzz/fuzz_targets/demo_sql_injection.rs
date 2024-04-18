@@ -11,7 +11,8 @@ const COMMAND_NAME: &str = "sql_injection_vulnerability";
 
 pub fn main() {
     let ptr = mini_app::demo::sql_injection_vulnerability as *const ();
-    let options = fuzzer::SimpleFuzzerConfig::from_toml(fuzz_config(), COMMAND_NAME, fuzz_dir()).into();
+    let options =
+        fuzzer::SimpleFuzzerConfig::from_toml(fuzz_config(), COMMAND_NAME, fuzz_dir()).into();
     let harness = |input: &BytesInput| {
         let app = setup_tauri_mock().expect("Failed to init Tauri app");
         invoke_command_minimal(app, create_payload(input.bytes()));

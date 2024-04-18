@@ -22,7 +22,8 @@ fn setup_tauri_mock() -> Result<TauriApp<MockRuntime>, tauri::Error> {
 pub fn main() {
     println!("Starting demo...");
     let addr = mini_app::tauri_commands::demo::tauri_cmd_with_backdoor as *const () as usize;
-    let options = fuzzer::SimpleFuzzerConfig::from_toml(fuzz_config(), COMMAND_NAME, fuzz_dir()).into();
+    let options =
+        fuzzer::SimpleFuzzerConfig::from_toml(fuzz_config(), COMMAND_NAME, fuzz_dir()).into();
     let harness = |input: &BytesInput| {
         let app = setup_tauri_mock().expect("Failed to init Tauri app");
         invoke_command_minimal(app, create_payload(input.bytes()));
@@ -52,6 +53,5 @@ fn bytes_input_to_u32(bytes_input: &[u8]) -> u32 {
     for (dst, src) in array_input.iter_mut().zip(bytes_input) {
         *dst = *src
     }
-    let res = u32::from_be_bytes(array_input);
-    res
+    u32::from_be_bytes(array_input)
 }

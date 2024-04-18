@@ -1,5 +1,4 @@
 #![allow(unused_imports)]
-use env_logger;
 use fuzzer::tauri_utils::{create_invoke_payload, invoke_command, CommandArgs};
 use log::trace;
 use mini_app::*;

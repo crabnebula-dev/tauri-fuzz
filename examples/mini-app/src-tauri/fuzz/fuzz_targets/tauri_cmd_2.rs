@@ -17,7 +17,8 @@ fn setup_tauri_mock() -> Result<TauriApp<MockRuntime>, tauri::Error> {
 
 pub fn main() {
     let addr = mini_app::basic::tauri_cmd_2 as *const ();
-    let options = fuzzer::SimpleFuzzerConfig::from_toml(fuzz_config(), COMMAND_NAME, fuzz_dir()).into();
+    let options =
+        fuzzer::SimpleFuzzerConfig::from_toml(fuzz_config(), COMMAND_NAME, fuzz_dir()).into();
     let harness = |input: &BytesInput| {
         let app = setup_tauri_mock().expect("Failed to init Tauri app");
         invoke_command_minimal(app, create_payload(input.bytes()));
@@ -50,7 +51,8 @@ mod test {
     #[test]
     fn no_crash_tauri_cmd_2() {
         let addr = mini_app::basic::tauri_cmd_2 as *const ();
-        let options = fuzzer::SimpleFuzzerConfig::from_toml(fuzz_config(), COMMAND_NAME, fuzz_dir()).into();
+        let options =
+            fuzzer::SimpleFuzzerConfig::from_toml(fuzz_config(), COMMAND_NAME, fuzz_dir()).into();
         let harness = |_input: &BytesInput| {
             let app = setup_tauri_mock().expect("Failed to init Tauri app");
             invoke_command_minimal(app, create_payload(&1u32.to_be_bytes()));
@@ -58,8 +60,8 @@ mod test {
         };
         unsafe {
             assert!(
-            fuzzer::fuzz_test(harness, &options, addr as usize, policies::no_policy()).is_ok()
-        );
+                fuzzer::fuzz_test(harness, &options, addr as usize, policies::no_policy()).is_ok()
+            );
         }
     }
 
@@ -70,7 +72,8 @@ mod test {
     #[ignore]
     fn hidden_crash_tauri_cmd_2() {
         let addr = mini_app::basic::tauri_cmd_2 as *const ();
-        let options = fuzzer::SimpleFuzzerConfig::from_toml(fuzz_config(), COMMAND_NAME, fuzz_dir()).into();
+        let options =
+            fuzzer::SimpleFuzzerConfig::from_toml(fuzz_config(), COMMAND_NAME, fuzz_dir()).into();
         let harness = |_input: &BytesInput| {
             let app = setup_tauri_mock().expect("Failed to init Tauri app");
             invoke_command_minimal(app, create_payload(&100u32.to_be_bytes()));
@@ -83,7 +86,7 @@ mod test {
                 addr as usize,
                 policies::file_policy::no_file_access(),
             )
-                .is_ok();
+            .is_ok();
         }
     }
 

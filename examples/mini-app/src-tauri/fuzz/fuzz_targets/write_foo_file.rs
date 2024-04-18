@@ -21,7 +21,8 @@ fn setup_tauri_mock() -> Result<TauriApp<MockRuntime>, tauri::Error> {
 
 pub fn main() {
     let ptr = mini_app::tauri_commands::file_access::write_foo_file as *const ();
-    let options = fuzzer::SimpleFuzzerConfig::from_toml(fuzz_config(), COMMAND_NAME, fuzz_dir()).into();
+    let options =
+        fuzzer::SimpleFuzzerConfig::from_toml(fuzz_config(), COMMAND_NAME, fuzz_dir()).into();
     let harness = |input: &BytesInput| {
         let app = setup_tauri_mock().expect("Failed to init Tauri app");
         invoke_command_minimal(app, create_payload(input.bytes()));
@@ -54,7 +55,8 @@ mod test {
     #[ignore]
     fn hidden_block_write_foo_file() {
         let addr = mini_app::file_access::write_foo_file as *const ();
-        let options = fuzzer::SimpleFuzzerConfig::from_toml(fuzz_config(), COMMAND_NAME, fuzz_dir()).into();
+        let options =
+            fuzzer::SimpleFuzzerConfig::from_toml(fuzz_config(), COMMAND_NAME, fuzz_dir()).into();
         let harness = |input: &BytesInput| {
             let app = setup_tauri_mock().expect("Failed to init Tauri app");
             invoke_command_minimal(app, create_payload(input.bytes()));
@@ -67,7 +69,7 @@ mod test {
                 addr as usize,
                 policies::file_policy::read_only_access(),
             )
-                .is_ok();
+            .is_ok();
         }
     }
 

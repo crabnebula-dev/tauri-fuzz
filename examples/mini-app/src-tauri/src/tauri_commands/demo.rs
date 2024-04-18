@@ -21,7 +21,7 @@ pub fn tauri_cmd_with_backdoor(input: u32) -> String {
             println!("Sending secret content to my server")
         }
     }
-    return "Finished computations".into();
+    "Finished computations".into()
 }
 
 use mysql::{prelude::Queryable, Pool};
