@@ -6,6 +6,8 @@ use libafl::prelude::ExitKind;
 use tauri::test::{mock_context, noop_assets, MockRuntime};
 use tauri::App as TauriApp;
 use tauri::InvokePayload;
+mod utils;
+use utils::*;
 
 const COMMAND_NAME: &str = "tauri_cmd_with_backdoor";
 
@@ -20,12 +22,10 @@ fn setup_tauri_mock() -> Result<TauriApp<MockRuntime>, tauri::Error> {
 pub fn main() {
     println!("Starting demo...");
     let addr = mini_app::tauri_commands::demo::tauri_cmd_with_backdoor as *const () as usize;
-    let fuzz_dir = std::path::PathBuf::from(std::env!("CARGO_MANIFEST_DIR"));
-    let options = fuzzer::get_fuzzer_options(COMMAND_NAME, fuzz_dir);
-
+    let options = fuzzer::SimpleFuzzerConfig::from_toml(fuzz_config(), COMMAND_NAME, fuzz_dir()).into();
     let harness = |input: &BytesInput| {
         let app = setup_tauri_mock().expect("Failed to init Tauri app");
-        let _res = invoke_command_minimal(app, create_payload(input.bytes()));
+        invoke_command_minimal(app, create_payload(input.bytes()));
         ExitKind::Ok
     };
 

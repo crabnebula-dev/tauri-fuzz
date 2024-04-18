@@ -6,6 +6,8 @@ use libafl::prelude::ExitKind;
 use tauri::test::{mock_context, noop_assets, MockRuntime};
 use tauri::App as TauriApp;
 use tauri::InvokePayload;
+mod utils;
+use utils::*;
 
 const COMMAND_NAME: &str = "read_foo_file";
 
@@ -19,17 +21,16 @@ fn setup_tauri_mock() -> Result<TauriApp<MockRuntime>, tauri::Error> {
 
 pub fn main() {
     let addr = mini_app::tauri_commands::file_access::read_foo_file as *const () as usize;
-    let fuzz_dir = std::path::PathBuf::from(std::env!("CARGO_MANIFEST_DIR"));
-    let options = fuzzer::get_fuzzer_options(COMMAND_NAME, fuzz_dir);
+    let options = fuzzer::SimpleFuzzerConfig::from_toml(fuzz_config(), COMMAND_NAME, fuzz_dir());
     let harness = |input: &BytesInput| {
         let app = setup_tauri_mock().expect("Failed to init Tauri app");
-        let _res = invoke_command_minimal(app, create_payload(input.bytes()));
+        invoke_command_minimal(app, create_payload(input.bytes()));
         ExitKind::Ok
     };
 
     fuzzer::fuzz_main(
         harness,
-        options,
+        options.into(),
         addr,
         policies::file_policy::no_access_to_filenames(),
     );
@@ -51,8 +52,7 @@ mod test {
     #[ignore]
     fn hidden_read_foo_block_all_file_access() {
         let addr = mini_app::file_access::read_foo_file as *const ();
-        let fuzz_dir = std::path::PathBuf::from(std::env!("CARGO_MANIFEST_DIR"));
-        let options = fuzzer::get_fuzzer_options(COMMAND_NAME, fuzz_dir);
+        let options = fuzzer::SimpleFuzzerConfig::from_toml(fuzz_config(), COMMAND_NAME, fuzz_dir());
         let harness = |input: &BytesInput| {
             let app = setup_tauri_mock().expect("Failed to init Tauri app");
             let _res = invoke_command_minimal(app, create_payload(input.bytes()));
@@ -61,11 +61,11 @@ mod test {
         unsafe {
             let _ = fuzzer::fuzz_test(
                 harness,
-                &options,
+                &options.into(),
                 addr as usize,
                 policies::file_policy::no_file_access(),
             )
-            .is_ok();
+                .is_ok();
         }
     }
 
@@ -76,8 +76,7 @@ mod test {
     #[ignore]
     fn hidden_read_foo_block_access_to_foo() {
         let addr = mini_app::file_access::read_foo_file as *const ();
-        let fuzz_dir = std::path::PathBuf::from(std::env!("CARGO_MANIFEST_DIR"));
-        let options = fuzzer::get_fuzzer_options(COMMAND_NAME, fuzz_dir);
+        let options = fuzzer::SimpleFuzzerConfig::from_toml(fuzz_config(), COMMAND_NAME, fuzz_dir());
         let harness = |input: &BytesInput| {
             let app = setup_tauri_mock().expect("Failed to init Tauri app");
             let _res = invoke_command_minimal(app, create_payload(input.bytes()));
@@ -86,11 +85,11 @@ mod test {
         unsafe {
             let _ = fuzzer::fuzz_test(
                 harness,
-                &options,
+                &options.into(),
                 addr as usize,
                 policies::file_policy::no_access_to_filenames(),
             )
-            .is_ok();
+                .is_ok();
         }
     }
 
@@ -134,8 +133,7 @@ mod test {
     #[test]
     fn read_foo_accepted_by_readonly_policy() {
         let addr = mini_app::file_access::read_foo_file as *const ();
-        let fuzz_dir = std::path::PathBuf::from(std::env!("CARGO_MANIFEST_DIR"));
-        let options = fuzzer::get_fuzzer_options(COMMAND_NAME, fuzz_dir);
+        let options = fuzzer::SimpleFuzzerConfig::from_toml(fuzz_config(), COMMAND_NAME, fuzz_dir());
         let harness = |input: &BytesInput| {
             let app = setup_tauri_mock().expect("Failed to init Tauri app");
             let _res = invoke_command_minimal(app, create_payload(input.bytes()));
@@ -144,11 +142,11 @@ mod test {
         unsafe {
             let _ = fuzzer::fuzz_test(
                 harness,
-                &options,
+                &options.into(),
                 addr as usize,
                 policies::file_policy::read_only_access(),
             )
-            .is_ok();
+                .is_ok();
         }
     }
 }

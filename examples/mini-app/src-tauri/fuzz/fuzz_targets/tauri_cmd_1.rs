@@ -4,16 +4,17 @@ use libafl::prelude::ExitKind;
 use tauri::test::{mock_builder, mock_context, noop_assets, MockRuntime};
 use tauri::App as TauriApp;
 use tauri::InvokePayload;
+mod utils;
+use utils::*;
 
 const COMMAND_NAME: &str = "tauri_cmd_1";
 
 pub fn main() {
     let ptr = mini_app::basic::tauri_cmd_1 as *const ();
-    let fuzz_dir = std::path::PathBuf::from(std::env!("CARGO_MANIFEST_DIR"));
-    let options = fuzzer::get_fuzzer_options(COMMAND_NAME, fuzz_dir);
+    let options = fuzzer::SimpleFuzzerConfig::from_toml(fuzz_config(), COMMAND_NAME, fuzz_dir()).into();
     let harness = |input: &BytesInput| {
         let app = setup_tauri_mock().expect("Failed to init Tauri app");
-        let _ = invoke_command_minimal(app, create_payload(input.bytes()));
+        invoke_command_minimal(app, create_payload(input.bytes()));
         ExitKind::Ok
     };
 
@@ -42,17 +43,16 @@ mod test {
     #[test]
     fn no_crash_tauri_cmd_1() {
         let addr = mini_app::basic::tauri_cmd_1 as *const ();
-        let fuzz_dir = std::path::PathBuf::from(std::env!("CARGO_MANIFEST_DIR"));
-        let options = fuzzer::get_fuzzer_options(COMMAND_NAME, fuzz_dir);
+        let options = fuzzer::SimpleFuzzerConfig::from_toml(fuzz_config(), COMMAND_NAME, fuzz_dir()).into();
         let harness = |_input: &BytesInput| {
             let app = setup_tauri_mock().expect("Failed to init Tauri app");
-            let _res = invoke_command_minimal(app, create_payload("foo".as_bytes()));
+            invoke_command_minimal(app, create_payload("foo".as_bytes()));
             ExitKind::Ok
         };
         unsafe {
             assert!(
-                fuzzer::fuzz_test(harness, &options, addr as usize, policies::no_policy()).is_ok()
-            );
+            fuzzer::fuzz_test(harness, &options, addr as usize, policies::no_policy()).is_ok()
+        );
         }
     }
 
@@ -63,11 +63,10 @@ mod test {
     #[ignore]
     fn hidden_crash_tauri_cmd_1() {
         let addr = mini_app::basic::tauri_cmd_1 as *const ();
-        let fuzz_dir = std::path::PathBuf::from(std::env!("CARGO_MANIFEST_DIR"));
-        let options = fuzzer::get_fuzzer_options(COMMAND_NAME, fuzz_dir);
+        let options = fuzzer::SimpleFuzzerConfig::from_toml(fuzz_config(), COMMAND_NAME, fuzz_dir()).into();
         let harness = |_input: &BytesInput| {
             let app = setup_tauri_mock().expect("Failed to init Tauri app");
-            let _res = invoke_command_minimal(app, create_payload("abc".as_bytes()));
+            invoke_command_minimal(app, create_payload("abc".as_bytes()));
             ExitKind::Ok
         };
         unsafe {
@@ -77,7 +76,7 @@ mod test {
                 addr as usize,
                 policies::file_policy::no_file_access(),
             )
-            .is_ok();
+                .is_ok();
         }
     }
 
@@ -85,7 +84,7 @@ mod test {
     fn crash_tauri_cmd_1() {
         let exe = std::env::current_exe().expect("Failed to extract current executable");
         let status = std::process::Command::new(exe)
-            .args(&["--ignored", "hidden_crash_tauri_cmd_1"])
+            .args(["--ignored", "hidden_crash_tauri_cmd_1"])
             .status()
             .expect("Unable to run program");
 

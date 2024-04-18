@@ -14,10 +14,8 @@ pub fn main() {
     // Take the function pointer to the harness and send it to the fuzzer
     // The fuzzer will start its runtime analysis only while executing this harness
     let ptr = crate::harness as *const ();
-    // Tell the fuzzer the path to this fuzz directory
-    let fuzz_dir = std::path::PathBuf::from(std::env!("CARGO_MANIFEST_DIR"));
-    // Set the options for fuzzing
-    let options = fuzzer::get_fuzzer_options(COMMAND_NAME, fuzz_dir);
+    // Set the options for the fuzzer
+    let options = fuzzer::SimpleFuzzerConfig::from_toml(fuzz_config(), COMMAND_NAME, fuzz_dir()).into();
 
     // Start the fuzzer
     fuzzer::fuzz_main(

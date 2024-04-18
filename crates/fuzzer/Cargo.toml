@@ -12,10 +12,11 @@ frida-gum = { workspace = true }
 color-backtrace = "0.6.1"
 env_logger = "0.11.3"
 policies = { workspace = true }
-serde = { version = "1.0.197", optional = true }
+serde = { version = "1.0.197" }
 serde_json = { version = "1.0.115", optional = true }
 tauri = { workspace = true, optional = true }
 log = "0.4"
+toml = "0.8"
 
 [features]
-tauri = ["dep:serde", "dep:serde_json", "dep:tauri"]
+tauri = ["dep:serde_json", "dep:tauri"]

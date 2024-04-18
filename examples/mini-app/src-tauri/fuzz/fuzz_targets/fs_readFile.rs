@@ -9,6 +9,8 @@ use tauri::test::{mock_builder, mock_context, noop_assets, MockRuntime};
 use tauri::App as TauriApp;
 use tauri::InvokePayload;
 use tauri_utils::config::FsAllowlistScope;
+mod utils;
+use utils::*;
 
 const COMMAND_NAME: &str = "readFile";
 
@@ -38,16 +40,14 @@ fn path_to_foo() -> PathBuf {
 fn harness(_input: &BytesInput) -> ExitKind {
     let app = setup_tauri_mock().expect("Failed to init Tauri app");
     let foo_path = path_to_foo().to_string_lossy().into_owned();
-    let _res = invoke_command_minimal(app, create_payload(foo_path.as_bytes()));
+    invoke_command_minimal(app, create_payload(foo_path.as_bytes()));
     ExitKind::Ok
 }
 
 pub fn main() {
     // The function in which the fuzzer analysis will be applied
     let fuzzed_function = crate::harness as *const ();
-    let fuzz_dir = std::path::PathBuf::from(std::env!("CARGO_MANIFEST_DIR"));
-    let options = fuzzer::get_fuzzer_options(COMMAND_NAME, fuzz_dir);
-
+    let options = fuzzer::SimpleFuzzerConfig::from_toml(fuzz_config(), COMMAND_NAME, fuzz_dir()).into();
     fuzzer::fuzz_main(
         harness,
         options,
@@ -60,8 +60,7 @@ pub fn main() {
 fn create_payload(bytes: &[u8]) -> InvokePayload {
     let mut args = CommandArgs::new();
     args.insert("path", String::from_utf8_lossy(bytes).into_owned());
-    let payload = create_invoke_payload(Some("Fs".into()), COMMAND_NAME, args);
-    payload
+    create_invoke_payload(Some("Fs".into()), COMMAND_NAME, args)
 }
 
 #[cfg(test)]
@@ -75,8 +74,7 @@ mod test {
     #[ignore]
     fn real_test_fs_readFile() {
         let addr = crate::harness as *const ();
-        let fuzz_dir = std::path::PathBuf::from(std::env!("CARGO_MANIFEST_DIR"));
-        let options = fuzzer::get_fuzzer_options(COMMAND_NAME, fuzz_dir);
+        let options = fuzzer::SimpleFuzzerConfig::from_toml(fuzz_config(), COMMAND_NAME, fuzz_dir()).into();
         unsafe {
             let _ = fuzzer::fuzz_test(
                 crate::harness,
@@ -84,7 +82,7 @@ mod test {
                 addr as usize,
                 policies::file_policy::no_file_access(),
             )
-            .is_ok();
+                .is_ok();
         }
     }
 
@@ -93,7 +91,7 @@ mod test {
     fn test_fs_readFile() {
         let exe = std::env::current_exe().expect("Failed to extract current executable");
         let status = std::process::Command::new(exe)
-            .args(&["--ignored", "real_test_fs_readFile"])
+            .args(["--ignored", "real_test_fs_readFile"])
             .status()
             .expect("Unable to run program");
 
