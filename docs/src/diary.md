@@ -508,7 +508,7 @@ InvokePayload {
   - even when adding the executable to `harness`, it is removed by `libafl_frida` to avoid the stalker from analyzing its own code and get recursion
     - this is annoying with rust where you usually use static libraries so you get one big executable
     - a solution would be to make LibAFL a dynamic lib
-      - with a quick try without perservering we get some link errors
+    - with a quick try without persevering we get some link errors
       - this is not a mess I want to invest time in currently
     - another solution would be to be able to give exact memory ranges that we want frida stalker to work on
       - currently the precision is per `Module`
@@ -516,6 +516,9 @@ InvokePayload {
       - for Rust it signifies the whole executable with all its crates + basic C libraries
       - ideally we would have the stalker on the main binary and not on any of its crate
       - We could make a PR for that
+- When running our binaries the fuzz_solutions are written in the wrong directory
+  - `cargo test` executes in the root directory of the crate containing the tests
+  - `cargo run` takes current directory where command is executed as root directory
 
 ## Windows
 
@@ -535,7 +538,7 @@ InvokePayload {
 - what toolchain should I use?
   - depends on which dynamic library I need to link to
   - look into libafl repo for hints
-    - in github action we see that they use the windows default stable toolchain
+  - in github action we see that they use the windows default stable toolchain
     - that should be `msvc`
 - Error found `TaskEntryDialog` entrypoint could not be found
   - running the fuzzer from windows ui
