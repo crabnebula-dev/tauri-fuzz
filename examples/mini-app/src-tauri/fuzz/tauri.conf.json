@@ -9,7 +9,7 @@
     },
     "bundle": {
       "icon": [
-        "../mini-app/src-tauri/icons/icon.ico"
+        "../icons/icon.ico"
       ],
       "identifier": "com.fuzz.dev"
     }

@@ -7,9 +7,9 @@ const BLOCKED_FILENAMES: [&'static str; 1] = ["foo.txt"];
 #[cfg(not(target_env = "msvc"))]
 mod file_policy_impl {
     use super::BLOCKED_FILENAMES;
+    use crate::engine::{FunctionPolicy, FuzzPolicy, Rule, RuleError};
     use crate::policies::{block_on_entry, LIBC};
     use std::ffi::CStr;
-    use crate::engine::{FunctionPolicy, FuzzPolicy, Rule, RuleError};
 
     // Functions that are monitored when it comes to file system access
     const MONITORED_FUNCTIONS: [&str; 3] = ["fopen", "open", "open64"];
@@ -102,8 +102,8 @@ mod file_policy_impl {
 #[cfg(target_env = "msvc")]
 mod file_policy_impl {
     use super::BLOCKED_FILENAMES;
+    use crate::engine::{FunctionPolicy, FuzzPolicy, Rule, RuleError};
     use crate::policies::block_on_entry;
-    use tauri_fuzz_tools::policies::{FunctionPolicy, FuzzPolicy, Rule, RuleError};
     use windows::core::PCWSTR;
     use windows_sys::Win32::Foundation::GENERIC_READ;
 

@@ -592,6 +592,8 @@ InvokePayload {
 - Adding a Windows Manifest file works to remove the error message
   - https://github.com/tauri-apps/tauri/pull/4383/files
   - Does not explain why the compilation worked in certain cases but not in other =(
+- Tried with crate `embed-manifest`
+  - crate seems outdated contain build instruction not recognized
 
 #### Fetching values from register does not give expected value
 

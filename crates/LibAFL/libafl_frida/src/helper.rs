@@ -11,7 +11,6 @@ use capstone::{
     arch::{self, BuildsCapstone},
     Capstone,
 };
-#[cfg(unix)]
 use frida_gum::instruction_writer::InstructionWriter;
 use frida_gum::{
     stalker::{StalkerIterator, StalkerOutput, Transformer},
@@ -166,7 +165,7 @@ impl FridaInstrumentationHelperBuilder {
     #[must_use]
     pub fn disable_excludes(self, disabled: bool) -> Self {
         Self {
-        disable_excludes: disabled,
+            disable_excludes: disabled,
             ..self
         }
     }
@@ -495,7 +494,7 @@ where
             #[cfg(unix)]
             let instr_size = instr.bytes().len();
             let address = instr.address();
-        // log::trace!("block @ {:x} transformed to {:x}", address, output.writer().pc());
+            // log::trace!("block @ {:x} transformed to {:x}", address, output.writer().pc());
             if ranges.borrow().contains_key(&(address as usize)) {
                 let mut runtimes = (*runtimes).borrow_mut();
                 // log::error!("runtimes: {:?}", runtimes);
