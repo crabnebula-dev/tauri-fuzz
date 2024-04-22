@@ -122,7 +122,7 @@ mod file_policy_impl {
     }
 
     // Checks if the flag is READ_ONLY
-    fn read_only_flag(params: &Vec<usize>) -> Result<bool, RuleError> {
+    fn read_only_flag(params: &[usize]) -> Result<bool, RuleError> {
         let flag = params[1];
         let res = flag == GENERIC_READ as usize;
         Ok(res)
@@ -139,7 +139,7 @@ mod file_policy_impl {
     }
 
     /// Checks if the filename contained in the first register is part of the blocked files
-    fn rule_no_access_to_filenames(registers: &Vec<usize>) -> Result<bool, RuleError> {
+    fn rule_no_access_to_filenames(registers: &[usize]) -> Result<bool, RuleError> {
         // the first register should contain a pointer to the name of the file being accessed
         let name_ptr = registers[0] as *const u16;
 
