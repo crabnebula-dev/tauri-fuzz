@@ -1,6 +1,6 @@
 name: Build and test
 
-on: [pull_request,workflow_dispatch]
+on: [pull_request, workflow_dispatch]
 env:
   CARGO_TERM_COLOR: always
 
@@ -38,7 +38,7 @@ jobs:
   Build-and-test-Fuzzer:
     strategy:
       matrix:
-          os: [ubuntu-latest, windows-latest] #[ubuntu-latest, windows-latest, macOS-latest]
+        os: [ubuntu-latest, windows-latest] #[ubuntu-latest, windows-latest, macOS-latest]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 45
     steps:
@@ -65,3 +65,7 @@ jobs:
 
       - name: Run tests
         run: cargo test --no-fail-fast
+
+      - name: Setup tmate session
+        if: ${{ failure() }}
+        uses: mxschmitt/action-tmate@v3
