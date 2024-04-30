@@ -1,0 +1,20 @@
+[package]
+name = "mini-app"
+version = "0.0.0"
+description = "A Tauri App"
+authors = ["you"]
+repository = ""
+edition = "2021"
+rust-version = "1.57"
+
+[build-dependencies]
+tauri-build = { workspace = true }
+
+[dependencies]
+log = "0.4"
+env_logger = "*"
+tauri = { workspace = true, features = ["api-all", "wry"] }
+policies = { workspace = true }
+fuzzer = { workspace = true, features = ["tauri"] }
+libc = "*"
+mysql = "*"

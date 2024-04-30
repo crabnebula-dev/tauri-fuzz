@@ -1,0 +1,14 @@
+[package]
+name = "policies"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+log = "0.4"
+thiserror = "1.0"
+
+[target.'cfg(target_env = "msvc")'.dependencies]
+windows-sys = { version = "0.52", features = ["Win32", "Win32_Foundation"] }
+windows = "0.54"

@@ -1,0 +1,48 @@
+[workspace]
+resolver = "2"
+members = [
+    "libafl",
+    "libafl_bolts",
+    "libafl_cc",
+    "libafl_concolic/symcc_runtime",
+    "libafl_concolic/symcc_libafl",
+    "libafl_concolic/test/dump_constraints",
+    "libafl_concolic/test/runtime_test",
+    "libafl_derive",
+    "libafl_frida",
+    "libafl_libfuzzer",
+    "libafl_nyx",
+    "libafl_qemu",
+    "libafl_sugar",
+    "libafl_targets",
+    "libafl_tinyinst",
+    "utils/build_and_test_fuzzers",
+    "utils/deexit",
+    "utils/libafl_benches",
+    "utils/gramatron/construct_automata",
+]
+default-members = [
+    "libafl",
+    "libafl_bolts",
+    "libafl_cc",
+    "libafl_derive",
+    "libafl_targets",
+]
+exclude = [
+    "bindings",
+    "fuzzers",
+    "libafl_qemu/libafl_qemu_build",
+    "libafl_qemu/libafl_qemu_sys",
+    "utils/noaslr",
+    "utils/gdb_qemu",
+    "scripts",
+]
+
+[workspace.package]
+version = "0.11.1"
+
+[profile.release]
+lto = true
+codegen-units = 1
+opt-level = 3
+debug = true
