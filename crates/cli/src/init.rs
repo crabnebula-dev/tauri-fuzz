@@ -6,6 +6,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
+use anyhow::Context;
 use clap::Parser;
 use ignore::WalkBuilder;
 use include_dir::{include_dir, Dir};
@@ -14,39 +15,20 @@ const TAURI_JSON: &str = "tauri.conf.json";
 const TAURI_JSON5: &str = "tauri.conf.json5";
 const TAURI_TOML: &str = "Tauri.toml";
 
-fn lookup<F: Fn(&PathBuf) -> bool>(dir: &Path, checker: F) -> anyhow::Result<PathBuf> {
-    let depth = std::env::var("TAURI_FUZZER_CONFIG_LOOKUP_DEPTH")
-        .map(|d| {
-            d.parse().expect(
-            "`TAURI_FUZZER_CONFIG_LOOKUP_DEPTH` environment variable must be a positive integer",
-        )
-        })
-        .unwrap_or(3);
-
-    let mut builder = WalkBuilder::new(dir);
-    builder
-        .require_git(false)
-        .ignore(false)
-        .max_depth(Some(depth))
-        .sort_by_file_path(|a, _| {
-            if a.extension().is_some() {
-                Ordering::Less
-            } else {
-                Ordering::Greater
-            }
-        });
-
-    for entry in builder.build().flatten() {
-        let path = dir.join(entry.path());
-        if checker(&path) {
-            return Ok(path);
-        }
-    }
-
-    anyhow::bail!("Couldn't find the file")
+fn folder_has_tuari_config(folder: &Path) -> bool {
+    folder.join(TAURI_JSON).exists()
+        || folder.join(TAURI_JSON5).exists()
+        || folder.join(TAURI_TOML).exists()
 }
 
-fn tauri_dir() -> anyhow::Result<PathBuf> {
+fn is_tauri_config_file(path: &Path) -> bool {
+    let file_name = path.file_name();
+    file_name == Some(OsStr::new(TAURI_JSON))
+        || file_name == Some(OsStr::new(TAURI_JSON5))
+        || file_name == Some(OsStr::new(TAURI_TOML))
+}
+
+pub fn tauri_dir() -> anyhow::Result<PathBuf> {
     let Ok(cwd) = std::env::current_dir() else {
         anyhow::bail!("failed to get current working dir");
     };
@@ -66,32 +48,37 @@ fn tauri_dir() -> anyhow::Result<PathBuf> {
         return Ok(src_tauri);
     }
 
-    lookup(&cwd, |path| {
-        folder_has_configuration_file(path) || is_configuration_file(path)
-    })
-    .map_err(|_|
-        anyhow::anyhow!("Couldn't recognize the current folder as a Tauri project. It must contain a `{TAURI_JSON}`, `{TAURI_JSON5}` or `{TAURI_TOML}` file in any subfolder.")
-    )
-    .map(|p| {
-        if p.is_dir() {
-            p
-        } else {
-            p.parent().unwrap().to_path_buf()
+    let depth = match std::env::var("TAURI_FUZZER_CONFIG_LOOKUP_DEPTH") {
+        Ok(d) =>  d.parse().map_err(|_| anyhow::anyhow!("`TAURI_FUZZER_CONFIG_LOOKUP_DEPTH` environment variable must be a positive integer"))?,
+        Err(_) => 3,
+    };
+
+    let mut builder = WalkBuilder::new(&cwd);
+    builder
+        .require_git(false)
+        .ignore(false)
+        .max_depth(Some(depth))
+        .sort_by_file_path(|a, _| {
+            if a.extension().is_some() {
+                Ordering::Less
+            } else {
+                Ordering::Greater
+            }
+        });
+
+    for entry in builder.build().flatten() {
+        let path = cwd.join(entry.path());
+        if path.is_dir() && folder_has_tuari_config(&path) {
+            return Ok(path);
+        } else if is_tauri_config_file(&path) {
+            return path
+                .parent()
+                .map(|p| p.to_path_buf())
+                .context("failed to get parent from path");
         }
-    })
-}
+    }
 
-pub fn folder_has_configuration_file(folder: &Path) -> bool {
-    folder.join(TAURI_JSON).exists()
-        || folder.join(TAURI_JSON5).exists()
-        || folder.join(TAURI_TOML).exists()
-}
-
-pub fn is_configuration_file(path: &Path) -> bool {
-    let file_name = path.file_name();
-    file_name == Some(OsStr::new(TAURI_JSON))
-        || file_name == Some(OsStr::new(TAURI_JSON5))
-        || file_name == Some(OsStr::new(TAURI_TOML))
+    anyhow::bail!("Couldn't recognize the current folder as a Tauri project. It must contain a `{TAURI_JSON}`, `{TAURI_JSON5}` or `{TAURI_TOML}` file in any subfolder.")
 }
 
 const TEMPLATE_DIR: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/template");
