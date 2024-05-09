@@ -11,11 +11,9 @@ path = "src/main.rs"
 anyhow = "1"
 clap = { version = "4.5", features = ["derive"] }
 env_logger = "0.11"
+handlebars = "5.1.2"
 ignore = "0.4.22"
 include_dir = "0.7"
 log = "0.4"
-
-# [[bin]]
-# name = "tauri_cmd_1"
-# path = "fuzz_targets/tauri_cmd_1.rs"
-# doc = false
+serde = "1"
+toml = "0.8"

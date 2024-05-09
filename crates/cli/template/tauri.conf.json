@@ -1,6 +1,6 @@
 {
   "package": {
-    "productName": "app-fuzz",
+    "productName": "{{ crate_name }}-fuzz",
     "version": "0.0.0"
   },
   "tauri": {
@@ -9,7 +9,7 @@
     },
     "bundle": {
       "icon": ["../icons/icon.ico"],
-      "identifier": "com.app-fuzz.dev"
+      "identifier": "com.{{ crate_name }}-fuzz.dev"
     }
   }
 }

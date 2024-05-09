@@ -1,5 +1,5 @@
 [package]
-name = "app-fuzz"
+name = "{{ crate_name }}-fuzz"
 version = "0.0.0"
 publish = false
 edition = "2021"
@@ -8,8 +8,13 @@ edition = "2021"
 tauri-build = "1"
 
 [dependencies]
-app = { path = ".." }
+{{ crate_name }} = { path = ".." }
 tauri = { version = "1", features = ["api-all"] }
 tauri-utils = "1"
 fuzzer = { version = "*", features = ["tauri"] }
 libafl = "*"
+
+# [[bin]]
+# name = "tauri_cmd_1"
+# path = "fuzz_targets/tauri_cmd_1.rs"
+# doc = false
