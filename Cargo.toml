@@ -1,9 +1,10 @@
 [workspace]
 resolver = "2"
 members = [
-  # Crates 
+  # Crates
   "crates/fuzzer",
   "crates/policies",
+  "crates/cli",
   # Examples
   "examples/mini-app/src-tauri",
   "examples/mini-app/src-tauri/fuzz",
