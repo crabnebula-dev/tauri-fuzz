@@ -9,7 +9,7 @@ fuzzer::define_fuzz_target! {
     command: "greet",
     path: {{crate_name_underscored}}::greet,
     parameters: {
-        name: |bytes: &[u8]| String::from_utf8(bytes.to_vec()).unwrap(),
+        name: |bytes: &[u8]| String::from_utf8_lossy(bytes).to_string(),
     },
     policy: policies::file_policy::no_file_access(),
 }

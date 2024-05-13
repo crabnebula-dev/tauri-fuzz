@@ -11,8 +11,9 @@ tauri-build = "1"
 {{ crate_name }} = { path = ".." }
 tauri = { version = "1", features = ["api-all"] }
 tauri-utils = "1"
-fuzzer = { version = "*", features = ["tauri"] }
-libafl = "*"
+fuzzer = { git = "ssh://git@github.com/crabnebula-dev/tauri-fuzzer.git", branch = "feat/cli", features = ["tauri"] }
+policies = { git = "ssh://git@github.com/crabnebula-dev/tauri-fuzzer.git", branch = "feat/cli" }
+libafl = { git = "ssh://git@github.com/crabnebula-dev/tauri-fuzzer.git", branch = "feat/cli" }
 
 # [[bin]]
 # name = "tauri_cmd_1"
