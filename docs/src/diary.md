@@ -520,6 +520,80 @@ InvokePayload {
   - `cargo test` executes in the root directory of the crate containing the tests
   - `cargo run` takes current directory where command is executed as root directory
 
+## Porting to 2.0
+
+- InvokeRequest new format
+
+```rust
+#### Template for a plugin InvokeRequest
+InvokeRequest {
+    cmd: "plugin:fs|read_file",
+    callback: CallbackFn(
+        3255320200,
+    ),
+    error: CallbackFn(
+        3097067861,
+    ),
+    url: Url {
+        scheme: "http",
+        cannot_be_a_base: false,
+        username: "",
+        password: None,
+        host: Some(
+            Ipv4(
+                127.0.0.1,
+            ),
+        ),
+        port: Some(
+            1430,
+        ),
+        path: "/",
+        query: None,
+        fragment: None,
+    },
+    body: Json(
+        Object {
+            "options": Object {},
+            "path": String("README.md"),
+        },
+    ),
+    headers: {},
+}
+```
+
+- Calling plugin commands with the `MockRuntime` (such as `fs:readFile`)
+  - Scope can be modified programatically using
+  ```rust
+  let scope = app.fs_scope();
+  scope.allow_file("/home/adang/boum/playground/rust/tauri2/src-tauri/assets/foo.txt");
+  ```
+  - `RuntimeAuthority` requires an acl and resolved acl
+    - the `RuntimeAuthority.acl`
+      - isn't modifiable programatically
+      - defines which permissions are allowed to be used by the application capabilities
+      - ACL from the runtime authority is generated at buildtime in the `Context`
+      - code generation to get the Tauri app context is located at `tauri-codegen::context::context_codegen`
+    - `Resolved`
+      - commands that are allowed/denied
+      - scopes associated to these commands
+      - it is initialized from the complete acl and the capabilities declared by the application
+- When building a Tauri v2 app `tauri-build` :
+  - path to permission manifests from each plugin are stored in environment variables
+    - 3 env variables per plugin used
+      - `DEP_TAURI_PLUGIN_FS_PERMISSION_FILES_PATH`
+        - where the permissions declaration for this plugin are declared
+      - `DEP_TAURI_PLUGIN_FS_GLOBAL_API_SCRIPT_PATH`
+        - JS script containing the API to call commands from the plugin
+        - I think this is only used when the option `withGlobalTauri` is set
+      - `DEP_TAURI_PLUGIN_FS_GLOBAL_SCOPE_SCHEMA_PATH`
+        - schema for the scopes of the plugin
+  - the permissions manifests are parsed
+    - manifests contain all the permissions declared by plugins
+  - parse the capabilities file
+  - check that declared capabilities are compatible with information given by the manifests
+- InvokeRequest `url`
+  - to have request that are deemed `Local` use `tauri://localhost`
+
 ## Windows
 
 ### Issues
