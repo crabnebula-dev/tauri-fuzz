@@ -22,7 +22,7 @@
     trivial_numeric_casts,
     unused_extern_crates,
     unused_import_braces,
-    unused_qualifications,
+    // unused_qualifications,
     //unused_results
 ))]
 #![cfg_attr(test, deny(
@@ -32,7 +32,7 @@
     trivial_numeric_casts,
     unused_extern_crates,
     unused_import_braces,
-    unused_qualifications,
+    // unused_qualifications,
     unused_must_use,
     missing_docs,
     //unused_results

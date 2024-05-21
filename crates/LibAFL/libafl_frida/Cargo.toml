@@ -48,6 +48,19 @@ nix = "0.26"
 libc = "0.2"
 hashbrown = "0.14"
 rangemap = "1.3"
+
+# frida-gum-sys = { path = "../../../../../tmp2/frida-rust/frida-gum-sys", features = [
+#   "auto-download",
+#   "event-sink",
+#   "invocation-listener",
+# ] }
+# frida-gum = { path = "../../../../../tmp2/frida-rust/frida-gum", features = [
+#   "auto-download",
+#   "event-sink",
+#   "invocation-listener",
+#   "module-names",
+# ] }
+
 frida-gum-sys = { version = "0.13.2", features = [
   "auto-download",
   "event-sink",

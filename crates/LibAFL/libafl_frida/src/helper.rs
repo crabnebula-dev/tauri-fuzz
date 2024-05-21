@@ -256,6 +256,21 @@ impl FridaInstrumentationHelperBuilder {
             if let Some(instrument_module_predicate) = &mut instrument_module_predicate {
                 let skip = skip_module_predicate(&module);
                 let should_instrument = instrument_module_predicate(&module);
+
+                let name = module.name();
+                let range = module.range();
+                let base = range.base_address().0 as usize;
+                let size = range.size();
+
+                let _s = format!(
+                    "ModuleDetails {}: [{:#018x}, {:#018x}]",
+                    name,
+                    base,
+                    base + size
+                );
+                // println!("{:?}", s);
+                // println!("should_instrument: {}", should_instrument);
+
                 should_instrument && !skip
             } else {
                 !skip_module_predicate(&module)

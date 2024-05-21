@@ -37,7 +37,7 @@ Welcome to `LibAFL`
     trivial_numeric_casts,
     unused_extern_crates,
     unused_import_braces,
-    unused_qualifications,
+    // unused_qualifications,
     //unused_results
 ))]
 #![cfg_attr(test, deny(
@@ -47,7 +47,7 @@ Welcome to `LibAFL`
     trivial_numeric_casts,
     unused_extern_crates,
     unused_import_braces,
-    unused_qualifications,
+    // unused_qualifications,
     unused_must_use,
     //unused_results
 ))]
