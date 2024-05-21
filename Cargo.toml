@@ -28,14 +28,11 @@ libafl_frida = { path = "./crates/LibAFL/libafl_frida", features = ["cmplog"] }
 libafl_targets = { path = "./crates/LibAFL/libafl_targets", features = [
   "sancov_cmplog",
 ] }
-tauri_fuzz_tools = { path = "./crates/tauri_fuzz_tools" }
-
-tauri = { version = "1.5", default-features = false, features = [
-  "test",
-  "tracing",
-] }
-tauri-runtime = "1.5"
-tauri-build = "1.5"
-tauri-utils = "1.5"
 policies = { path = "./crates/policies" }
 fuzzer = { path = "./crates/fuzzer" }
+
+tauri = { version = "2.0.0-beta", features = ["test", "tracing"] }
+tauri-runtime = { version = "2.0.0-beta", features = [] }
+tauri-build = { version = "2.0.0-beta", features = [] }
+tauri-utils = { version = "2.0.0-beta", features = [] }
+tauri-plugin-fs = "2.0.0-beta"

@@ -9,7 +9,7 @@ use std::collections::HashMap;
 #[tauri::command]
 /// Crash on input `abc`
 pub fn tauri_cmd_1(input: &str) -> String {
-    log::debug!("[tauri_cmd_1] Entering with input: {}", input);
+    tracing::debug!("[tauri_cmd_1] Entering with input: {}", input);
     let mut bytes = input.bytes();
     if bytes.next() == Some(b'a') && bytes.next() == Some(b'b') && bytes.next() == Some(b'c') {
         panic!("[mini-app] Crashing! =)");

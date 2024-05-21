@@ -1,17 +1,9 @@
 {
-  "package": {
-    "productName": "fuzz",
-    "version": "0.0.0"
-  },
-  "tauri": {
-    "allowlist": {
-      "all": true
-    },
-    "bundle": {
-      "icon": [
-        "../icons/icon.ico"
-      ],
-      "identifier": "com.fuzz.dev"
-    }
+  "productName": "fuzz",
+  "version": "0.0.0",
+  "identifier": "dev.crabnebula.mini-app-fuzz",
+  "bundle": {
+    "active": true,
+    "targets": "all"
   }
 }

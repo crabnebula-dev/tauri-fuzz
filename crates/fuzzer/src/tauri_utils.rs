@@ -3,11 +3,13 @@ use serde::de::DeserializeOwned;
 use serde::ser::Serialize;
 use std::collections::HashMap;
 use std::fmt::Debug;
+use std::str::FromStr;
 use tauri::ipc::{CallbackFn, InvokeBody};
 use tauri::test::MockRuntime;
 use tauri::webview::InvokeRequest;
 use tauri::Builder;
 use tauri::WebviewWindow;
+use tauri_utils::acl::capability::CapabilityFile::{self, *};
 
 /// Minimal builder for a Tauri application using the `MockRuntime`
 /// NOTE: if your Tauri command uses a state this won't work since it does manage any state
@@ -157,6 +159,43 @@ pub fn create_invoke_request(
     }
 }
 
+/// Setup a Tauri application context which can call commands from a Tauri plugin.
+/// This involves passing the plugin permission and defining the application capability.
+pub fn setup_context_with_plugin<R: tauri::Runtime>(
+    context: &mut tauri::Context<R>,
+    plugin_name: &str,
+    permission_file_toml: &str,
+    capability: &str,
+) {
+    let runtime_authority = context.runtime_authority_mut();
+
+    // The acl of our application contains the `read-files` permission from the fs plugin
+    let permission_file: tauri_utils::acl::manifest::PermissionFile =
+        toml::from_str(permission_file_toml).unwrap();
+    let manifest = tauri_utils::acl::manifest::Manifest::new(vec![permission_file], None);
+    let mut acl = std::collections::BTreeMap::new();
+    acl.insert(plugin_name.to_string(), manifest);
+
+    // Capability of our mock app declare the use of the `fs:read-files` permission
+    let capability_file = CapabilityFile::from_str(capability).unwrap();
+    let Capability(capability) = capability_file else {
+        unreachable!()
+    };
+    let mut capability_map = std::collections::BTreeMap::new();
+    capability_map.insert(capability.identifier.clone(), capability.clone());
+
+    // Resolved capabilities against the acl
+    let resolved = tauri_utils::acl::resolved::Resolved::resolve(
+        &acl,
+        capability_map,
+        tauri_utils::platform::Target::current(),
+    )
+    .unwrap();
+
+    // Setup our custom `RuntimeAuthority` in our application context
+    *runtime_authority = tauri::ipc::RuntimeAuthority::new(acl, resolved);
+}
+
 /// A wrapper around HashMap to facilitate `InvokePayload` creation.
 #[derive(Default)]
 pub struct CommandArgs {
@@ -221,9 +260,7 @@ mod test {
         path
     }
 
-    use std::str::FromStr;
     use tauri_plugin_fs::FsExt;
-    use tauri_utils::acl::capability::CapabilityFile::{self, *};
     #[test]
     fn test_invoke_command_plugin() {
         // Trimmed `read-files` permission from the Fs plugin
@@ -247,34 +284,9 @@ commands.allow = [
 }"#;
 
         let mut context = mock_context(noop_assets());
-        let runtime_authority = context.runtime_authority_mut();
+        setup_context_with_plugin(&mut context, "fs", FS_READ_FILE_PERMISSION, CAPABILITY);
 
-        // The acl of our application contains the `read-files` permission from the fs plugin
-        let permission_file: tauri_utils::acl::manifest::PermissionFile =
-            toml::from_str(FS_READ_FILE_PERMISSION).unwrap();
-        let manifest = tauri_utils::acl::manifest::Manifest::new(vec![permission_file], None);
-        let mut acl = std::collections::BTreeMap::new();
-        acl.insert("fs".to_string(), manifest);
-
-        // Capability of our mock app declare the use of the `fs:read-files` permission
-        let capability_file = CapabilityFile::from_str(CAPABILITY).unwrap();
-        let Capability(capability) = capability_file else {
-            unreachable!()
-        };
-        let mut capability_map = std::collections::BTreeMap::new();
-        capability_map.insert(capability.identifier.clone(), capability.clone());
-
-        // Resolved capabilities against the acl
-        let resolved = tauri_utils::acl::resolved::Resolved::resolve(
-            &acl,
-            capability_map,
-            tauri_utils::platform::Target::current(),
-        )
-        .unwrap();
-
-        // Setup our custom `RuntimeAuthority` in our application context
-        *runtime_authority = tauri::ipc::RuntimeAuthority::new(acl, resolved);
-
+        // Build the app with our custom context and init the plugin
         let app = mock_builder()
             .plugin(tauri_plugin_fs::init())
             .invoke_handler(tauri::generate_handler![])
