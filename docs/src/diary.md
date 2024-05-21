@@ -593,6 +593,10 @@ InvokeRequest {
   - check that declared capabilities are compatible with information given by the manifests
 - InvokeRequest `url`
   - to have request that are deemed `Local` use `tauri://localhost`
+- Fuzzer does not need to `tauri_app_builder.run(...)` just if
+  - we don't need an event loop
+  - we don't need to setup the app
+  - we don't need to interact with the app state
 
 ## Windows
 

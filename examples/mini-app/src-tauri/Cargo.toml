@@ -10,11 +10,22 @@ rust-version = "1.57"
 [build-dependencies]
 tauri-build = { workspace = true }
 
+[lib]
+crate-type = ["staticlib", "cdylib", "rlib"]
+
 [dependencies]
-log = "0.4"
-env_logger = "*"
-tauri = { workspace = true, features = ["api-all", "wry"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["std", "env-filter", "fmt", "registry"]}
+tauri = { workspace = true, features = ["wry", "tracing"] }
 policies = { workspace = true }
 fuzzer = { workspace = true, features = ["tauri"] }
 libc = "*"
 mysql = "*"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tauri-plugin-fs = { workspace = true }
+
+[features]
+# this feature is used for production builds or when `devPath` points to the filesystem
+# DO NOT REMOVE!!
+custom-protocol = ["tauri/custom-protocol"]

@@ -1,46 +1,65 @@
 #![allow(non_snake_case)]
-use fuzzer::tauri_utils::{create_invoke_payload, invoke_command_minimal, CommandArgs};
+use fuzzer::tauri_utils::{
+    create_invoke_request, invoke_command_minimal, setup_context_with_plugin, CommandArgs,
+};
 /// We fuzz the Tauri command `readFile` in the `Fs` module
-/// The calling convention for the `InvokePayload` are different from custom Tauri commands
+/// The calling convention for the `InvokeRequest` are different from custom Tauri commands
 use libafl::inputs::BytesInput;
 use libafl::prelude::ExitKind;
-use std::path::PathBuf;
 use tauri::test::{mock_builder, mock_context, noop_assets, MockRuntime};
-use tauri::App as TauriApp;
-use tauri::InvokePayload;
-use tauri_utils::config::FsAllowlistScope;
+use tauri::webview::InvokeRequest;
 mod utils;
+use tauri_plugin_fs::FsExt;
 use utils::*;
 
 const COMMAND_NAME: &str = "readFile";
 
-/// Generate a Tauri mock runtime
-fn setup_tauri_mock() -> Result<TauriApp<MockRuntime>, tauri::Error> {
+fn setup_mock() -> tauri::WebviewWindow<MockRuntime> {
+    const FS_READ_FILE_PERMISSION: &str = r#"
+[[permission]]
+identifier = "read-files"
+description = "This enables file read related commands without any pre-configured accessible paths."
+commands.allow = [
+    "read_file",
+]"#;
+
+    // Capability given to our mock app, use `fs:read-files` permission
+    const CAPABILITY: &str = r#"{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Capability for the main window",
+  "windows": ["main"],
+  "permissions": [
+    "fs:read-files"
+  ]
+}"#;
+
+    // Prepare context with right permissions and capability
     let mut context = mock_context(noop_assets());
-    // Allow the module to read in "../assets/" directory
-    context.config_mut().tauri.allowlist.fs.scope =
-        FsAllowlistScope::AllowedPaths(vec![path_to_foo()]);
+    setup_context_with_plugin(&mut context, "fs", FS_READ_FILE_PERMISSION, CAPABILITY);
 
-    // We're not using the usual `mock_builder_minimal` since the function we're fuzzing uses a
-    // state
-    mock_builder()
-        .invoke_handler(tauri::generate_handler![])
+    let app = mock_builder()
+        .invoke_handler(tauri::generate_handler![
+            mini_app::file_access::read_foo_file
+        ])
         .build(context)
-}
+        .expect("Failed to init Tauri app");
 
-fn path_to_foo() -> PathBuf {
-    let mut assets_dir = std::path::PathBuf::from(std::env!("CARGO_MANIFEST_DIR"));
-    assets_dir.pop();
-    assets_dir.push("assets");
-    assets_dir.push("foo.txt");
-    assets_dir
+    // Modify the scope of the fs plugin
+    let scope = app.fs_scope();
+    scope.allow_file(path_to_foo().to_str().unwrap());
+
+    let webview = tauri::WebviewWindowBuilder::new(&app, "main", Default::default())
+        .build()
+        .unwrap();
+    webview
 }
 
 /// The harness that we are going to fuzz
 fn harness(_input: &BytesInput) -> ExitKind {
-    let app = setup_tauri_mock().expect("Failed to init Tauri app");
+    let w = setup_mock();
     let foo_path = path_to_foo().to_string_lossy().into_owned();
-    invoke_command_minimal(app, create_payload(foo_path.as_bytes()));
+    invoke_command_minimal(w, create_request(foo_path.as_bytes()));
     ExitKind::Ok
 }
 
@@ -57,11 +76,11 @@ pub fn main() {
     );
 }
 
-/// Create an `InvokePayload` for a Tauri module command
-fn create_payload(bytes: &[u8]) -> InvokePayload {
+/// Create an `InvokeRequest` for a Tauri module command
+fn create_request(bytes: &[u8]) -> InvokeRequest {
     let mut args = CommandArgs::new();
     args.insert("path", String::from_utf8_lossy(bytes).into_owned());
-    create_invoke_payload(Some("Fs".into()), COMMAND_NAME, args)
+    create_invoke_request(Some("Fs".into()), COMMAND_NAME, args)
 }
 
 #[cfg(test)]
