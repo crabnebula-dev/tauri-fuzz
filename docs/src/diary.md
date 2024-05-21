@@ -524,7 +524,7 @@ InvokePayload {
 
 - InvokeRequest new format
 
-```rust
+```rust,ignore
 #### Template for a plugin InvokeRequest
 InvokeRequest {
     cmd: "plugin:fs|read_file",
@@ -562,21 +562,23 @@ InvokeRequest {
 ```
 
 - Calling plugin commands with the `MockRuntime` (such as `fs:readFile`)
-  - Scope can be modified programatically using
-  ```rust
+  - Scope can be modified programmatically using
+
+```rust,ignore
   let scope = app.fs_scope();
   scope.allow_file("/home/adang/boum/playground/rust/tauri2/src-tauri/assets/foo.txt");
-  ```
-  - `RuntimeAuthority` requires an acl and resolved acl
-    - the `RuntimeAuthority.acl`
-      - isn't modifiable programatically
-      - defines which permissions are allowed to be used by the application capabilities
-      - ACL from the runtime authority is generated at buildtime in the `Context`
-      - code generation to get the Tauri app context is located at `tauri-codegen::context::context_codegen`
-    - `Resolved`
-      - commands that are allowed/denied
-      - scopes associated to these commands
-      - it is initialized from the complete acl and the capabilities declared by the application
+```
+
+- `RuntimeAuthority` requires an acl and resolved acl
+  - the `RuntimeAuthority.acl`
+    - isn't modifiable programmatically
+    - defines which permissions are allowed to be used by the application capabilities
+    - ACL from the runtime authority is generated at buildtime in the `Context`
+    - code generation to get the Tauri app context is located at `tauri-codegen::context::context_codegen`
+  - `Resolved`
+    - commands that are allowed/denied
+    - scopes associated to these commands
+    - it is initialized from the complete acl and the capabilities declared by the application
 - When building a Tauri v2 app `tauri-build` :
   - path to permission manifests from each plugin are stored in environment variables
     - 3 env variables per plugin used

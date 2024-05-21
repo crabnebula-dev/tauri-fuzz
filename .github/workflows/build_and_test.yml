@@ -46,7 +46,7 @@ jobs:
         if: contains(matrix.os, 'ubuntu-latest')
         run: |
           sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.0-dev build-essential libssl-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev libc++-15-dev libc++abi-15-dev clang-15 ## libgtk-3-dev
+          sudo apt-get install -y libwebkit2gtk-4.1-dev build-essential libssl-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev libc++-15-dev libc++abi-15-dev clang-15 ## libgtk-3-dev
 
       - uses: actions/checkout@v4
         name: Checkout repository
@@ -65,7 +65,3 @@ jobs:
 
       - name: Run tests
         run: cargo test --no-fail-fast
-      #
-      # - name: Setup tmate session
-      #   if: ${{ failure() }}
-      #   uses: mxschmitt/action-tmate@v3
