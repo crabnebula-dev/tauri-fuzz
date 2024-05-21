@@ -60,16 +60,18 @@ impl From<SimpleFuzzerConfig> for FuzzerOptions {
             // Settings for Frida stalker
             harness: std::env::current_exe().ok(),
             // harness: None,
-            libs_to_instrument: vec![],
+            libs_to_instrument: vec![
+                // std::env::current_exe().unwrap().display().to_string(),
+            ],
             disable_excludes: true,
             dont_instrument: vec![],
 
             // Settings for code coverage
             // You have to enable the stalker to use them
             disable_coverage: !simple.with_coverage,
-            cmplog: true,
+            cmplog: simple.with_coverage,
             cmplog_cores: Cores::from_cmdline("1").unwrap(),
-            drcov: true,
+            drcov: simple.with_coverage,
 
             // Settings for the memory sanitizer
             // We don't really use it in our fuzzer

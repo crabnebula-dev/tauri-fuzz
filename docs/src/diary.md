@@ -598,7 +598,26 @@ InvokeRequest {
 - Fuzzer does not need to `tauri_app_builder.run(...)` just if
   - we don't need an event loop
   - we don't need to setup the app
-  - we don't need to interact with the app state
+- we don't need to interact with the app state
+
+## 32
+
+- Github actions
+  - use act to run github actions locally
+  - to run test as github actions locally `act -W ".github/workflows/build_and_test.yml" -j Build-and-test-Fuzzer`
+- Bug with Rust 1.78
+  - Rust 1.78 enables debug assertions in std by default
+  - `slice::from_raw_parts` panics when given a pointer which is not aligned/null/bigger than `isize::max`
+  - Bug in libafl_frida which trigger this situation when
+    - `stalker_is_enabled` is set to true in `libafl_frida/src/helper.rs`
+    - and no module is specified to be stalked
+    - as a reminder stalker is enabled if we want to use the code coverage
+  - Bug for coverage when stalker is enabled
+    - in `libafl_frida/src/helper.rs::FridaInstrumentationHelperBuilder::build`
+    - the `instrument_module_predicate` return true for the harness
+    - but the `ModuleMap` returned by `gum_sys` is empty
+    - this provokes a panic from Rust 1.78
+    - current fix is to disable coverage but not good enough
 
 ## Windows
 
