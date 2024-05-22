@@ -599,6 +599,9 @@ InvokeRequest {
   - we don't need an event loop
   - we don't need to setup the app
 - we don't need to interact with the app state
+- Url for `InvokeRequest` for local tauri commands is
+  - "http://tauri.localhost" for windows and android
+  - "tauri://localhost" for the rest
 
 ## 32
 
@@ -618,6 +621,7 @@ InvokeRequest {
     - but the `ModuleMap` returned by `gum_sys` is empty
     - this provokes a panic from Rust 1.78
     - current fix is to disable coverage but not good enough
+-
 
 ## Windows
 
@@ -726,6 +730,12 @@ InvokeRequest {
 - to be honest I don't really understand what's happening precisely and I don't want to dig further.
 But I'm happy to have found a solution quickly but I expect this to bite me back in the future
 
+### Docker on Windows
+
+- Docker daemon can be started by launching Docker desktop
+- _docker-credential-desktop not installed or not available in PATH_
+  - in the file `C:\Users\user\.docker\config.json`
+  - delete `credsStore` field
 
 ### Tools for debugging
 

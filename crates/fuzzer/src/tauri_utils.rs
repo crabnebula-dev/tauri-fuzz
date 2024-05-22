@@ -41,6 +41,12 @@ pub fn invoke_command_minimal(webview: WebviewWindow<MockRuntime>, request: Invo
     )
 }
 
+/// Url used by tauri commands
+#[cfg(not(any(windows, target_os = "android")))]
+const TAURI_PROTOCOL_URL: &str = "tauri://localhost";
+#[cfg(any(windows, target_os = "android"))]
+const TAURI_PROTOCOL_URL: &str = "http://tauri.localhost";
+
 /// Helper function to create a Tauri `InvokeRequest`.
 ///
 /// # Arguments
@@ -59,6 +65,7 @@ pub fn create_invoke_request(
     for (k, v) in command_args.inner {
         json_command_args.insert(k, v);
     }
+
     match tauri_plugin {
         // The Tauri command invoked is a custom command
 
@@ -99,7 +106,7 @@ pub fn create_invoke_request(
             cmd: cmd_name.into(),
             callback: CallbackFn(0),
             error: CallbackFn(1),
-            url: "tauri://localhost".parse().unwrap(),
+            url: TAURI_PROTOCOL_URL.parse().unwrap(),
             body: InvokeBody::from(serde_json::value::Value::Object(json_command_args)),
             headers: Default::default(),
         },
@@ -151,7 +158,7 @@ pub fn create_invoke_request(
                 cmd,
                 callback: CallbackFn(0),
                 error: CallbackFn(1),
-                url: "tauri://localhost".parse().unwrap(),
+                url: TAURI_PROTOCOL_URL.parse().unwrap(),
                 body: InvokeBody::from(serde_json::value::Value::Object(json_command_args)),
                 headers: Default::default(),
             }
@@ -285,6 +292,7 @@ commands.allow = [
 
         let mut context = mock_context(noop_assets());
         setup_context_with_plugin(&mut context, "fs", FS_READ_FILE_PERMISSION, CAPABILITY);
+        println!("{:#?}", context);
 
         // Build the app with our custom context and init the plugin
         let app = mock_builder()
@@ -307,6 +315,7 @@ commands.allow = [
         let request = create_invoke_request(Some("fs".into()), "read_file", args);
 
         let res: Result<Vec<u8>, String> = invoke_command(&webview, request);
+        println!("{:#?}", res);
         assert!(res.is_ok());
         assert_eq!(&String::from_utf8_lossy(&res.unwrap()), "foo\n");
     }
@@ -323,6 +332,5 @@ commands.allow = [
         let request = create_invoke_request(None, "test_command", CommandArgs::new());
         invoke_command_minimal(webview, request);
         // The goal is just to reach this point
-        assert!(true);
     }
 }
