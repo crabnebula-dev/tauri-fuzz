@@ -17,20 +17,19 @@ macro_rules! define_fuzz_target {
         policy: $policy:expr $(,)?
     ) => {
         use ::fuzzer::tauri_utils::{create_invoke_payload, invoke_command_minimal, CommandArgs};
+        use ::fuzzer::SimpleFuzzerConfig;
         use ::libafl::inputs::{BytesInput, HasBytesVec};
         use ::libafl::prelude::ExitKind;
-        use ::tauri::test::{mock_builder, mock_context, noop_assets, MockRuntime};
-        use ::tauri::App as TauriApp;
+        use ::tauri::test::{mock_builder, mock_context, noop_assets};
         use ::tauri::InvokePayload;
 
         const COMMAND_NAME: &str = $command;
 
         fn main() {
-            let ptr = harness as *const ();
-            let fuzz_dir = std::path::PathBuf::from(std::env!("CARGO_MANIFEST_DIR"));
+            let fuzz_dir = ::std::path::PathBuf::from(::std::env!("CARGO_MANIFEST_DIR"));
             let fuzz_config_file = fuzz_dir.join("fuzzer_config.toml");
-            let options = fuzzer::SimpleFuzzerConfig::from_toml(fuzz_config_file, COMMAND_NAME, fuzz_dir).into();
-            ::fuzzer::fuzz_main(harness, options, ptr as usize, $policy);
+            let options = SimpleFuzzerConfig::from_toml(fuzz_config_file, COMMAND_NAME, fuzz_dir).into();
+            ::fuzzer::fuzz_main(harness, options, harness as *const () as usize, $policy);
         }
 
         fn harness(input: &BytesInput) -> ExitKind {
