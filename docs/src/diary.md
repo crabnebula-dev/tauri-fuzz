@@ -709,8 +709,8 @@ InvokeRequest {
 
 #### Conflicting C runtime library during linking
 
-```
-= note: LINK : warning LNK4098: defaultlib 'LIBCMT' conflicts with use of other libs; use /NODEFAULTLIB:library
+```ignore
+= note: LINK : warning LNK4098: defaultlib "LIBCMT" conflicts with use of other libs; use /NODEFAULTLIB:library
           LINK : error LNK1218: warning treated as error; no output file generated
 ```
 - This seems to happen
@@ -723,7 +723,7 @@ InvokeRequest {
   - my guess is that some library is trying to link against "libcmt" on top
 - Solution found
   - linker options added in `.cargo/config.toml` file
-  ```
+  ```ignore
   [target.x86_64-pc-windows-msvc]
   rustflags = ["-C", "link-args=/NODEFAULTLIB:libcmt.lib"]
   ```
