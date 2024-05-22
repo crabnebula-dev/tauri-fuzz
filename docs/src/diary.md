@@ -703,7 +703,33 @@ InvokeRequest {
 - Windows do not use utf-8 encoding but utf-16 for strings
   - use the `windows` crate to import correct windows type and do type conversion
 
+#### Conflicting C runtime library during linking
+
+```
+= note: LINK : warning LNK4098: defaultlib 'LIBCMT' conflicts with use of other libs; use /NODEFAULTLIB:library
+          LINK : error LNK1218: warning treated as error; no output file generated
+```
+- This seems to happen
+- I don't really know what made this bug appear
+  - one suspicion is the upgrade to Rust 1.78
+  - Amr had this first and I only got it when I manually updated my `rustup`
+- Cause of the event
+  - conflicting lib c runtime have been found
+  - I see in the compilation logs that we already link against the "msvcrt.lib" c runtime
+  - my guess is that some library is trying to link against "libcmt" on top
+- Solution found
+  - linker options added in `.cargo/config.toml` file
+  ```
+  [target.x86_64-pc-windows-msvc]
+  rustflags = ["-C", "link-args=/NODEFAULTLIB:libcmt.lib"]
+  ```
+- to be honest I don't really understand what's happening precisely and I don't want to dig further.
+But I'm happy to have found a solution quickly but I expect this to bite me back in the future
+
+
 ### Tools for debugging
 
 - `ProcessMonitor` to see all the events related to a process
 - `DependencyWalker` to investigate issue related to modules/dlls
+
+####
