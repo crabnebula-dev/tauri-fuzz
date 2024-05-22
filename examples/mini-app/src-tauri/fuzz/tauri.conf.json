@@ -4,6 +4,7 @@
   "identifier": "dev.crabnebula.mini-app-fuzz",
   "bundle": {
     "active": true,
-    "targets": "all"
+    "targets": "all",
+    "icon": ["../icons/icon.ico"]
   }
 }
