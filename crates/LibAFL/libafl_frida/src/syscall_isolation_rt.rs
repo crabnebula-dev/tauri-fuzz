@@ -29,6 +29,8 @@ use crate::utils::frida_to_cs;
 
 /// `Frida`-based binary-only instrumentation that intercepts calls to system calls
 pub struct SyscallIsolationRuntime {
+    /// If the runtime has been initialized yet
+    initialized: Arc<Mutex<bool>>,
     /// A listener to the harness function we are fuzzing
     harness_listener: HarnessListener,
     /// Listeners to all the libc functions that are being monitored
@@ -162,7 +164,12 @@ impl FridaRuntime for SyscallIsolationRuntime {
         // if !is_tauri_app_instrumented {
         //     panic!("{} not instrumented", self.tauri_app.name)
         // }
+        if *self.initialized.lock().expect("Poisoned initialized mutex") {
+            return;
+        }
+        *self.initialized.lock().unwrap() = true;
 
+        log::error!("Initiating the SyscallIsolationRuntime");
         let mut interceptor = Interceptor::obtain(gum);
         interceptor.attach(
             self.harness_listener.function_pointer,
@@ -260,6 +267,7 @@ impl SyscallIsolationRuntime {
         let harness_listener = Self::create_harness_listener(harness_address, Arc::clone(&flag))?;
 
         let res = SyscallIsolationRuntime {
+            initialized: Arc::new(Mutex::new(false)),
             harness_listener,
             function_listeners: listeners,
             activated: flag,
