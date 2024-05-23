@@ -216,7 +216,7 @@ impl SyscallIsolationRuntime {
         // println!("{:#?}", modules_info());
         // let lib = Module::enumerate_modules()
         //     .into_iter()
-        //     .find(|m| m.name.contains("KERNEL32"))
+        //     .find(|m| m.name.contains("ntdll.dll"))
         //     .ok_or(Error::unknown(format!(
         //         "lib {} not found in modules",
         //         "kernel"

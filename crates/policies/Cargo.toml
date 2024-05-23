@@ -10,5 +10,4 @@ log = "0.4"
 thiserror = "1.0"
 
 [target.'cfg(target_env = "msvc")'.dependencies]
-windows-sys = { version = "0.52", features = ["Win32", "Win32_Foundation"] }
-windows = "0.54"
+windows-sys = { version = "0.52", features = ["Win32", "Win32_Foundation", "Wdk", "Wdk_Foundation"] }

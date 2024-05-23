@@ -91,4 +91,24 @@ mod test {
             assert_eq!(Some(134), status.code());
         }
     }
+
+    #[test]
+    fn write_foo_accepted_by_writeonly_policy() {
+        let w = setup_mock();
+        let options =
+            fuzzer::SimpleFuzzerConfig::from_toml(fuzz_config(), COMMAND_NAME, fuzz_dir()).into();
+        let harness = |input: &BytesInput| {
+            invoke_command_minimal(w.clone(), create_request(input.bytes()));
+            ExitKind::Ok
+        };
+        unsafe {
+            assert!(fuzzer::fuzz_test(
+                harness,
+                &options,
+                COMMAND_PTR as usize,
+                policies::file_policy::write_only_access(),
+            )
+            .is_ok(),)
+        }
+    }
 }

@@ -734,6 +734,21 @@ InvokeRequest {
 - to be honest I don't really understand what's happening precisely and I don't want to dig further.
   But I'm happy to have found a solution quickly but I expect this to bite me back in the future
 
+#### NtCreateFile use flags different from the doc
+
+- doc: https://learn.microsoft.com/en-us/windows/win32/api/winternl/nf-winternl-ntcreatefile
+- from the doc `NtCreateFile` is supposed to use flags such as:
+  - FILE_GENERIC_READ: 0x00120089
+  - FILE_GENERIC_WRITE: 0x00120116
+  - FILE_READ_DATA: 0x00000001
+- from the experimentations we get values such as:
+  - open file in read only: 0x80100080
+  - open file in write only: 0x40100080
+- this matches other known windows constants that exist are:
+  - GENERIC_READ: 0x80000000
+  - GENERIC_WRITE: 0x40000000
+- we will use these flags eventhough this is different from what described from the doc
+
 ### Docker on Windows
 
 - Docker daemon can be started by launching Docker desktop
