@@ -6,13 +6,17 @@ pub use crate::fuzzer_options::SimpleFuzzerConfig;
 #[cfg(feature = "tauri")]
 pub mod tauri_utils;
 
+mod from_random_bytes;
+
+pub use from_random_bytes::FromRandomBytes;
+
 #[macro_export]
 macro_rules! define_fuzz_target {
     (
         command: $command:literal,
         path: $path:path,
         parameters: {
-            $($param:ident : $param_fn:expr),+ $(,)?
+            $($param:ident : $param_type:ty),+ $(,)?
         },
         policy: $policy:expr $(,)?
     ) => {
@@ -47,7 +51,7 @@ macro_rules! define_fuzz_target {
             let mut params = CommandArgs::new();
 
             $(
-                let param = $param_fn(bytes);
+                let param: $param_type = <$param_type as ::fuzzer::FromRandomBytes>::from_random_bytes(bytes).unwrap();
                 params.insert(stringify!($param).to_string(), param);
             )*
 

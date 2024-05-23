@@ -1,14 +1,16 @@
+use fuzzer::tauri_utils::{create_invoke_payload, invoke_command_minimal, CommandArgs};
 /// This is a template to create a fuzz target
 ///
 /// Steps:
 /// 1. Copy this file and rename it
-/// 2. Change `COMMAND_NAME` const value on line 17
-/// 3. Change the path to your command in `tauri::generate_handler` on line 34
-/// 4. Modify `create_payload` to create arguments for your command on line 43
+/// 2. Change `COMMAND_NAME` const value on line 19
+/// 3. Change the path to your command in `tauri::generate_handler` on line 35
+/// 4. Modify `create_payload` to create arguments for your command on line 44
 /// 5. Finally add the new fuzz target in [[bin]] table in Cargo.toml of your project
 ///
-use fuzzer::tauri_utils::{create_invoke_payload, invoke_command_minimal, CommandArgs};
-use fuzzer::SimpleFuzzerConfig;
+/// Note: you may need to implement [FromRandomBytes] for your command argument types.
+///
+use fuzzer::{FromRandomBytes, SimpleFuzzerConfig};
 use libafl::inputs::{BytesInput, HasBytesVec};
 use libafl::prelude::ExitKind;
 use tauri::test::{mock_builder, mock_context, noop_assets};
@@ -42,7 +44,7 @@ fn harness(input: &BytesInput) -> ExitKind {
 fn create_payload(bytes: &[u8]) -> InvokePayload {
     let mut params = CommandArgs::new();
 
-    let param = String::from_utf8_lossy(&bytes).to_string();
+    let param = String::from_random_bytes(&bytes).unwrap();
     params.insert("name", param);
 
     create_invoke_payload(None, COMMAND_NAME, params)

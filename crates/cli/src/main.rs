@@ -20,7 +20,7 @@ struct Cli {
     verbose: u8,
     /// Disables logging
     #[clap(short, long)]
-    quite: bool,
+    quiet: bool,
 
     #[command(subcommand)]
     command: Commands,
@@ -34,7 +34,7 @@ enum Commands {
 fn main() -> anyhow::Result<()> {
     let cli = Cli::parse_from(std::env::args_os().skip(1));
 
-    if !cli.quite {
+    if !cli.quiet {
         if let Err(err) = setup_logger(&cli) {
             eprintln!("Failed to attach logger: {err}");
         }

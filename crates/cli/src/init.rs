@@ -18,7 +18,7 @@ const TAURI_JSON: &str = "tauri.conf.json";
 const TAURI_JSON5: &str = "tauri.conf.json5";
 const TAURI_TOML: &str = "Tauri.toml";
 
-fn folder_has_tuari_config(folder: &Path) -> bool {
+fn folder_has_tauri_config(folder: &Path) -> bool {
     folder.join(TAURI_JSON).exists()
         || folder.join(TAURI_JSON5).exists()
         || folder.join(TAURI_TOML).exists()
@@ -71,7 +71,7 @@ pub fn tauri_dir() -> anyhow::Result<PathBuf> {
 
     for entry in builder.build().flatten() {
         let path = cwd.join(entry.path());
-        if path.is_dir() && folder_has_tuari_config(&path) {
+        if path.is_dir() && folder_has_tauri_config(&path) {
             return Ok(path);
         } else if is_tauri_config_file(&path) {
             return path
