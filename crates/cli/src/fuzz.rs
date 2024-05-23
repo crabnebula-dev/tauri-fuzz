@@ -32,7 +32,7 @@ pub fn command(options: Options) -> anyhow::Result<()> {
     std::process::Command::new("cargo")
         .args(["run", "--bin"])
         .arg(options.fuzz_target)
-        .current_dir(cwd)
+        .current_dir(fuzz_dir)
         .status()
         .map(|_| ())
         .map_err(Into::into)
