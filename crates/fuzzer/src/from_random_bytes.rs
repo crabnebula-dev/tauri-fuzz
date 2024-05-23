@@ -1,7 +1,7 @@
 use std::array::TryFromSliceError;
 use std::{str::Utf8Error, string::FromUtf8Error};
 
-/// Construct a type from arbitray random bytes.
+/// Construct a type from arbitrary random bytes.
 pub trait FromRandomBytes<'a> {
     type Output;
     type Error;
