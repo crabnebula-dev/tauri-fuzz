@@ -1,6 +1,7 @@
 use clap::{ArgAction, Parser, Subcommand};
 use log::Level;
 
+mod fuzz;
 mod init;
 
 #[derive(Parser)]
@@ -29,6 +30,7 @@ struct Cli {
 #[derive(Subcommand)]
 enum Commands {
     Init(init::Options),
+    Fuzz(fuzz::Options),
 }
 
 fn main() -> anyhow::Result<()> {
@@ -42,6 +44,7 @@ fn main() -> anyhow::Result<()> {
 
     let res = match cli.command {
         Commands::Init(opts) => init::command(opts),
+        Commands::Fuzz(opts) => fuzz::command(opts),
     };
 
     if let Err(e) = res {
