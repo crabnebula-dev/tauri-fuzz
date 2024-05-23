@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use std::fmt::Debug;
 use std::str::FromStr;
 use tauri::ipc::{CallbackFn, InvokeBody};
-use tauri::test::MockRuntime;
+use tauri::test::{MockRuntime, INVOKE_KEY};
 use tauri::webview::InvokeRequest;
 use tauri::Builder;
 use tauri::WebviewWindow;
@@ -109,6 +109,7 @@ pub fn create_invoke_request(
             url: TAURI_PROTOCOL_URL.parse().unwrap(),
             body: InvokeBody::from(serde_json::value::Value::Object(json_command_args)),
             headers: Default::default(),
+            invoke_key: INVOKE_KEY.to_string(),
         },
 
         Some(plugin) => {
@@ -161,6 +162,7 @@ pub fn create_invoke_request(
                 url: TAURI_PROTOCOL_URL.parse().unwrap(),
                 body: InvokeBody::from(serde_json::value::Value::Object(json_command_args)),
                 headers: Default::default(),
+                invoke_key: INVOKE_KEY.to_string(),
             }
         }
     }
@@ -292,7 +294,6 @@ commands.allow = [
 
         let mut context = mock_context(noop_assets());
         setup_context_with_plugin(&mut context, "fs", FS_READ_FILE_PERMISSION, CAPABILITY);
-        println!("{:#?}", context);
 
         // Build the app with our custom context and init the plugin
         let app = mock_builder()
@@ -315,9 +316,16 @@ commands.allow = [
         let request = create_invoke_request(Some("fs".into()), "read_file", args);
 
         let res: Result<Vec<u8>, String> = invoke_command(&webview, request);
-        println!("{:#?}", res);
         assert!(res.is_ok());
-        assert_eq!(&String::from_utf8_lossy(&res.unwrap()), "foo\n");
+        let res = unsafe { String::from_utf8_unchecked(res.unwrap()) };
+
+        // Remove trailing linebreaks for every platform
+        let stripped_res = res
+            .strip_suffix("\r\n")
+            .or(res.strip_suffix('\n'))
+            .unwrap_or(&res);
+
+        assert_eq!(stripped_res, "foo");
     }
 
     #[test]

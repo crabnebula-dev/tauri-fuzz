@@ -11,7 +11,7 @@ members = [
 exclude = ["./crates/LibAFL"]
 
 [workspace.dependencies]
-# frida-gum = { path = "../../tmp2/frida-rust/frida-gum", features = [
+# frida-gum = { path = "../frida-rust/frida-gum", features = [
 #   "auto-download",
 #   "event-sink",
 #   "invocation-listener",
@@ -43,8 +43,8 @@ tauri-build = { version = "2.0.0-beta", features = [] }
 tauri-utils = { version = "2.0.0-beta", features = [] }
 tauri-plugin-fs = "2.0.0-beta"
 
-# tauri = { path = "../../tmp2/tauri/core/tauri", features = ["test", "tracing"] }
-# tauri-runtime = { path = "../../tmp2/tauri/core/tauri-runtime", features = [] }
-# tauri-build = { path = "../../tmp2/tauri/core/tauri-build", features = [] }
-# tauri-utils = { path = "../../tmp2/tauri/core/tauri-utils", features = [] }
-# tauri-plugin-fs = { path = "../../tmp2/plugins-workspace/plugins/fs" }
+# tauri = { path = "../tauri/core/tauri", features = ["test", "tracing"] }
+# tauri-runtime = { path = "../tauri/core/tauri-runtime", features = [] }
+# tauri-build = { path = "../tauri/core/tauri-build", features = [] }
+# tauri-utils = { path = "../tauri/core/tauri-utils", features = [] }
+# tauri-plugin-fs = { path = "../plugins-workspace/plugins/fs" }

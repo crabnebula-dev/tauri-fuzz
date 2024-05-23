@@ -607,7 +607,10 @@ InvokeRequest {
 
 - Github actions
   - use act to run github actions locally
-  - to run test as github actions locally `act -W ".github/workflows/build_and_test.yml" -j Build-and-test-Fuzzer`
+  - to run test as github actions locally
+  - with linux container: `act -W ".github/workflows/build_and_test.yml" -j Build-and-test-Fuzzer -P ubuntu-latest=catthehacker/ubuntu:act-latest`
+  - on windows host: `act -W ".github/workflows/build_and_test.yml" -j Build-and-test-Fuzzer -P windows-latest=self-hosted --pull=false`
+  - always do the command twice, the first one usually fails for unknown reasons
 - Bug with Rust 1.78
   - Rust 1.78 enables debug assertions in std by default
   - `slice::from_raw_parts` panics when given a pointer which is not aligned/null/bigger than `isize::max`
@@ -713,6 +716,7 @@ InvokeRequest {
 = note: LINK : warning LNK4098: defaultlib "LIBCMT" conflicts with use of other libs; use /NODEFAULTLIB:library
           LINK : error LNK1218: warning treated as error; no output file generated
 ```
+
 - This seems to happen
 - I don't really know what made this bug appear
   - one suspicion is the upgrade to Rust 1.78
@@ -728,7 +732,7 @@ InvokeRequest {
   rustflags = ["-C", "link-args=/NODEFAULTLIB:libcmt.lib"]
   ```
 - to be honest I don't really understand what's happening precisely and I don't want to dig further.
-But I'm happy to have found a solution quickly but I expect this to bite me back in the future
+  But I'm happy to have found a solution quickly but I expect this to bite me back in the future
 
 ### Docker on Windows
 
