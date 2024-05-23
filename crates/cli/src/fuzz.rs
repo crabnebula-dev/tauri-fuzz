@@ -2,6 +2,8 @@ use std::path::PathBuf;
 
 use clap::Parser;
 
+use crate::util::tauri_dir;
+
 #[derive(Parser, Debug)]
 pub struct Options {
     /// Set target directory for init
@@ -16,14 +18,16 @@ pub struct Options {
 pub fn command(options: Options) -> anyhow::Result<()> {
     let cwd = match options.directory {
         Some(dir) => dir,
-        None => {
-            let fuzz_dir = std::env::current_dir()?.join("fuzz");
-            if !fuzz_dir.exists() {
-                anyhow::bail!("Couldn't find `fuzz` directory in the current directory")
-            }
-            fuzz_dir
-        }
+        None => tauri_dir()?,
     };
+
+    let fuzz_dir = cwd.join("fuzz");
+    if !fuzz_dir.exists() {
+        anyhow::bail!(
+            "Couldn't find `fuzz` directory in {}, did you forget to run `cargo-tauri-fuzz init`?",
+            cwd.display()
+        )
+    }
 
     std::process::Command::new("cargo")
         .args(["run", "--bin"])

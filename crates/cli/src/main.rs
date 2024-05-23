@@ -3,6 +3,7 @@ use log::Level;
 
 mod fuzz;
 mod init;
+mod util;
 
 #[derive(Parser)]
 #[command(
