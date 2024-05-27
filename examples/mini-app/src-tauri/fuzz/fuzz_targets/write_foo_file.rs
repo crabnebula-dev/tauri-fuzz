@@ -38,11 +38,12 @@ pub fn main() {
     );
 }
 
-fn create_request(bytes: &[u8]) -> InvokeRequest {
-    let input = String::from_utf8_lossy(bytes).to_string();
+
+fn create_request(_bytes: &[u8]) -> InvokeRequest {
+    // let input = String::from_utf8_lossy(bytes).to_string();
     let arg_name = String::from("input");
     let mut args = CommandArgs::new();
-    args.insert(arg_name, input);
+    args.insert(arg_name, "foo".to_string());
     create_invoke_request(None, COMMAND_NAME, args)
 }
 
@@ -89,6 +90,26 @@ mod test {
         } else {
             // Check that fuzzer process launched exit with status error 134
             assert_eq!(Some(134), status.code());
+        }
+    }
+
+    #[test]
+    fn write_foo_accepted_by_writeonly_policy() {
+        let w = setup_mock();
+        let options =
+            fuzzer::SimpleFuzzerConfig::from_toml(fuzz_config(), COMMAND_NAME, fuzz_dir()).into();
+        let harness = |input: &BytesInput| {
+            invoke_command_minimal(w.clone(), create_request(input.bytes()));
+            ExitKind::Ok
+        };
+        unsafe {
+            assert!(fuzzer::fuzz_test(
+                harness,
+                &options,
+                COMMAND_PTR as usize,
+                policies::file_policy::write_only_access(),
+            )
+            .is_ok(),)
         }
     }
 }

@@ -142,13 +142,13 @@ mod test {
             ExitKind::Ok
         };
         unsafe {
-            let _ = fuzzer::fuzz_test(
+            assert!(fuzzer::fuzz_test(
                 harness,
                 &options.into(),
                 COMMAND_PTR as usize,
                 policies::file_policy::read_only_access(),
             )
-            .is_ok();
+            .is_ok(),)
         }
     }
 }
