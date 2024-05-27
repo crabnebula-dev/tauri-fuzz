@@ -38,11 +38,11 @@ pub fn main() {
     );
 }
 
-fn create_request(bytes: &[u8]) -> InvokeRequest {
-    let input = String::from_utf8_lossy(bytes).to_string();
+fn create_request(_bytes: &[u8]) -> InvokeRequest {
+    // let input = String::from_utf8_lossy(bytes).to_string();
     let arg_name = String::from("input");
     let mut args = CommandArgs::new();
-    args.insert(arg_name, input);
+    args.insert(arg_name, "foo".to_string());
     create_invoke_request(None, COMMAND_NAME, args)
 }
 

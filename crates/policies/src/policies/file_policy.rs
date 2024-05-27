@@ -132,6 +132,7 @@ mod file_policy_impl {
     use super::BLOCKED_FILENAMES;
     use crate::engine::{FunctionPolicy, FuzzPolicy, Rule, RuleError};
     use crate::policies::block_on_entry;
+    use nt_string::unicode_string::NtUnicodeStr;
     use windows_sys::Wdk::Foundation::OBJECT_ATTRIBUTES;
     use windows_sys::Win32::Foundation::{GENERIC_READ, GENERIC_WRITE};
 
@@ -198,13 +199,18 @@ mod file_policy_impl {
             let obj_attr: OBJECT_ATTRIBUTES = *obj_attr_ptr;
 
             // Convert win32 UNICODE_STRING to a rust String
-            let unicode_data = (*obj_attr.ObjectName).Buffer;
+            let filename_buffer = (*obj_attr.ObjectName).Buffer;
+            let filename_slice =
+                slice::from_raw_parts(filename_buffer, (*obj_attr.ObjectName).Length as usize);
+            // Get a proper UNICODE_STRING parsin with the nt-string crate
+            let unicode_data =
+                NtUnicodeStr::try_from_u16_until_nul(filename_slice).map_err(|_| {
+                    RuleError::ParametersTypeConversionError(String::from(
+                        "Failed to get Unicode string from parameter",
+                    ))
+                })?;
 
-            // NOTE: `unicode.Length` gives the wrong size of the string
-            // Instead we manually calculate the size of the string by searching the first null byte
-            let len = (0..).take_while(|&i| *unicode_data.offset(i) != 0).count();
-            let buffer: &[u16] = slice::from_raw_parts(unicode_data, len);
-            let file_path = String::from_utf16_lossy(buffer);
+            let file_path = String::from_utf16_lossy(unicode_data.as_slice());
             Ok(!BLOCKED_FILENAMES
                 .iter()
                 .any(|blocked_filename| file_path.ends_with(blocked_filename)))

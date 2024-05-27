@@ -83,6 +83,9 @@ pub enum RuleError {
     #[error("Error while converting a string")]
     StringConversionError(#[from] std::str::Utf8Error),
 
+    #[error("Error while trying to convert a parameter into Rust type: `{0}`")]
+    ParametersTypeConversionError(String),
+
     /// Generic error that happened during the rule evaluation
     #[error("Error during evaluation: `{0}`")]
     EvaluationError(String),
