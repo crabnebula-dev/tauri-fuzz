@@ -7,7 +7,7 @@ members = [
   "crates/cli",
   # Examples
   "examples/mini-app/src-tauri",
-  "examples/mini-app/src-tauri/fuzz",
+  "examples/mini-app/src-tauri/fuzz_with_tests",
 ]
 exclude = ["./crates/LibAFL"]
 

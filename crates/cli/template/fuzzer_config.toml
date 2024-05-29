@@ -5,6 +5,6 @@ nb_of_cores = 1
 # Directories containing starting input to start fuzzing
 corpus_input = []
 # Enable code coverage optimization
-with_coverage = true
+with_coverage = false
 # Port used by the fuzzer broker
 broker_port = 8888

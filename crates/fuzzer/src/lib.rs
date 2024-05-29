@@ -20,12 +20,14 @@ macro_rules! define_fuzz_target {
         },
         policy: $policy:expr $(,)?
     ) => {
-        use ::fuzzer::tauri_utils::{create_invoke_payload, invoke_command_minimal, CommandArgs};
-        use ::fuzzer::SimpleFuzzerConfig;
-        use ::libafl::inputs::{BytesInput, HasBytesVec};
-        use ::libafl::prelude::ExitKind;
-        use ::tauri::test::{mock_builder, mock_context, noop_assets};
-        use ::tauri::InvokePayload;
+        use fuzzer::tauri_utils::{create_invoke_request, invoke_command_minimal, CommandArgs};
+        use fuzzer::SimpleFuzzerConfig;
+        use libafl::inputs::{BytesInput, HasBytesVec};
+        use libafl::prelude::ExitKind;
+        use tauri::test::{mock_builder, mock_context, noop_assets, MockRuntime};
+        use tauri::webview::InvokeRequest;
+        use tauri::WebviewWindow;
+
 
         const COMMAND_NAME: &str = $command;
 
@@ -36,18 +38,25 @@ macro_rules! define_fuzz_target {
             ::fuzzer::fuzz_main(harness, options, harness as *const () as usize, $policy);
         }
 
-        fn harness(input: &BytesInput) -> ExitKind {
+        fn setup_mock() -> WebviewWindow<MockRuntime> {
             let app = mock_builder()
                 .invoke_handler(tauri::generate_handler![$path])
                 .build(mock_context(noop_assets()))
                 .expect("Failed to init Tauri app");
+            let webview = tauri::WebviewWindowBuilder::new(&app, "main", Default::default())
+                .build()
+                .unwrap();
+            webview
+        }
 
-            let _ = invoke_command_minimal(app, create_payload(input.bytes()));
 
+        fn harness(input: &BytesInput) -> ExitKind {
+            let webview = setup_mock();
+            let _ = invoke_command_minimal(webview, create_request(input.bytes()));
             ExitKind::Ok
         }
 
-        fn create_payload(bytes: &[u8]) -> InvokePayload {
+        fn create_request(bytes: &[u8]) -> InvokeRequest {
             let mut params = CommandArgs::new();
 
             $(
@@ -55,7 +64,7 @@ macro_rules! define_fuzz_target {
                 params.insert(stringify!($param).to_string(), param);
             )*
 
-            create_invoke_payload(None, COMMAND_NAME, params)
+            create_invoke_request(None, COMMAND_NAME, params)
         }
     }
 }

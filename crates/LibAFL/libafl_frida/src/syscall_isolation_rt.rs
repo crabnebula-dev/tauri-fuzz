@@ -169,7 +169,7 @@ impl FridaRuntime for SyscallIsolationRuntime {
         }
         *self.initialized.lock().unwrap() = true;
 
-        log::error!("Initiating the SyscallIsolationRuntime");
+        log::trace!("Initiating the SyscallIsolationRuntime");
         let mut interceptor = Interceptor::obtain(gum);
         interceptor.attach(
             self.harness_listener.function_pointer,

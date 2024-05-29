@@ -1,5 +1,5 @@
 [package]
-name = "mini-app-fuzz"
+name = "mini-app-fuzz-tests"
 version = "0.0.0"
 publish = false
 edition = "2021"
@@ -8,9 +8,6 @@ edition = "2021"
 tauri-build = { workspace = true }
 
 [dependencies]
-log = "0.4"
-env_logger = "*"
-color-backtrace = "0.6"
 mini-app = { path = ".." }
 policies = { workspace = true }
 fuzzer = { workspace = true, features = ["tauri"] }
@@ -20,7 +17,6 @@ tracing-subscriber = "0.3.17"
 tauri = { workspace = true }
 tauri-utils = { workspace = true }
 libafl = { workspace = true }
-libafl_bolts = { workspace = true }
 tauri-plugin-fs = { workspace = true}
 
 [[bin]]

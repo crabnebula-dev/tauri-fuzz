@@ -11,14 +11,18 @@ pub trait FromRandomBytes<'a> {
 impl FromRandomBytes<'_> for String {
     type Output = String;
     type Error = FromUtf8Error;
+
+    // Random data easily produce invalid utf-8 characters, we don't want to invalidate too much of
+    // them so we use the lossy conversion
     fn from_random_bytes(bytes: &[u8]) -> Result<Self::Output, Self::Error> {
-        String::from_utf8(bytes.to_vec())
+        Ok(String::from_utf8_lossy(bytes).to_string())
     }
 }
 
 impl<'a> FromRandomBytes<'a> for &str {
     type Output = &'a str;
     type Error = Utf8Error;
+
     fn from_random_bytes(bytes: &'a [u8]) -> Result<Self::Output, Self::Error> {
         std::str::from_utf8(bytes)
     }
@@ -31,7 +35,17 @@ macro_rules! impl_int {
                 type Output = $int;
                 type Error = TryFromSliceError;
                 fn from_random_bytes(bytes: &[u8]) -> Result<Self::Output, Self::Error> {
-                    bytes.try_into().map(|b| <$int>::from_be_bytes(b))
+                    // TODO: this is generic but can certainly be improved
+                    // performance-wise
+
+                    // Init an array with biggest basic integer size (128 bits)
+                    let mut bytes_array = [0u8; 16];
+                    for (dst, src) in bytes_array.iter_mut().zip(bytes) {
+                        *dst = *src
+                    }
+                    let nb_bytes = std::mem::size_of::<$int>();
+                    let first_bytes = bytes_array[0..nb_bytes].try_into().unwrap();
+                    Ok(<$int>::from_be_bytes(first_bytes))
                 }
             }
         )*
