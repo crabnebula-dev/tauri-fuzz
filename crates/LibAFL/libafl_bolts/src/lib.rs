@@ -15,6 +15,7 @@
 #![cfg_attr(nightly, feature(error_in_core))]
 #![warn(clippy::cargo)]
 #![allow(ambiguous_glob_reexports)]
+#![allow(dead_code)]
 #![deny(clippy::cargo_common_metadata)]
 #![deny(rustdoc::broken_intra_doc_links)]
 #![deny(clippy::all)]
@@ -39,7 +40,7 @@
     trivial_numeric_casts,
     unused_extern_crates,
     unused_import_braces,
-    unused_qualifications,
+    // unused_qualifications,
     //unused_results
 ))]
 #![cfg_attr(test, deny(
@@ -49,7 +50,7 @@
     trivial_numeric_casts,
     unused_extern_crates,
     unused_import_braces,
-    unused_qualifications,
+    // unused_qualifications,
     unused_must_use,
     //unused_results
 ))]
@@ -57,7 +58,7 @@
     test,
     deny(
         bad_style,
-        dead_code,
+        // dead_code,
         improper_ctypes,
         non_shorthand_field_patterns,
         no_mangle_generic_items,

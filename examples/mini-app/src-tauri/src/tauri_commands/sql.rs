@@ -35,7 +35,7 @@ use mysql::{prelude::Queryable, Pool};
 /// Crash on input `abc`
 pub fn sql_transaction(input: &str) -> String {
     // We assume that student name will be taken as input
-    log::debug!("[sql_transaction] Entering with input: {}", input);
+    tracing::debug!("[sql_transaction] Entering with input: {}", input);
 
     let url = "mysql://root@localhost/SchoolDatabase";
 

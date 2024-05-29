@@ -1,66 +1,32 @@
 {
+  "productName": "mini-app",
+  "version": "0.0.0",
+  "identifier": "dev.crabnebula.mini-app",
   "build": {
     "beforeDevCommand": "",
     "beforeBuildCommand": "",
-    "devPath": "../src",
-    "distDir": "../src",
-    "withGlobalTauri": true
+    "frontendDist": "../src"
   },
-  "package": {
-    "productName": "mini-app",
-    "version": "0.0.0"
-  },
-  "tauri": {
-    "allowlist": {
-      "all": true
-    },
-    "bundle": {
-      "active": true,
-      "category": "DeveloperTool",
-      "copyright": "",
-      "deb": {
-        "depends": []
-      },
-      "externalBin": [],
-      "icon": [
-        "icons/32x32.png",
-        "icons/128x128.png",
-        "icons/128x128@2x.png",
-        "icons/icon.icns",
-        "icons/icon.ico"
-      ],
-      "identifier": "com.mini-app.dev",
-      "longDescription": "",
-      "macOS": {
-        "entitlements": null,
-        "exceptionDomain": "",
-        "frameworks": [],
-        "providerShortName": null,
-        "signingIdentity": null
-      },
-      "resources": [],
-      "shortDescription": "",
-      "targets": "all",
-      "windows": {
-        "certificateThumbprint": null,
-        "digestAlgorithm": "sha256",
-        "timestampUrl": ""
-      }
-    },
+  "app": {
+    "withGlobalTauri": true,
+    "windows": [],
     "security": {
-      "csp": null
-    },
+      "csp": "default-src 'self'; frame-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; connect-src 'self' http://127.0.0.1:*/; img-src 'self'; object-src 'none'; report-uri https://o4506303762464768.ingest.sentry.io/api/4506303812272128/security/?sentry_key=57614e75ac5f8c480aed3a2dd1528f13;"
+    }
+  },
+  "plugins": {
     "updater": {
-      "active": false
-    },
-    "windows": [
-      {
-        "fullscreen": false,
-        "height": 600,
-        "resizable": true,
-        "title": "mini-app",
-        "width": 800
-      }
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDZFQTU2NEQ0Q0ZDRTY5QzEKUldUQmFjN1AxR1NsYmplTy9YUi8vbzJyQ1lGaHB0M3pMZ0FuU1lhUHlYN3NGdDJucVFiZVgyci8K",
+      "endpoints": [
+        "https://cdn.crabnebula.app/update/crabnebula/devtools-desktop/{{target}}-{{arch}}/{{current_version}}"
+      ]
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/icon.ico"
     ]
   }
 }

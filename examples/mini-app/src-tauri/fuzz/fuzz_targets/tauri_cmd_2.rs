@@ -1,39 +1,50 @@
-use fuzzer::tauri_utils::{create_invoke_payload, invoke_command_minimal, CommandArgs};
+use fuzzer::tauri_utils::{create_invoke_request, invoke_command_minimal, CommandArgs};
+use fuzzer::SimpleFuzzerConfig;
 use libafl::inputs::{BytesInput, HasBytesVec};
 use libafl::prelude::ExitKind;
 use tauri::test::{mock_builder, mock_context, noop_assets, MockRuntime};
-use tauri::App as TauriApp;
-use tauri::InvokePayload;
+use tauri::webview::InvokeRequest;
+use tauri::WebviewWindow;
 mod utils;
 use utils::*;
 
 const COMMAND_NAME: &str = "tauri_cmd_2";
+const COMMAND_PTR: *const () = mini_app::basic::tauri_cmd_2 as *const ();
 
-fn setup_tauri_mock() -> Result<TauriApp<MockRuntime>, tauri::Error> {
-    mock_builder()
+fn setup_mock() -> WebviewWindow<MockRuntime> {
+    let app = mock_builder()
         .invoke_handler(tauri::generate_handler![mini_app::basic::tauri_cmd_2])
         .build(mock_context(noop_assets()))
+        .expect("Failed to init Tauri app");
+    let webview = tauri::WebviewWindowBuilder::new(&app, "main", Default::default())
+        .build()
+        .unwrap();
+    webview
 }
 
 pub fn main() {
-    let addr = mini_app::basic::tauri_cmd_2 as *const ();
-    let options =
-        fuzzer::SimpleFuzzerConfig::from_toml(fuzz_config(), COMMAND_NAME, fuzz_dir()).into();
+    let w = setup_mock();
     let harness = |input: &BytesInput| {
-        let app = setup_tauri_mock().expect("Failed to init Tauri app");
-        invoke_command_minimal(app, create_payload(input.bytes()));
+        invoke_command_minimal(w.clone(), create_request(input.bytes()));
         ExitKind::Ok
     };
-    fuzzer::fuzz_main(harness, options, addr as usize, policies::no_policy());
+    let options = SimpleFuzzerConfig::from_toml(fuzz_config(), COMMAND_NAME, fuzz_dir());
+
+    fuzzer::fuzz_main(
+        harness,
+        options.into(),
+        COMMAND_PTR as usize,
+        policies::no_policy(),
+    );
 }
 
 // Helper code to create a payload tauri_cmd_2
-fn create_payload(bytes: &[u8]) -> InvokePayload {
+fn create_request(bytes: &[u8]) -> InvokeRequest {
     let input = bytes_input_to_u32(bytes);
     let arg_name = String::from("input");
     let mut args = CommandArgs::new();
     args.insert(arg_name, input);
-    create_invoke_payload(None, COMMAND_NAME, args)
+    create_invoke_request(None, COMMAND_NAME, args)
 }
 
 fn bytes_input_to_u32(bytes_input: &[u8]) -> u32 {
@@ -50,18 +61,21 @@ mod test {
 
     #[test]
     fn no_crash_tauri_cmd_2() {
-        let addr = mini_app::basic::tauri_cmd_2 as *const ();
         let options =
             fuzzer::SimpleFuzzerConfig::from_toml(fuzz_config(), COMMAND_NAME, fuzz_dir()).into();
+        let w = setup_mock();
         let harness = |_input: &BytesInput| {
-            let app = setup_tauri_mock().expect("Failed to init Tauri app");
-            invoke_command_minimal(app, create_payload(&1u32.to_be_bytes()));
+            invoke_command_minimal(w.clone(), create_request(&1u32.to_be_bytes()));
             ExitKind::Ok
         };
         unsafe {
-            assert!(
-                fuzzer::fuzz_test(harness, &options, addr as usize, policies::no_policy()).is_ok()
-            );
+            assert!(fuzzer::fuzz_test(
+                harness,
+                &options,
+                COMMAND_PTR as usize,
+                policies::no_policy()
+            )
+            .is_ok());
         }
     }
 
@@ -71,19 +85,18 @@ mod test {
     #[test]
     #[ignore]
     fn hidden_crash_tauri_cmd_2() {
-        let addr = mini_app::basic::tauri_cmd_2 as *const ();
         let options =
             fuzzer::SimpleFuzzerConfig::from_toml(fuzz_config(), COMMAND_NAME, fuzz_dir()).into();
+        let w = setup_mock();
         let harness = |_input: &BytesInput| {
-            let app = setup_tauri_mock().expect("Failed to init Tauri app");
-            invoke_command_minimal(app, create_payload(&100u32.to_be_bytes()));
+            invoke_command_minimal(w.clone(), create_request(&100u32.to_be_bytes()));
             ExitKind::Ok
         };
         unsafe {
             let _ = fuzzer::fuzz_test(
                 harness,
                 &options,
-                addr as usize,
+                COMMAND_PTR as usize,
                 policies::file_policy::no_file_access(),
             )
             .is_ok();

@@ -30,7 +30,7 @@ use mysql::{prelude::Queryable, Pool};
 #[tauri::command]
 pub fn sql_injection_vulnerability(input: &str) -> String {
     // We assume that student name will be taken as input
-    log::debug!("[sql_transaction] Entering with input: {}", input);
+    tracing::debug!("[sql_transaction] Entering with input: {}", input);
 
     let url = "mysql://root@localhost/SchoolDatabase";
 

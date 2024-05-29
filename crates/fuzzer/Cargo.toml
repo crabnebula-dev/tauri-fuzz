@@ -15,8 +15,12 @@ policies = { workspace = true }
 serde = { version = "1.0.197" }
 serde_json = { version = "1.0.115", optional = true }
 tauri = { workspace = true, optional = true }
+tauri-utils = { workspace = true }
 log = "0.4"
 toml = "0.8"
+
+[dev-dependencies]
+tauri-plugin-fs = { workspace = true }
 
 [features]
 tauri = ["dep:serde_json", "dep:tauri"]

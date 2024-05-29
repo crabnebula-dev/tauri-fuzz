@@ -1,4 +1,3 @@
-use log::trace;
 use std::fs::File;
 use std::io::{Read, Write};
 use std::path::PathBuf;
@@ -6,7 +5,7 @@ use std::path::PathBuf;
 #[tauri::command]
 /// Write to the file `assets/foo.txt`
 pub fn write_foo_file(input: &str) {
-    trace!("[write_foo_file] Entering with input: {}", input);
+    tracing::info!("[write_foo_file] Entering with input: {}", input);
     let file_path = get_foo_path();
     let mut file = File::create(file_path.clone()).unwrap();
     file.write_all(input.as_bytes())
@@ -16,7 +15,7 @@ pub fn write_foo_file(input: &str) {
 #[tauri::command]
 /// Read the file `assets/foo.txt`
 pub fn read_foo_file() -> String {
-    trace!("[read_foo_file] Entering");
+    tracing::info!("[read_foo_file] Entering");
     let path = get_foo_path();
     let mut content = String::new();
     let mut file = File::open(path).unwrap();

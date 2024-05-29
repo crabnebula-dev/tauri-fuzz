@@ -520,6 +520,112 @@ InvokePayload {
   - `cargo test` executes in the root directory of the crate containing the tests
   - `cargo run` takes current directory where command is executed as root directory
 
+## Porting to 2.0
+
+- InvokeRequest new format
+
+```rust,ignore
+#### Template for a plugin InvokeRequest
+InvokeRequest {
+    cmd: "plugin:fs|read_file",
+    callback: CallbackFn(
+        3255320200,
+    ),
+    error: CallbackFn(
+        3097067861,
+    ),
+    url: Url {
+        scheme: "http",
+        cannot_be_a_base: false,
+        username: "",
+        password: None,
+        host: Some(
+            Ipv4(
+                127.0.0.1,
+            ),
+        ),
+        port: Some(
+            1430,
+        ),
+        path: "/",
+        query: None,
+        fragment: None,
+    },
+    body: Json(
+        Object {
+            "options": Object {},
+            "path": String("README.md"),
+        },
+    ),
+    headers: {},
+}
+```
+
+- Calling plugin commands with the `MockRuntime` (such as `fs:readFile`)
+  - Scope can be modified programmatically using
+
+```rust,ignore
+  let scope = app.fs_scope();
+  scope.allow_file("/home/adang/boum/playground/rust/tauri2/src-tauri/assets/foo.txt");
+```
+
+- `RuntimeAuthority` requires an acl and resolved acl
+  - the `RuntimeAuthority.acl`
+    - isn't modifiable programmatically
+    - defines which permissions are allowed to be used by the application capabilities
+    - ACL from the runtime authority is generated at buildtime in the `Context`
+    - code generation to get the Tauri app context is located at `tauri-codegen::context::context_codegen`
+  - `Resolved`
+    - commands that are allowed/denied
+    - scopes associated to these commands
+    - it is initialized from the complete acl and the capabilities declared by the application
+- When building a Tauri v2 app `tauri-build` :
+  - path to permission manifests from each plugin are stored in environment variables
+    - 3 env variables per plugin used
+      - `DEP_TAURI_PLUGIN_FS_PERMISSION_FILES_PATH`
+        - where the permissions declaration for this plugin are declared
+      - `DEP_TAURI_PLUGIN_FS_GLOBAL_API_SCRIPT_PATH`
+        - JS script containing the API to call commands from the plugin
+        - I think this is only used when the option `withGlobalTauri` is set
+      - `DEP_TAURI_PLUGIN_FS_GLOBAL_SCOPE_SCHEMA_PATH`
+        - schema for the scopes of the plugin
+  - the permissions manifests are parsed
+    - manifests contain all the permissions declared by plugins
+  - parse the capabilities file
+  - check that declared capabilities are compatible with information given by the manifests
+- InvokeRequest `url`
+  - to have request that are deemed `Local` use `tauri://localhost`
+- Fuzzer does not need to `tauri_app_builder.run(...)` just if
+  - we don't need an event loop
+  - we don't need to setup the app
+- we don't need to interact with the app state
+- Url for `InvokeRequest` for local tauri commands is
+  - "http://tauri.localhost" for windows and android
+  - "tauri://localhost" for the rest
+
+## 32
+
+- Github actions
+  - use act to run github actions locally
+  - to run test as github actions locally
+  - with linux container: `act -W ".github/workflows/build_and_test.yml" -j Build-and-test-Fuzzer -P ubuntu-latest=catthehacker/ubuntu:act-latest`
+  - on windows host: `act -W ".github/workflows/build_and_test.yml" -j Build-and-test-Fuzzer -P windows-latest=self-hosted --pull=false`
+  - always do the command twice, the first one usually fails for unknown reasons
+- Bug with Rust 1.78
+  - Rust 1.78 enables debug assertions in std by default
+  - `slice::from_raw_parts` panics when given a pointer which is not aligned/null/bigger than `isize::max`
+  - Bug in libafl_frida which trigger this situation when
+    - `stalker_is_enabled` is set to true in `libafl_frida/src/helper.rs`
+    - and no module is specified to be stalked
+    - as a reminder stalker is enabled if we want to use the code coverage
+  - Bug for coverage when stalker is enabled
+    - in `libafl_frida/src/helper.rs::FridaInstrumentationHelperBuilder::build`
+    - the `instrument_module_predicate` return true for the harness
+    - but the `ModuleMap` returned by `gum_sys` is empty
+    - this provokes a panic from Rust 1.78
+    - current fix is to disable coverage but not good enough
+-
+
 ## Windows
 
 ### Issues
@@ -604,7 +710,55 @@ InvokePayload {
 - Windows do not use utf-8 encoding but utf-16 for strings
   - use the `windows` crate to import correct windows type and do type conversion
 
+#### Conflicting C runtime library during linking
+
+```ignore
+= note: LINK : warning LNK4098: defaultlib "LIBCMT" conflicts with use of other libs; use /NODEFAULTLIB:library
+          LINK : error LNK1218: warning treated as error; no output file generated
+```
+
+- This seems to happen
+- I don't really know what made this bug appear
+  - one suspicion is the upgrade to Rust 1.78
+  - Amr had this first and I only got it when I manually updated my `rustup`
+- Cause of the event
+  - conflicting lib c runtime have been found
+  - I see in the compilation logs that we already link against the "msvcrt.lib" c runtime
+  - my guess is that some library is trying to link against "libcmt" on top
+- Solution found
+  - linker options added in `.cargo/config.toml` file
+  ```ignore
+  [target.x86_64-pc-windows-msvc]
+  rustflags = ["-C", "link-args=/NODEFAULTLIB:libcmt.lib"]
+  ```
+- to be honest I don't really understand what's happening precisely and I don't want to dig further.
+  But I'm happy to have found a solution quickly but I expect this to bite me back in the future
+
+#### NtCreateFile use flags different from the doc
+
+- doc: https://learn.microsoft.com/en-us/windows/win32/api/winternl/nf-winternl-ntcreatefile
+- from the doc `NtCreateFile` is supposed to use flags such as:
+  - FILE_GENERIC_READ: 0x00120089
+  - FILE_GENERIC_WRITE: 0x00120116
+  - FILE_READ_DATA: 0x00000001
+- from the experimentations we get values such as:
+  - open file in read only: 0x80100080
+  - open file in write only: 0x40100080
+- this matches other known windows constants that exist are:
+  - GENERIC_READ: 0x80000000
+  - GENERIC_WRITE: 0x40000000
+- we will use these flags eventhough this is different from what described from the doc
+
+### Docker on Windows
+
+- Docker daemon can be started by launching Docker desktop
+- _docker-credential-desktop not installed or not available in PATH_
+  - in the file `C:\Users\user\.docker\config.json`
+  - delete `credsStore` field
+
 ### Tools for debugging
 
 - `ProcessMonitor` to see all the events related to a process
 - `DependencyWalker` to investigate issue related to modules/dlls
+
+####

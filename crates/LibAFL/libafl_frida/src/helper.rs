@@ -29,9 +29,9 @@ use rangemap::RangeMap;
 
 #[cfg(all(feature = "cmplog", target_arch = "aarch64"))]
 use crate::cmplog_rt::CmpLogRuntime;
-use crate::coverage_rt::CoverageRuntime;
 #[cfg(unix)]
 use crate::{asan::asan_rt::AsanRuntime, drcov_rt::DrCovRuntime};
+use crate::{coverage_rt::CoverageRuntime, syscall_isolation_rt::SyscallIsolationRuntime};
 
 #[cfg(target_vendor = "apple")]
 const ANONYMOUS_FLAG: MapFlags = MapFlags::MAP_ANON;
@@ -256,6 +256,21 @@ impl FridaInstrumentationHelperBuilder {
             if let Some(instrument_module_predicate) = &mut instrument_module_predicate {
                 let skip = skip_module_predicate(&module);
                 let should_instrument = instrument_module_predicate(&module);
+
+                let name = module.name();
+                let range = module.range();
+                let base = range.base_address().0 as usize;
+                let size = range.size();
+
+                let _s = format!(
+                    "ModuleDetails {}: [{:#018x}, {:#018x}]",
+                    name,
+                    base,
+                    base + size
+                );
+                // println!("{:?}", s);
+                // println!("should_instrument: {}", should_instrument);
+
                 should_instrument && !skip
             } else {
                 !skip_module_predicate(&module)
@@ -296,6 +311,15 @@ impl FridaInstrumentationHelperBuilder {
                 .borrow_mut()
                 .init_all(gum, &ranges.borrow(), &module_map);
         }
+
+        // This has to be initialized even if we don't use the stalker
+        if let Some(rt) = runtimes
+            .borrow_mut()
+            .match_first_type_mut::<SyscallIsolationRuntime>()
+        {
+            rt.init(gum, &ranges.borrow(), &module_map)
+        }
+
         let transformer = FridaInstrumentationHelper::build_transformer(gum, &ranges, &runtimes);
 
         #[cfg(unix)]

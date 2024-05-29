@@ -1,32 +1,34 @@
-use fuzzer::tauri_utils::{
-    create_invoke_payload, invoke_command_minimal, mock_builder_minimal, CommandArgs,
-};
+use fuzzer::tauri_utils::{create_invoke_request, invoke_command_minimal, CommandArgs};
 use libafl::inputs::{BytesInput, HasBytesVec};
 use libafl::prelude::ExitKind;
-use tauri::test::{mock_context, noop_assets, MockRuntime};
-use tauri::App as TauriApp;
-use tauri::InvokePayload;
+use tauri::test::{mock_builder, mock_context, noop_assets, MockRuntime};
+use tauri::webview::InvokeRequest;
 mod utils;
 use utils::*;
 
 const COMMAND_NAME: &str = "tauri_cmd_with_backdoor";
+const COMMAND_PTR: *const () = mini_app::demo::tauri_cmd_with_backdoor as *const ();
 
-fn setup_tauri_mock() -> Result<TauriApp<MockRuntime>, tauri::Error> {
-    mock_builder_minimal()
+fn setup_mock() -> tauri::WebviewWindow<MockRuntime> {
+    let app = mock_builder()
         .invoke_handler(tauri::generate_handler![
-            mini_app::tauri_commands::demo::tauri_cmd_with_backdoor
+            mini_app::demo::tauri_cmd_with_backdoor
         ])
         .build(mock_context(noop_assets()))
+        .expect("Failed to init Tauri app");
+    let webview = tauri::WebviewWindowBuilder::new(&app, "main", Default::default())
+        .build()
+        .unwrap();
+    webview
 }
 
 pub fn main() {
     println!("Starting demo...");
-    let addr = mini_app::tauri_commands::demo::tauri_cmd_with_backdoor as *const () as usize;
     let options =
         fuzzer::SimpleFuzzerConfig::from_toml(fuzz_config(), COMMAND_NAME, fuzz_dir()).into();
+    let w = setup_mock();
     let harness = |input: &BytesInput| {
-        let app = setup_tauri_mock().expect("Failed to init Tauri app");
-        invoke_command_minimal(app, create_payload(input.bytes()));
+        invoke_command_minimal(w.clone(), create_request(input.bytes()));
         ExitKind::Ok
     };
 
@@ -34,18 +36,18 @@ pub fn main() {
     fuzzer::fuzz_main(
         harness,
         options,
-        addr,
+        COMMAND_PTR as usize,
         policies::file_policy::no_file_access(),
     );
 }
 
 // Helper code to create a payload for `tauri_cmd_with_backdoor`
-fn create_payload(bytes: &[u8]) -> InvokePayload {
+fn create_request(bytes: &[u8]) -> InvokeRequest {
     let input = bytes_input_to_u32(bytes);
     let arg_name = String::from("input");
     let mut args = CommandArgs::new();
     args.insert(arg_name, input);
-    create_invoke_payload(None, COMMAND_NAME, args)
+    create_invoke_request(None, COMMAND_NAME, args)
 }
 
 fn bytes_input_to_u32(bytes_input: &[u8]) -> u32 {
