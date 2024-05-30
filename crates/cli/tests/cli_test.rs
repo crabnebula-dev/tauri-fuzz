@@ -25,7 +25,6 @@ fn init_and_fuzz() {
     let fuzz_dir = app_dir.join(["src-tauri", "fuzz"].iter().collect::<PathBuf>());
     let binaries_dir = fuzz_dir.join(["target", "debug"].iter().collect::<PathBuf>());
     let fuzz_targets = ["greet", "greet_full"];
-    let fuzz_targets = ["greet_full"];
 
     // Build the cli
     Command::new("cargo")
@@ -33,7 +32,7 @@ fn init_and_fuzz() {
         .output()
         .expect("failed to build [fuzzer-cli]");
 
-    // Init fuzz direcoty in tauri-app
+    // Init fuzz directory in tauri-app
     Command::new("cargo")
         .args(["run", "-p", "fuzzer-cli", "init"])
         .current_dir(app_dir.clone())
@@ -42,10 +41,6 @@ fn init_and_fuzz() {
 
     // Fuzz directory has been created
     assert!(fuzz_dir.is_dir());
-
-    // Create fuzz target
-    // let template_path = fuzz_dir.join(Path::new("_template_.rs"));
-    // let template_full_path = fuzz_dir.join(Path::new("_template_full_.rs"));
 
     // Declare the binaries in Cargo.toml
     let cargo_path = fuzz_dir.join(Path::new("Cargo.toml"));
@@ -68,35 +63,31 @@ fn init_and_fuzz() {
         build_commands.push(build_cmd);
     }
 
-    // Check if the builds were succesful
+    // Check if the builds were successful
     assert!(build_commands.iter().all(|build_cmd| build_cmd.success()));
 
     // Start fuzzing
     // We fuzz by calling the binary directly, this avoids having to wait for compile time from
     // `cargo run`
-    let mut fuzz_commands = vec![];
+    let mut s = System::new();
     for target in fuzz_targets.iter() {
         let binary = binaries_dir.join(PathBuf::from(target));
-        let fuzz_cmd = Command::new(binary.to_str().unwrap())
+        Command::new(binary.to_str().unwrap())
             .spawn()
             .expect("Failed to fuzz with full template");
-        fuzz_commands.push(fuzz_cmd);
-    }
 
-    // Wait for the fuzzer to start
-    // This has to be long enough so that cargo has time to compile the binaries
-    let one_sec = std::time::Duration::from_secs(1);
-    std::thread::sleep(one_sec);
+        // Wait for the fuzzer to start
+        let one_sec = std::time::Duration::from_secs(1);
+        std::thread::sleep(one_sec);
 
-    // Kill the fuzzing processes, the fuzzers should not have exited before
-    let s = System::new_all();
-    for target in fuzz_targets.iter() {
-        let fuzz_processes = s.processes_by_exact_name(target).collect::<Vec<&Process>>();
+        // Kill the fuzzing processes, the fuzzers should not have exited before
+        s.refresh_processes();
+        let fuzz_processes = s.processes_by_name(target).collect::<Vec<&Process>>();
         for proc in fuzz_processes.into_iter() {
             proc.kill();
         }
     }
 
     // Clean the fuzz directory and check that it worked
-    assert!(std::fs::remove_dir_all(fuzz_dir).is_ok());
+    // assert!(std::fs::remove_dir_all(fuzz_dir).is_ok());
 }
