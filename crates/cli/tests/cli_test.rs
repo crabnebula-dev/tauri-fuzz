@@ -1,10 +1,34 @@
-use std::fs::OpenOptions;
+use std::fs::File;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use sysinfo::{Process, System};
 
-const FUZZ_TARGETS_DECLARATION: &str = r#"
+// Custom toml file for the fuzz directory
+// - to use local dependencies instead of remote
+// - declare the fuzz target binaries
+const CARGO_TOML: &str = r#"
+[package]
+name = "tauri-app-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2021"
+
+[workspace]
+
+[build-dependencies]
+tauri-build = "2.0.0-beta"
+
+[dependencies]
+tauri-app = { path = ".." }
+tauri = { version = "2.0.0-beta" }
+tauri-utils = "2.0.0-beta"
+
+fuzzer =  { path = "../../../../../fuzzer", features = ["tauri"] }
+policies = { path = "../../../../../policies" }
+libafl =  { path = "../../../../../LibAFL/libafl" }
+
+
 [[bin]]
 name = "greet"
 path = "fuzz_targets/_template_.rs"
@@ -39,17 +63,14 @@ fn init_and_fuzz() {
         .output()
         .expect("failed to init fuzz directory");
 
-    // Fuzz directory has been created
+    // Check if command was successful
     assert!(fuzz_dir.is_dir());
 
-    // Declare the binaries in Cargo.toml
+    // Replace the Cargo.toml file with our custom one
     let cargo_path = fuzz_dir.join(Path::new("Cargo.toml"));
-    let mut cargo_file = OpenOptions::new()
-        .append(true)
-        .open(cargo_path)
-        .expect("Unable to open fuzz/Cargo.toml");
+    let mut cargo_file = File::create(cargo_path).expect("Unable to open fuzz/Cargo.toml");
     cargo_file
-        .write_all(FUZZ_TARGETS_DECLARATION.as_bytes())
+        .write_all(CARGO_TOML.as_bytes())
         .expect("Failed to declare fuzz target in fuzz/Cargo.toml");
 
     // Build the fuzz targets
