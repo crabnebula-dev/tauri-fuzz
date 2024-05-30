@@ -17,3 +17,6 @@ include_dir = "0.7"
 log = "0.4"
 serde = "1"
 toml = "0.8"
+
+[target.'cfg(target_os = "linux")'.dev-dependencies]
+sysinfo = "0.30"

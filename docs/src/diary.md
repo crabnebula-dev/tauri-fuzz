@@ -624,7 +624,17 @@ InvokeRequest {
     - but the `ModuleMap` returned by `gum_sys` is empty
     - this provokes a panic from Rust 1.78
     - current fix is to disable coverage but not good enough
--
+
+## 33
+
+- Generating test for cli
+  - issue killing the fuzzer process after launching it with cli
+  - how do we get the pid of the fuzzer process which is a different process from the binary ran by `cargo run`
+  - rust does not have command with timeout
+  - We do it by querying the system for process with certain exact name
+    - this is not super robust
+    - behaviour is also platform dependent
+    - we limit this test to linux platform to avoid future complications
 
 ## Windows
 

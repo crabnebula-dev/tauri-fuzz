@@ -1,0 +1,27 @@
+[package]
+name = "tauri-app"
+version = "0.0.0"
+description = "A Tauri App"
+authors = ["you"]
+repository = ""
+edition = "2021"
+rust-version = "1.57"
+
+[workspace]
+
+[lib]
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = "2.0.0-beta"
+
+[dependencies]
+tauri = { version = "2.0.0-beta", features = ["wry", "tracing"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+
+[features]
+# this feature is used for production builds or when `devPath` points to the filesystem
+# DO NOT REMOVE!!
+custom-protocol = ["tauri/custom-protocol"]

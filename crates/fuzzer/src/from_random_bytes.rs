@@ -12,7 +12,7 @@ impl FromRandomBytes<'_> for String {
     type Output = String;
     type Error = FromUtf8Error;
 
-    // Random data easily produce invalid utf-8 characters, we don't want to invalidate too much of
+    // Random data often produce invalid utf-8 characters, we don't want to invalidate too much of
     // them so we use the lossy conversion
     fn from_random_bytes(bytes: &[u8]) -> Result<Self::Output, Self::Error> {
         Ok(String::from_utf8_lossy(bytes).to_string())
