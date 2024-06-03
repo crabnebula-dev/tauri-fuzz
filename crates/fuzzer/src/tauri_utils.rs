@@ -24,9 +24,8 @@ pub fn invoke_command<T: DeserializeOwned + Debug, E: DeserializeOwned + Debug>(
 ) -> Result<T, E> {
     let res = tauri::test::get_ipc_response(&webview, request);
     res.map(|response| {
-        response
-            .deserialize::<T>()
-            .expect("Error while deserializing the command response")
+        let deserialized_res = response.deserialize();
+        deserialized_res.expect("Error while deserializing the command response")
     })
     .map_err(|err| {
         serde_json::from_value(err).expect("Error while deserializing the error response")
