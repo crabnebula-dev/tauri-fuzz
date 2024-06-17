@@ -93,7 +93,7 @@ mod file_policy_impl {
         // Pointers in registers are supposed to be valid since they're sent from frida_gum
         unsafe {
             // the first register should contain a pointer to the name of the file being accessed
-            let name_ptr = registers[0] as *const ffi::c_char;
+            let name_ptr = registers[0] as *const std::ffi::c_char;
             let c_str = CStr::from_ptr(name_ptr);
             filename = c_str.to_str()?;
         }
@@ -202,7 +202,7 @@ mod file_policy_impl {
             let filename_buffer = (*obj_attr.ObjectName).Buffer;
             let filename_slice =
                 slice::from_raw_parts(filename_buffer, (*obj_attr.ObjectName).Length as usize);
-            // Get a proper UNICODE_STRING parsin with the nt-string crate
+            // Get a proper UNICODE_STRING parsing with the nt-string crate
             let unicode_data =
                 NtUnicodeStr::try_from_u16_until_nul(filename_slice).map_err(|_| {
                     RuleError::ParametersTypeConversionError(String::from(
