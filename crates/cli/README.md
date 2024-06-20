@@ -16,7 +16,7 @@ This is a guide on how to fuzz a Tauri app using the cli.
 cargo-tauri-fuzz init
 ```
 
-#### 3. Create your fuzz target in the fuzz direcoty
+#### 3. Create your fuzz target in the fuzz directory
 
 Copy the templates and fill them with your Tauri commands info.
 
