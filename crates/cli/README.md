@@ -5,14 +5,14 @@ This is a guide on how to fuzz a Tauri app using the cli.
 
 ## tl;dr
 
-####  1. Make your Tauri app fuzz-compatible
+#### 1. Make your Tauri app fuzz-compatible
 
 - make your Tauri app as a crate
 - make your Tauri commands a
 
 #### 2. Setup the fuzz directory
 
-```
+```ignore
 cargo-tauri-fuzz init
 ```
 
@@ -22,7 +22,7 @@ Copy the templates and fill them with your Tauri commands info.
 
 #### 4. Fuzz
 
-```
+```ignore
 cargo-tauri-fuzz fuzz [fuzz_target]
 ```
 
@@ -43,7 +43,7 @@ be visible and accessible to the fuzzer.
 This should be the default if you're using Tauri 2.
 _Cargo.toml_:
 
-```
+```ignore
 [lib]
 crate-type = ["staticlib", "cdylib", "rlib"]
 ```
@@ -52,7 +52,7 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 
 The tauri commands of your app should be visible and accessible from outside the app.
 
-```
+```ignore
 #[tauri::command]
 pub fn greet(name: &str) -> String {
   ...
@@ -67,7 +67,7 @@ To solve this situation we recommend defining your Tauri commands in a separate 
 
 In your Tauri app project you can run
 
-```
+```ignore
 cargo-tauri-fuzz init
 ```
 
@@ -94,7 +94,7 @@ to call the Tauri commands of your app.
 
 **src-tauri/fuzz/Cargo.toml:**
 
-```
+```ignore
 [[bin]]
 name = "[fuzz_target name]"
 path = "fuzz_targets/[fuzz_target file]"
