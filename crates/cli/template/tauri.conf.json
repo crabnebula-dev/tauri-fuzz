@@ -1,0 +1,10 @@
+{
+  "productName": "{{ crate_name }}-fuzz",
+  "version": "0.0.0",
+  "identifier": "dev.crabnebula.{{ crate_name }}-fuzz",
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": ["../icons/icon.ico"]
+  }
+}

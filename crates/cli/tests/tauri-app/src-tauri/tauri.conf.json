@@ -1,0 +1,29 @@
+{
+  "productName": "tauri-app",
+  "version": "0.0.0",
+  "identifier": "dev.crabnebula.example-for-cli-fuzz",
+  "build": {
+    "beforeDevCommand": "",
+    "beforeBuildCommand": ""
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "windows": [],
+    "security": {
+      "csp": "default-src 'self'; frame-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; connect-src 'self' http://127.0.0.1:*/; img-src 'self'; object-src 'none'; report-uri https://o4506303762464768.ingest.sentry.io/api/4506303812272128/security/?sentry_key=57614e75ac5f8c480aed3a2dd1528f13;"
+    }
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDZFQTU2NEQ0Q0ZDRTY5QzEKUldUQmFjN1AxR1NsYmplTy9YUi8vbzJyQ1lGaHB0M3pMZ0FuU1lhUHlYN3NGdDJucVFiZVgyci8K",
+      "endpoints": [
+        "https://cdn.crabnebula.app/update/crabnebula/devtools-desktop/{{target}}-{{arch}}/{{current_version}}"
+      ]
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": ["icons/icon.ico"]
+  }
+}

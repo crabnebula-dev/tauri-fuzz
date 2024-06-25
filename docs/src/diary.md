@@ -624,7 +624,49 @@ InvokeRequest {
     - but the `ModuleMap` returned by `gum_sys` is empty
     - this provokes a panic from Rust 1.78
     - current fix is to disable coverage but not good enough
--
+
+## 33
+
+- Generating test for cli
+  - issue killing the fuzzer process after launching it with cli
+  - how do we get the pid of the fuzzer process which is a different process from the binary ran by `cargo run`
+  - rust does not have command with timeout
+  - We do it by querying the system for process with certain exact name
+    - this is not super robust
+    - behaviour is also platform dependent
+    - we limit this test to linux platform to avoid future complications
+- New issue introduced with Tauri `2.0.0-beta.22`
+
+  - `fs::read_file` returns `InvokeBody::Raw(Vec<u8>)`
+  - to get Rust type from this raw value, Tauri provides this function
+
+  ```rust, ignore
+  pub fn deserialize<T: DeserializeOwned>(self) -> serde_json::Result<T> {
+    match self {
+        ...
+        InvokeBody::Raw(v) => serde_json::from_slice(&v),
+    }
+  }
+  ```
+
+  - this is flawed as `serde_json::from_slice(&v)` expects `v` to be `bytes of JSON text` (from `serde_json` documentation)
+  - what was given from `fs::read_file` are raw bytes of the content of a file and this triggers a serialization error
+  - for the function `deserialize` to work we need an additional conversion of the raw bytes into bytes of json text
+  - a proposal that does not completely fix the issue but at least allow us to recuperate a `Vec<u8>` that can be used for further conversion:
+
+  ```rust, ignore
+  pub fn deserialize<T: DeserializeOwned>(self) -> serde_json::Result<T> {
+    match self {
+      ...
+      InvokeBody::Raw(v) => {
+        let json_string = serde_json::to_string(&v).unwrap();
+        serde_json::from_slice(&json_string.into_bytes())
+      }
+    }
+  }
+  ```
+
+  - either the function `deserialize` in Tauri is wrong or what is returned from `fs::read_file` is wrong
 
 ## Windows
 
