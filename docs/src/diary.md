@@ -668,6 +668,20 @@ InvokeRequest {
 
   - either the function `deserialize` in Tauri is wrong or what is returned from `fs::read_file` is wrong
 
+### Default policy
+
+- We want to have a default policy that catches any calls to an external binary that returns an error
+  - our intuition is a call to an external binary that can result into a syntax error
+    also has a chance to be vulnerable to an exploit
+  - with the fuzzer there is a high chance "vulnerable" calls to external process will result in syntax error
+- We want to attach to Rust `std::process::Command::spawn/output`
+  - I don't see the symbol of these functions in the binary, I don't really get why
+- Maybe the solution is to attach to `execv` family of calls and monitor the return status of the call
+  - this is lower level that rust `Command`, we can catch more external interactions from the app we monitor
+  - I believe this is called by rust `Command` but I need to check that
+- All functions from `exec` family calls `execve`
+  - from this implementation of libc [https://github.com/zerovm/glibc/blob/master/posix/execv.c](https://github.com/zerovm/glibc/blob/master/posix/execv.c)
+
 ## Windows
 
 ### Issues

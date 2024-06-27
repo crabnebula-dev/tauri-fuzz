@@ -72,7 +72,7 @@ pub fn main() {
         harness,
         options,
         fuzzed_function as usize,
-        policies::file_policy::no_file_access(),
+        policies::filesystem::no_file_access(),
     );
 }
 
@@ -101,7 +101,7 @@ mod test {
                 crate::harness,
                 &options,
                 addr as usize,
-                policies::file_policy::no_file_access(),
+                policies::filesystem::no_file_access(),
             )
             .is_ok();
         }

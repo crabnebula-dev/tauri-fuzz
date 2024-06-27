@@ -34,7 +34,7 @@ pub fn main() {
         harness,
         options,
         COMMAND_PTR as usize,
-        policies::file_policy::read_only_access(),
+        policies::filesystem::read_only_access(),
     );
 }
 
@@ -68,7 +68,7 @@ mod test {
                 harness,
                 &options,
                 COMMAND_PTR as usize,
-                policies::file_policy::read_only_access(),
+                policies::filesystem::read_only_access(),
             )
             .is_ok();
         }
@@ -106,7 +106,7 @@ mod test {
                 harness,
                 &options,
                 COMMAND_PTR as usize,
-                policies::file_policy::write_only_access(),
+                policies::filesystem::write_only_access(),
             )
             .is_ok(),)
         }

@@ -93,7 +93,7 @@ mod file_policy_impl {
         // Pointers in registers are supposed to be valid since they're sent from frida_gum
         unsafe {
             // the first register should contain a pointer to the name of the file being accessed
-            let name_ptr = registers[0] as *const std::ffi::c_char;
+            let name_ptr = registers[0] as *const i8;
             let c_str = CStr::from_ptr(name_ptr);
             filename = c_str.to_str()?;
         }

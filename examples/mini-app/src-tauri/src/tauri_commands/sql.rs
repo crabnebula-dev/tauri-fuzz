@@ -3,7 +3,7 @@
     windows_subsystem = "windows"
 )]
 
-use mysql::{prelude::Queryable, Pool};
+use mysql::{prelude::Queryable, Pool, PooledConn};
 
 /// Create a Database with some data first
 /// ```sql
@@ -31,19 +31,19 @@ use mysql::{prelude::Queryable, Pool};
 /// ('Daniel', 'Martinez', '2000-11-05', 'daniel.martinez@example.com');
 /// ```
 
+const SQL_DB: &str = "mysql://root@localhost/SchoolDatabase";
+fn connect_to_db() -> Result<PooledConn, mysql::Error> {
+    let pool = Pool::new(SQL_DB)?;
+    pool.get_conn()
+}
+
 #[tauri::command]
 /// Crash on input `abc`
 pub fn sql_transaction(input: &str) -> String {
     // We assume that student name will be taken as input
     tracing::debug!("[sql_transaction] Entering with input: {}", input);
 
-    let url = "mysql://root@localhost/SchoolDatabase";
-
-    // Create MySQL pool
-    let pool = Pool::new(url).unwrap();
-
-    // Acquire connection from pool
-    let mut conn = pool.get_conn().unwrap();
+    let mut conn = connect_to_db().unwrap();
 
     // Example query to select all data from Students table
     let query = format!("SELECT * FROM Students where email='{input}'");

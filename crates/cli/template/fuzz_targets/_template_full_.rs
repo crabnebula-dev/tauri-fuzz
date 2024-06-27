@@ -27,7 +27,7 @@ fn main() {
         harness,
         options,
         harness as *const () as usize,
-        policies::file_policy::no_file_access(),
+        policies::filesystem::no_file_access(),
     );
 }
 

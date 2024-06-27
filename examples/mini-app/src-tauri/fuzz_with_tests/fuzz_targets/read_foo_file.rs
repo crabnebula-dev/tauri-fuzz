@@ -34,7 +34,7 @@ pub fn main() {
         harness,
         options.into(),
         COMMAND_PTR as usize,
-        policies::file_policy::no_access_to_filenames(),
+        policies::filesystem::no_access_to_filenames(),
     );
 }
 
@@ -65,7 +65,7 @@ mod test {
                 harness,
                 &options.into(),
                 COMMAND_PTR as usize,
-                policies::file_policy::no_file_access(),
+                policies::filesystem::no_file_access(),
             )
             .is_ok();
         }
@@ -89,7 +89,7 @@ mod test {
                 harness,
                 &options.into(),
                 COMMAND_PTR as usize,
-                policies::file_policy::no_access_to_filenames(),
+                policies::filesystem::no_access_to_filenames(),
             )
             .is_ok();
         }
@@ -146,7 +146,7 @@ mod test {
                 harness,
                 &options.into(),
                 COMMAND_PTR as usize,
-                policies::file_policy::read_only_access(),
+                policies::filesystem::read_only_access(),
             )
             .is_ok(),)
         }

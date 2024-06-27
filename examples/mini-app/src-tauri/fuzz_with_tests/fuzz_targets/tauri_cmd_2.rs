@@ -97,7 +97,7 @@ mod test {
                 harness,
                 &options,
                 COMMAND_PTR as usize,
-                policies::file_policy::no_file_access(),
+                policies::filesystem::no_file_access(),
             )
             .is_ok();
         }
