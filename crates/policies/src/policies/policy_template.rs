@@ -41,6 +41,7 @@ mod no_execv_policy {
                 rule: todo!(),
                 description: todo!(),
                 nb_parameters: todo!(),
+                is_rust_function: todo!(),
             },
         ]
     }

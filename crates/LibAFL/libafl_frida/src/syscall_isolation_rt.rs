@@ -29,40 +29,60 @@ use crate::utils::frida_to_cs;
 
 /// `Frida`-based binary-only instrumentation that intercepts calls to system calls
 pub struct SyscallIsolationRuntime {
-    /// If the runtime has been initialized yet
-    initialized: Arc<Mutex<bool>>,
     /// A listener to the harness function we are fuzzing
-    harness_listener: HarnessListener,
+    // harness_listener: HarnessListener,
     /// Listeners to all the libc functions that are being monitored
     function_listeners: Vec<FunctionListener>,
     /// Flag to indicate when the runtime is activated
-    activated: Arc<Mutex<bool>>,
+    switch: Arc<Mutex<InterceptionSwitch>>,
+    /// Pointer to the harness code
+    harness_pointer: NativePointer,
+}
+
+#[derive(Debug)]
+struct InterceptionSwitch {
+    flag: bool,
+}
+
+impl InterceptionSwitch {
+    fn activate(&mut self) {
+        self.flag = true;
+    }
+
+    fn deactivate(&mut self) {
+        self.flag = false;
+    }
+
+    fn is_active(&self) -> bool {
+        self.flag
+    }
 }
 
 /// A listener to the Tauri command we are fuzzing
 // The harness listener is used to indicate the fuzzer if the
 // code being executed is the fuzz target or the fuzzer code
-#[derive(Clone)]
-struct HarnessListener {
-    /// Pointer to the function
-    function_pointer: NativePointer,
-    /// Flag to indicate when we have started the harness
-    in_the_harness: Arc<Mutex<bool>>,
-}
+// #[derive(Clone)]
+// struct HarnessListener {
+//     /// Pointer to the function
+//     function_pointer: NativePointer,
+//     /// Flag to indicate when we have started the harness
+//     activated: Arc<Mutex<bool>>,
+// }
 
-impl InvocationListener for HarnessListener {
+impl InvocationListener for SyscallIsolationRuntime {
     /// When entering the fuzzed code set the flag to true
     fn on_enter(&mut self, _context: InvocationContext) {
-        *self.in_the_harness.lock().unwrap() = true;
+        self.switch.lock().unwrap().activate()
     }
 
     /// When leaving the fuzzed code set the flag to true
     fn on_leave(&mut self, _context: InvocationContext) {
-        *self.in_the_harness.lock().unwrap() = false;
+        self.switch.lock().unwrap().deactivate()
     }
 }
 
 /// The listener to one of the function which access is targeted
+#[derive(Debug)]
 struct FunctionListener {
     /// Name of the function targeted
     function_name: String,
@@ -73,7 +93,7 @@ struct FunctionListener {
     /// A flag to only trigger analysis when the targeted function is called from fuzzed code
     /// Otherwise we would also trigger the analysis for calls from the fuzzer code which we want
     /// to avoid.
-    in_the_harness: Arc<Mutex<bool>>,
+    interception_switch: Arc<Mutex<InterceptionSwitch>>,
 }
 
 use frida_gum::interceptor::PointCut;
@@ -99,14 +119,13 @@ impl FunctionListener {
 
 impl InvocationListener for FunctionListener {
     fn on_enter(&mut self, context: InvocationContext) {
-        let flag = self.in_the_harness.lock().unwrap();
-        if *flag {
+        if self.interception_switch.lock().unwrap().is_active() {
             // Check the deny rules of the function
             log::info!("#{} Entering: {:?}", context.thread_id(), self);
             // We drop the flag before function that may panic.
             // The fuzzer panic_hook will need to access it.
             // Otherwise we'd have a deadlock
-            drop(flag);
+            // drop(flag);
             if !self.is_policy_respected(&context) {
                 panic!(
                     "Intercepting call to [{}].\n{}",
@@ -120,15 +139,13 @@ impl InvocationListener for FunctionListener {
     }
 
     fn on_leave(&mut self, context: InvocationContext) {
-        let flag = self.in_the_harness.lock().unwrap();
-
-        if *flag {
+        if self.interception_switch.lock().unwrap().is_active() {
             // Check the deny rules of the function
             log::info!("#{} Leaving: {:?}", context.thread_id(), self);
             // We drop the flag before function that may panic.
             // The fuzzer panic_hook will need to access it.
             // Otherwise we'd have a deadlock
-            drop(flag);
+            // drop(flag);
             if !self.is_policy_respected(&context) {
                 panic!(
                     "Intercepting returning function [{}].\n{}",
@@ -164,31 +181,25 @@ impl FridaRuntime for SyscallIsolationRuntime {
         // if !is_tauri_app_instrumented {
         //     panic!("{} not instrumented", self.tauri_app.name)
         // }
-        if *self.initialized.lock().expect("Poisoned initialized mutex") {
-            return;
-        }
-        *self.initialized.lock().unwrap() = true;
-
         log::trace!("Initiating the SyscallIsolationRuntime");
+
         let mut interceptor = Interceptor::obtain(gum);
-        interceptor.attach(
-            self.harness_listener.function_pointer,
-            &mut self.harness_listener,
-        );
+        // Create interceptor for the harness
+        interceptor.attach(self.harness_pointer, self);
+        // Create interceptors for the functions we are monitoring
         for listener in self.function_listeners.iter_mut() {
             interceptor.attach(listener.function_pointer, listener);
         }
 
-        // Activate the function listeners
-        let flag = Arc::clone(&self.activated);
-
         // NOTE this is not the ideal way but seems to work
         // We modify the panic hook so that the `SyscallIsolationRuntime`
-        // is deactivated when crashing and does not interfere with the
-        // fuzzer code
+        // is deactivated when crashing and does not continue monitoring
+        // the fuzzer code
         let old_hook = std::panic::take_hook();
+        let switch = self.switch.clone();
         std::panic::set_hook(Box::new(move |panic_info| {
-            *flag.lock().unwrap() = false;
+            // *flag.lock().unwrap() = false;
+            switch.lock().unwrap().deactivate();
             old_hook(panic_info);
         }));
     }
@@ -198,7 +209,7 @@ impl FridaRuntime for SyscallIsolationRuntime {
     }
 
     fn post_exec<I: Input + HasTargetBytes>(&mut self, _input: &I) -> Result<(), Error> {
-        *self.activated.lock().unwrap() = false;
+        self.switch.lock().unwrap().deactivate();
         Ok(())
     }
 }
@@ -214,6 +225,8 @@ impl SyscallIsolationRuntime {
         log::debug!("{:#?}", modules_info());
 
         // println!("{:#?}", modules_info());
+        // let libs = Module::enumerate_modules();
+        // let lib = libs.get(0).unwrap();
         // let lib = Module::enumerate_modules()
         //     .into_iter()
         //     .find(|m| m.name.contains("ntdll.dll"))
@@ -225,72 +238,33 @@ impl SyscallIsolationRuntime {
         // println!("{:#?}", exports_in_module(&lib.name));
 
         let mut listeners: Vec<FunctionListener> = vec![];
-        let flag = Arc::new(Mutex::new(false));
+        let switch = Arc::new(Mutex::new(InterceptionSwitch { flag: false }));
 
         // Create function listeners from the fuzz policy received
         for function_policy in fuzz_policy.into_iter() {
             // Get the function lib
-            let lib = Module::enumerate_modules()
-                .into_iter()
-                .find(|m| m.name.contains(&function_policy.lib))
-                .ok_or(Error::unknown(format!(
-                    "lib {} not found in modules",
-                    function_policy.lib
-                )))?;
-
-            // Get the function pointer
-            let func_ptr = Module::find_export_by_name(Some(&lib.name), &function_policy.name)
-                .unwrap_or_else(|| {
-                    panic!(
-                        "Failed to find init interceptor for function {}",
-                        &function_policy.name
-                    )
-                });
-            if func_ptr.is_null() {
-                panic!(
-                    "Function {} in lib {} is null pointer",
-                    &function_policy.name, function_policy.lib
-                );
-            }
+            let func_ptr = find_symbol_in_modules(&function_policy);
 
             // Create listener
             let listener = FunctionListener {
                 function_name: function_policy.name.clone(),
                 policy: function_policy,
                 function_pointer: func_ptr,
-                in_the_harness: Arc::clone(&flag),
+                interception_switch: switch.clone(),
             };
+
             log::info!("listener: {:?}", listener);
             listeners.push(listener);
+            println!("listener: {:?}", listeners);
         }
 
-        let harness_listener = Self::create_harness_listener(harness_address, Arc::clone(&flag))?;
-
         let res = SyscallIsolationRuntime {
-            initialized: Arc::new(Mutex::new(false)),
-            harness_listener,
+            harness_pointer: NativePointer(harness_address as *mut core::ffi::c_void),
             function_listeners: listeners,
-            activated: flag,
+            switch,
         };
 
         Ok(res)
-    }
-
-    /// Create a listener for the fuzz harness
-    /// It's used to signal to the fuzzer if we are currently executing harness code.
-    fn create_harness_listener(
-        harness_address: usize,
-        flag: Arc<Mutex<bool>>,
-    ) -> Result<HarnessListener, Error> {
-        let harness_ptr = NativePointer(harness_address as *mut core::ffi::c_void);
-
-        let harness_listener = HarnessListener {
-            function_pointer: harness_ptr,
-            in_the_harness: Arc::clone(&flag),
-        };
-
-        log::info!("{:?}", harness_listener);
-        Ok(harness_listener)
     }
 
     /// Check if current instruction is relevant for the [`SyscallIsolationRuntime`]
@@ -311,6 +285,61 @@ impl SyscallIsolationRuntime {
             }
         }
     }
+}
+
+fn find_symbol_in_modules(policy: &FunctionPolicy) -> NativePointer {
+    let lib = Module::enumerate_modules()
+        .into_iter()
+        .find(|m| m.path.contains(&policy.lib))
+        .unwrap_or_else(|| panic!("Failed to find library for policy {:#?}", policy));
+
+    let function_name = if policy.is_rust_function {
+        // If the function is a Rust we have to find it among mangled names
+        // let func_name = policy.name.to_string();
+        let parsed_tokens = policy.name.split("::");
+
+        let mut symbols: Vec<String> = Module::enumerate_symbols(&lib.name).into_iter().map(|symbol| symbol.name).collect();
+        // Add the export symbols to look for
+        let export_names = Module::enumerate_exports(&lib.name).into_iter().map(|export| export.name);
+        symbols.extend(export_names);
+
+        for token in parsed_tokens {
+            symbols.retain(|symbol| symbol.contains(token));
+        }
+        // Remove the $got version of the function we are searching
+        symbols.retain(|symbol| !symbol.contains("$got"));
+
+        if symbols.len() == 1 {
+            symbols.get(0).unwrap().clone()
+        } else {
+            // We have found no or multiple remaining symbols
+            // If we have multiple symbols, mayde demangle the remaining ones to find the correct one
+            panic!("Symbol {} not found in {}", policy.name, policy.lib);
+        }
+    } else {
+        policy.name.clone()
+    };
+
+    let func_ptr = 
+        // Get the function pointer
+        // Search in the exports first
+        Module::find_export_by_name(Some(&lib.name), &function_name).unwrap_or_else(|| {
+            // Else search in the symbols
+            Module::find_symbol_by_name(&lib.name, &function_name).unwrap_or_else(|| {
+                panic!(
+                    "Failed to find init interceptor for function {}",
+                    policy.name
+                )
+            })
+        }) ;
+
+    if func_ptr.is_null() {
+        panic!(
+            "Function {} in lib {} is null pointer",
+            policy.name, policy.lib
+        );
+    }
+    func_ptr
 }
 
 #[cfg(unix)]
@@ -410,7 +439,7 @@ fn symbol_details_to_string(s: &SymbolDetails) -> String {
 #[allow(dead_code)]
 fn export_details_to_string(e: &ExportDetails) -> String {
     format!(
-        "SymbolDetails {}: {:#018x}, typ: {}]",
+        "ExportDetails {}: {:#018x}, typ: {}]",
         e.name, e.address, e.typ
     )
 }
@@ -418,7 +447,7 @@ fn export_details_to_string(e: &ExportDetails) -> String {
 impl Debug for SyscallIsolationRuntime {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let mut dbg_me = f.debug_struct("SyscallIsolationRuntime");
-        dbg_me.field("harness_listener", &self.harness_listener);
+        dbg_me.field("activated", &self.switch.lock().unwrap().is_active());
         dbg_me.field(
             "function_listeners",
             &self
@@ -428,22 +457,5 @@ impl Debug for SyscallIsolationRuntime {
                 .collect::<Vec<String>>(),
         );
         dbg_me.finish()
-    }
-}
-
-impl Debug for HarnessListener {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        let mut dbg_me = f.debug_struct("HarnessListener");
-        dbg_me.field("in_the_harness", &self.in_the_harness);
-        dbg_me.finish_non_exhaustive()
-    }
-}
-
-impl Debug for FunctionListener {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        let mut dbg_me = f.debug_struct("LibCListener");
-        dbg_me.field("function_name", &self.function_name);
-        // dbg_me.field("in_the_harness", &self.in_the_harness);
-        dbg_me.finish_non_exhaustive()
     }
 }

@@ -30,9 +30,10 @@ pub fn main() {
         fuzzer::SimpleFuzzerConfig::from_toml(fuzz_config(), COMMAND_NAME, fuzz_dir()).into();
     fuzzer::fuzz_main(
         harness,
-        options,
+        &options,
         COMMAND_PTR as usize,
         policies::no_policy(),
+        true,
     );
 }
 

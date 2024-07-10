@@ -32,9 +32,10 @@ pub fn main() {
 
     fuzzer::fuzz_main(
         harness,
-        options.into(),
+        &options.into(),
         COMMAND_PTR as usize,
-        policies::filesystem::no_access_to_filenames(),
+        policies::filesystem::no_access_to_filenames(vec!["foo.txt".to_string()]),
+        false,
     );
 }
 
@@ -89,7 +90,7 @@ mod test {
                 harness,
                 &options.into(),
                 COMMAND_PTR as usize,
-                policies::filesystem::no_access_to_filenames(),
+                policies::filesystem::no_access_to_filenames(vec!["foo.txt".to_string()]),
             )
             .is_ok();
         }

@@ -31,9 +31,10 @@ pub fn main() {
 
     fuzzer::fuzz_main(
         harness,
-        options,
+        &options,
         COMMAND_PTR as usize,
         policies::no_policy(),
+        false,
     );
 }
 

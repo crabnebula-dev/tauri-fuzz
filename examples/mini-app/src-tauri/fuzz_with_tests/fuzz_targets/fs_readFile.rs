@@ -70,9 +70,10 @@ pub fn main() {
         fuzzer::SimpleFuzzerConfig::from_toml(fuzz_config(), COMMAND_NAME, fuzz_dir()).into();
     fuzzer::fuzz_main(
         harness,
-        options,
+        &options,
         fuzzed_function as usize,
         policies::filesystem::no_file_access(),
+        false,
     );
 }
 

@@ -1,15 +1,11 @@
 #![allow(dead_code)]
 pub use file_policy_impl::*;
 
-// TODO make this a macro
-const BLOCKED_FILENAMES: [&str; 1] = ["foo.txt"];
-
 #[cfg(not(target_env = "msvc"))]
 mod file_policy_impl {
-    use super::BLOCKED_FILENAMES;
     use crate::engine::{FunctionPolicy, FuzzPolicy, Rule, RuleError};
     use crate::policies::{block_on_entry, LIBC};
-    use std::ffi::CStr;
+    use std::sync::Arc;
 
     // Functions that are monitored when it comes to file system access
     const MONITORED_FUNCTIONS: [&str; 3] = ["fopen", "open", "open64"];
@@ -23,9 +19,10 @@ mod file_policy_impl {
                 FunctionPolicy {
                     name,
                     lib: LIBC.into(),
-                    rule: Rule::OnEntry(block_on_entry),
+                    rule: Rule::OnEntry(block_on_entry()),
                     description,
                     nb_parameters: 2,
+                    is_rust_function: false,
                 }
             })
             .collect()
@@ -54,9 +51,10 @@ mod file_policy_impl {
                 FunctionPolicy {
                     name,
                     lib: LIBC.into(),
-                    rule: Rule::OnEntry(read_only_flag),
+                    rule: Rule::OnEntry(Arc::new(read_only_flag)),
                     description,
                     nb_parameters: 2,
+                    is_rust_function: false,
                 }
             })
             .collect()
@@ -79,46 +77,48 @@ mod file_policy_impl {
                 FunctionPolicy {
                     name,
                     lib: LIBC.into(),
-                    rule: Rule::OnEntry(is_write_only_flag),
+                    rule: Rule::OnEntry(Arc::new(is_write_only_flag)),
                     description,
                     nb_parameters: 2,
+                    is_rust_function: false,
                 }
             })
             .collect()
     }
 
     /// Checks if the filename contained in the first register is part of the blocked files
-    fn rule_no_access_to_filenames(registers: &[usize]) -> Result<bool, RuleError> {
-        let filename: &str;
-        // Pointers in registers are supposed to be valid since they're sent from frida_gum
-        unsafe {
-            // the first register should contain a pointer to the name of the file being accessed
-            let name_ptr = registers[0] as *const i8;
-            let c_str = CStr::from_ptr(name_ptr);
-            filename = c_str.to_str()?;
-        }
+    fn rule_no_access_to_filenames(
+        blocked_files: &[String],
+        registers: &[usize],
+    ) -> Result<bool, RuleError> {
+        let filename = unsafe { crate::policies::utils::nth_argument_as_str(registers, 0) };
 
-        Ok(!BLOCKED_FILENAMES
+        Ok(!blocked_files
             .iter()
             .any(|blocked_filename| filename.ends_with(blocked_filename)))
     }
 
     /// Block access to file with name [`filename`].
-    pub fn no_access_to_filenames() -> FuzzPolicy {
+    pub fn no_access_to_filenames(blocked_files: Vec<String>) -> FuzzPolicy {
         MONITORED_FUNCTIONS
             .iter()
-            .map(|f| {
+            .map(move |f| {
                 let name: String = (*f).into();
                 let description = format!(
                     "Access to {} denied. Blocked files are {:?}",
-                    f, BLOCKED_FILENAMES
+                    f,
+                    blocked_files.clone()
                 );
+                let blocked_files_clone = blocked_files.clone();
                 FunctionPolicy {
                     name,
                     lib: LIBC.into(),
-                    rule: Rule::OnEntry(rule_no_access_to_filenames),
+                    rule: Rule::OnEntry(Arc::new(move |registers| {
+                        rule_no_access_to_filenames(&blocked_files_clone, registers)
+                    })),
                     description,
                     nb_parameters: 2,
+                    is_rust_function: false,
                 }
             })
             .collect()
@@ -133,6 +133,7 @@ mod file_policy_impl {
     use crate::engine::{FunctionPolicy, FuzzPolicy, Rule, RuleError};
     use crate::policies::block_on_entry;
     use nt_string::unicode_string::NtUnicodeStr;
+    use std::sync::Arc;
     use windows_sys::Wdk::Foundation::OBJECT_ATTRIBUTES;
     use windows_sys::Win32::Foundation::{GENERIC_READ, GENERIC_WRITE};
 
@@ -144,9 +145,10 @@ mod file_policy_impl {
         vec![FunctionPolicy {
             name: OPEN_FILE.into(),
             lib: FILE_CRT.into(),
-            rule: Rule::OnEntry(block_on_entry),
+            rule: Rule::OnEntry(block_on_entry()),
             description: format!("Access to [{FILE_CRT}::{OPEN_FILE}] denied"),
             nb_parameters: 11,
+            is_rust_function: false,
         }]
     }
 
@@ -155,9 +157,10 @@ mod file_policy_impl {
         vec![FunctionPolicy {
             name: OPEN_FILE.into(),
             lib: FILE_CRT.into(),
-            rule: Rule::OnEntry(is_read_only_flag),
+            rule: Rule::OnEntry(Arc::new(is_read_only_flag)),
             description: format!("Access to [{FILE_CRT}::{OPEN_FILE}] restricted to read-only"),
             nb_parameters: 11,
+            is_rust_function: false,
         }]
     }
 
@@ -177,9 +180,10 @@ mod file_policy_impl {
         vec![FunctionPolicy {
             name: OPEN_FILE.into(),
             lib: FILE_CRT.into(),
-            rule: Rule::OnEntry(is_write_only_flag),
+            rule: Rule::OnEntry(Arc::new(is_write_only_flag)),
             description: format!("Access to [{FILE_CRT}::{OPEN_FILE}] restricted to read-only"),
             nb_parameters: 11,
+            is_rust_function: false,
         }]
     }
 
@@ -193,7 +197,10 @@ mod file_policy_impl {
     }
 
     /// Checks if the filename contained in the first register is part of the blocked files
-    fn rule_no_access_to_filenames(registers: &[usize]) -> Result<bool, RuleError> {
+    fn rule_no_access_to_filenames(
+        blocked_files: &Vec<String>,
+        registers: &[usize],
+    ) -> Result<bool, RuleError> {
         let obj_attr_ptr = registers[2] as *const OBJECT_ATTRIBUTES;
         unsafe {
             let obj_attr: OBJECT_ATTRIBUTES = *obj_attr_ptr;
@@ -211,20 +218,24 @@ mod file_policy_impl {
                 })?;
 
             let file_path = String::from_utf16_lossy(unicode_data.as_slice());
-            Ok(!BLOCKED_FILENAMES
+            Ok(!blocked_files
                 .iter()
                 .any(|blocked_filename| file_path.ends_with(blocked_filename)))
         }
     }
 
     /// Block access to file with name [`filename`].
-    pub fn no_access_to_filenames() -> FuzzPolicy {
+    pub fn no_access_to_filenames(blocked_files: Vec<String>) -> FuzzPolicy {
+        let blocked_files_clone = blocked_files.clone();
         vec![FunctionPolicy {
             name: OPEN_FILE.into(),
             lib: FILE_CRT.into(),
-            rule: Rule::OnEntry(rule_no_access_to_filenames),
-            description: format!("Access to files {:?} denied", BLOCKED_FILENAMES),
+            rule: Rule::OnEntry(Arc::new(move |registers| {
+                rule_no_access_to_filenames(blocked_files, registers)
+            })),
+            description: format!("Access to files {:?} denied", blocked_files),
             nb_parameters: 11,
+            is_rust_function: false,
         }]
     }
 }

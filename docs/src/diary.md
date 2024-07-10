@@ -681,6 +681,119 @@ InvokeRequest {
   - I believe this is called by rust `Command` but I need to check that
 - All functions from `exec` family calls `execve`
   - from this implementation of libc [https://github.com/zerovm/glibc/blob/master/posix/execv.c](https://github.com/zerovm/glibc/blob/master/posix/execv.c)
+- Fuzzer crashes when monitoring `execv`
+
+  - it does not crash when monitoring other functions
+  - it crashes in the fuzzer code
+    - with fuzz_test
+      - with a rule that never blocks
+        - it crashes in the harness and is captured by the fuzzer
+      - with a rule that always blocks
+        - it crashes in the harness too
+        - actually the harness has time to finish, corruption appears after the harness
+        - `*** stack smashing detected ***: terminated`
+    - with fuzz_main
+      - with a rule that always blocks
+        - it crashes in the harness when the tauri command is finished but the harness has not finished yet
+        - `*** stack smashing detected ***: terminated`
+      - with a rule that never blocks
+        - it crashes in the harness when the tauri command is finished but the harness has not finished yet
+        - `*** stack smashing detected ***: terminated`
+  - I think that after the harness the fuzzer calls execve before the flag is removed
+  - Call order starting from when the harness is being called
+    - in `libafl::Executor::run_target`: `let ret = (self.harness_fn.borrow_mut())(input);`
+    - `libafl::executors::inprocess::GenericInProcessExecutor`
+    - `core::ops::function::FnMut::call_mut`
+    - `ls_with_rust::harness` with `ls_with_rust` the binary being executed
+      - `_gum_function_context_begin_invocation`
+        - `gum_tls_key_get_value`
+        - `pthread_getspecific`
+        - `gum_tls_key_set_value`
+        - `get_interceptor_thread_context`
+        - `gum_thread_get_system_error`
+        - `gum_invocation_stack_push`
+          - `gum_sign_code_pointer`
+        - `gum_rust_invocation_listener_on_enter`
+          - `frida_gum::interceptor::invocation_listener::call_on_enter`
+            - `libafl_frida::syscall_isolation_rt::HarnessListener::on_enter`
+        - `gum_thread_set_system_error`
+          - `__errno_location@plt`
+        - `gum_tls_key_set_value`
+        - `pthread_setspecific`
+      - harness code ...
+    - pure asm code that push registers on the stack
+      - that looks like context switch with context being saved on the stack
+    - `_gum_function_context_end_invocation`
+      - `gum_tls_key_set_value`
+        - `pthread_setspecific@plt`
+      - `gum_thread_get_system_error`
+        - `__errno_location@plt`
+      - `get_interceptor_thread_context`
+        - `_frida_g_private_get`
+          - `g_private_get_impl`
+          - `pthread_getspecific@plt`
+      - `gum_sign_code_pointer`
+      - `gum_rust_invocation_listener_on_leave`
+        - `frida_gum::interceptor::invocation_listener::call_on_leave`
+          - `frida_gum::interceptor::invocation_listener::InvocationContext::from_raw`
+          - `libafl_frida::syscall_isolation_rt::HarnessListener::on_leave`
+      - `gum_thread_set_system_error`
+        - `_errno_location@plt`
+      - `_frida_g_array_set_size`
+      - `gum_tls_key_set_value`
+        - `pthread_setspecific`
+    - pure asm code that pop stack values into registers
+      - restore context switch
+  - `__execvpe_common.isra`: here we crash
+
+- Correct execution trace at the end of the harness:
+  - pure asm code that push registers on the stack
+    - that looks like context switch with context being saved on the stack
+  - `_gum_function_context_end_invocation`
+    - `gum_tls_key_set_value`
+      - `pthread_setspecific@plt`
+    - `gum_thread_get_system_error`
+      - `__errno_location@plt`
+    - `get_interceptor_thread_context`
+      - `_frida_g_private_get`
+        - `g_private_get_impl`
+        - `pthread_getspecific@plt`
+    - `gum_sign_code_pointer`
+    - `gum_rust_invocation_listener_on_leave`
+      - `frida_gum::interceptor::invocation_listener::call_on_leave`
+        - `frida_gum::interceptor::invocation_listener::InvocationContext::from_raw`
+        - `libafl_frida::syscall_isolation_rt::HarnessListener::on_leave`
+    - `gum_thread_set_system_error`
+      - `_errno_location@plt`
+    - `_frida_g_array_set_size`
+    - `gum_tls_key_set_value`
+      - `pthread_setspecific`
+  - pure asm code that pop stack values into registers
+  - here we don't crash contrary to above
+- New approach where we detach the frida listeners of monitored functions instead of deactivating them
+  - Contrary to what the docs says, calling `Gum::obtain` produce a deadlock (in doc it's supposed to do a no-op)
+  - Without `Gum::obtain` we can't detach the monitored function listeners
+- Weirdest thing ever: the crash does not appear anymore with gdb when putting a breakpoint on `execve`
+- I'm temporarily giving up on monitoring `execv`
+  - I still think it's the
+- Trying with `__execve` instead of `execve`
+  - maybe C weak links mess up with Frida
+  - not working either
+- Ok I just notice that my approach was wrong anyway
+  - `execve` usually called in the child process after being forked
+  - Frida rust bindings do not support monitoring the child process anyway
+  - I still don't know why there was a bug
+
+### Improving engine code
+
+- Our rules now use `Fn` closure trait rather than `fn` object
+- this allow us to make rules that are more flexible with captured variables and arguments
+- the main issue was to use `Box<dyn Fn>>` that were also implementing `Clone`
+  - inspiration from Tauri code with all the callbacks
+  - this thread helped us solve the issue: https://users.rust-lang.org/t/how-to-clone-a-boxed-closure/31035/7
+  - replace `Box` by `Arc`
+  - we could also create manual cloneable `Box<dyn Fn>>` like this example
+    - https://play.rust-lang.org/?version=stable&mode=debug&edition=2018&gist=6ca48c4cff92370c907ecf4c548ee33c
 
 ## Windows
 
