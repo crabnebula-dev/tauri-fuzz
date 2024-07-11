@@ -1,5 +1,5 @@
 use crate::engine::{ConditionOnParameters, FuzzPolicy};
-// pub mod external_process;
+pub mod external_process;
 pub mod filesystem;
 mod utils;
 

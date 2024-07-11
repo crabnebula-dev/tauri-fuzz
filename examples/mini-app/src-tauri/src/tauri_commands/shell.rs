@@ -6,6 +6,8 @@ use tracing::info;
 pub fn ls_with_rust_command(input: String) -> String {
     info!("[ls_with_rust_command] Entering with input: {:?}", input);
     let mut ls = std::process::Command::new("ls");
+    let ptr = &ls as *const std::process::Command as usize;
+    println!("ptr: {:#018x}", ptr);
     let output = ls
         .arg(&input)
         .output()

@@ -70,3 +70,8 @@ name = "demo_sql_injection"
 path = "fuzz_targets/demo_sql_injection.rs"
 test = false
 doc = false
+
+[[bin]]
+name = "ls_with_rust"
+path = "fuzz_targets/ls_with_rust.rs"
+doc = false

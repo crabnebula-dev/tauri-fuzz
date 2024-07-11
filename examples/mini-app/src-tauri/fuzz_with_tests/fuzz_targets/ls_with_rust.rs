@@ -34,7 +34,7 @@ fn main() {
         harness,
         &options,
         mini_app::shell::ls_with_rust_command as *const () as usize,
-        policies::external_process::block_execv_on_error(),
+        policies::external_process::block_on_entry(vec!["ls".to_string()]),
         true,
     );
 }
