@@ -56,13 +56,14 @@ pub fn fuzz_main<H>(
 ) where
     H: FnMut(&BytesInput) -> ExitKind,
 {
-    color_backtrace::install();
-    env_logger::init();
-    log::info!("Starting");
     unsafe {
         let res = if as_test {
             fuzz_test(harness, options, tauri_cmd_address, policy)
         } else {
+            color_backtrace::install();
+            env_logger::init();
+            log::info!("Starting");
+
             fuzz(harness, options, tauri_cmd_address, policy)
         };
         match res {

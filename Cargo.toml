@@ -7,7 +7,8 @@ members = [
   "crates/cli",
   # Examples
   "examples/mini-app/src-tauri",
-  "examples/mini-app/src-tauri/fuzz_with_tests",
+  # Tests
+  "tests/fuzz-mini-app"
 ]
 exclude = ["./crates/LibAFL"]
 
@@ -37,12 +38,14 @@ libafl_targets = { path = "./crates/LibAFL/libafl_targets", features = [
 ] }
 policies = { path = "./crates/policies" }
 fuzzer = { path = "./crates/fuzzer" }
+mini-app = { path = "./examples/mini-app/src-tauri" }
 
 tauri = { version = "2.0.0-beta", features = ["test", "tracing"] }
 tauri-runtime = { version = "2.0.0-beta", features = [] }
 tauri-build = { version = "2.0.0-beta", features = [] }
 tauri-utils = { version = "2.0.0-beta", features = [] }
 tauri-plugin-fs = "2.0.0-beta"
+
 
 # tauri = { path = "../tauri/core/tauri", features = ["test", "tracing"] }
 # tauri-runtime = { path = "../tauri/core/tauri-runtime", features = [] }
