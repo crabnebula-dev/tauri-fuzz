@@ -1,4 +1,5 @@
 #![allow(dead_code)]
+#![allow(unused_imports)]
 use fuzzer::tauri_utils::{create_invoke_request, setup_context_with_plugin, CommandArgs};
 use std::path::PathBuf;
 use tauri::test::{mock_builder, mock_context, noop_assets, MockRuntime};
@@ -61,7 +62,9 @@ commands.allow = [
             mini_app::file_access::read_foo_file,
             mini_app::file_access::write_foo_file,
             mini_app::sql::sql_transaction,
-            mini_app::shell::ls_with_rust_command,
+            mini_app::external_process::ls_with_rust_command_status,
+            mini_app::external_process::ls_with_rust_command_output,
+            mini_app::external_process::ls_with_rust_command_spawn,
             mini_app::demo::tauri_cmd_with_backdoor,
             mini_app::demo::sql_injection_vulnerability,
         ])

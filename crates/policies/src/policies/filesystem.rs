@@ -105,8 +105,7 @@ mod file_policy_impl {
             .map(move |f| {
                 let name: String = (*f).into();
                 let description = format!(
-                    "Access to {} denied. Blocked files are {:?}",
-                    f,
+                    "Access to following files is denied: {:?}",
                     blocked_files.clone()
                 );
                 let blocked_files_clone = blocked_files.clone();

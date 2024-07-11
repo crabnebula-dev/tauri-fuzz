@@ -6,10 +6,10 @@ use std::sync::Arc;
 
 /// These are the functions that the Rust `Command` API gives to start an external
 /// binary in a new process
-const MONITORED_FUNCTIONS_AT_ENTRY: [&str; 1] = [
+const MONITORED_FUNCTIONS_AT_ENTRY: [&str; 3] = [
     "std::process::Command::output",
-    // "std::process::Command::status",
-    // "std::process::Command::spawn",
+    "std::process::Command::status",
+    "std::process::Command::spawn",
 ];
 
 /// These are the functions that the Rust `Command` API gives to get the return value
@@ -76,8 +76,23 @@ mod not_msvc {
             .collect()
     }
 
+    // Check error status when the we get a Rust `std::process::Output` as return value
+    fn block_output_with_error(_register: usize) -> Result<bool, RuleError> {
+        // // This is unsafe because we assume that register contain a pointer to
+        // // `std::process::Output`
+        // let exit_status = unsafe {
+        //     let ptr = register as *const std::process::Output;
+        //     println!("Output {:?}", ptr.as_ref().unwrap());
+        //     ptr.as_ref().unwrap().status
+        // };
+        //
+        // println!("Exit status {:?}", exit_status);
+        // Ok(exit_status.success())
+
+        todo!(); // We don't get anything from casting the *const Output
+    }
+
     pub fn block_on_error_status() -> FuzzPolicy {
-        todo!();
         let current_bin = std::env::current_exe()
             .expect("Failed to get binary path")
             .to_string_lossy()
@@ -86,13 +101,12 @@ mod not_msvc {
             .iter()
             .map(|f| {
                 let name: String = (*f).into();
-                let description = format!("Access to [{}] is blocked", f);
+                let description = format!("External binary {} returned with error status", f);
 
                 FunctionPolicy {
                     name,
                     lib: current_bin.clone(),
-                    rule: Rule::OnEntry(todo!()),
-                    // rule: Rule::OnEntry(block_on_entry),
+                    rule: Rule::OnLeave(Arc::new(block_output_with_error)),
                     description,
                     nb_parameters: 2,
                     is_rust_function: true,

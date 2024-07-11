@@ -1,17 +1,19 @@
+#![allow(unused_variables)]
 use fuzzer::tauri_utils::invoke_command_minimal;
-use libafl::inputs::{BytesInput, HasBytesVec};
+use libafl::inputs::BytesInput;
 use libafl::prelude::ExitKind;
 mod utils;
 use utils::*;
 
-const COMMAND_NAME: &str = "tauri_cmd_1";
-const COMMAND_PTR: *const () = mini_app::basic::tauri_cmd_1 as *const ();
+const COMMAND_NAME: &str = "ls_with_rust_command_status";
+const COMMAND_PTR: *const () = mini_app::external_process::ls_with_rust_command_status as *const ();
 
 pub fn main() {
     let w = setup_mock();
     let harness = |random_input: &BytesInput| {
         let request =
-            create_invoke_request_with_input_as_string(COMMAND_NAME, random_input.bytes());
+            // create_invoke_request_with_input_as_string(COMMAND_NAME, random_input.bytes());
+            create_invoke_request_with_input_as_string(COMMAND_NAME, "-la".as_bytes());
         invoke_command_minimal(w.clone(), request);
         ExitKind::Ok
     };
@@ -21,7 +23,8 @@ pub fn main() {
         harness,
         &options,
         COMMAND_PTR as usize,
-        policies::no_policy(),
+        // policies::external_process::block_on_entry(vec!["ls".to_string()]),
+        policies::external_process::block_on_error_status(),
         true,
     );
 }

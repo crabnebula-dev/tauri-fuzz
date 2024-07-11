@@ -7,10 +7,9 @@ use tauri::{
 };
 pub use tauri_commands::basic;
 pub use tauri_commands::demo;
+pub use tauri_commands::external_process;
 pub use tauri_commands::file_access;
 pub use tauri_commands::libc_calls;
-#[cfg(unix)]
-pub use tauri_commands::shell;
 pub use tauri_commands::sql;
 use tracing::info;
 use tracing_subscriber::fmt;
@@ -29,8 +28,8 @@ pub fn run() {
             crate::file_access::read_foo_file,
             crate::basic::tauri_cmd_2,
             crate::basic::tauri_cmd_1,
-            crate::shell::ls_with_rust_command,
-            crate::shell::ls_with_shell,
+            crate::external_process::ls_with_rust_command_output,
+            crate::external_process::ls_with_shell,
         ])
         // .setup(move |app| {
         //     tauri::WebviewWindowBuilder::new(app, "main", Default::default())

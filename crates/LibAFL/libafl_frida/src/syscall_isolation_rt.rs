@@ -245,17 +245,18 @@ impl SyscallIsolationRuntime {
             // Get the function lib
             let func_ptr = find_symbol_in_modules(&function_policy);
 
-            // Create listener
-            let listener = FunctionListener {
-                function_name: function_policy.name.clone(),
-                policy: function_policy,
-                function_pointer: func_ptr,
-                interception_switch: switch.clone(),
-            };
+            if let Some(func_ptr) = func_ptr {
+                // Create listener
+                let listener = FunctionListener {
+                    function_name: function_policy.name.clone(),
+                    policy: function_policy,
+                    function_pointer: func_ptr,
+                    interception_switch: switch.clone(),
+                };
 
-            log::info!("listener: {:?}", listener);
-            listeners.push(listener);
-            println!("listener: {:?}", listeners);
+                log::info!("listener: {:?}", listener);
+                listeners.push(listener);
+            }
         }
 
         let res = SyscallIsolationRuntime {
@@ -287,7 +288,7 @@ impl SyscallIsolationRuntime {
     }
 }
 
-fn find_symbol_in_modules(policy: &FunctionPolicy) -> NativePointer {
+fn find_symbol_in_modules(policy: &FunctionPolicy) -> Option<NativePointer> {
     let lib = Module::enumerate_modules()
         .into_iter()
         .find(|m| m.path.contains(&policy.lib))
@@ -298,9 +299,14 @@ fn find_symbol_in_modules(policy: &FunctionPolicy) -> NativePointer {
         // let func_name = policy.name.to_string();
         let parsed_tokens = policy.name.split("::");
 
-        let mut symbols: Vec<String> = Module::enumerate_symbols(&lib.name).into_iter().map(|symbol| symbol.name).collect();
+        let mut symbols: Vec<String> = Module::enumerate_symbols(&lib.name)
+            .into_iter()
+            .map(|symbol| symbol.name)
+            .collect();
         // Add the export symbols to look for
-        let export_names = Module::enumerate_exports(&lib.name).into_iter().map(|export| export.name);
+        let export_names = Module::enumerate_exports(&lib.name)
+            .into_iter()
+            .map(|export| export.name);
         symbols.extend(export_names);
 
         for token in parsed_tokens {
@@ -308,19 +314,29 @@ fn find_symbol_in_modules(policy: &FunctionPolicy) -> NativePointer {
         }
         // Remove the $got version of the function we are searching
         symbols.retain(|symbol| !symbol.contains("$got"));
+        // Remove the $GT version of the function we are searching
+        symbols.retain(|symbol| !symbol.contains("$GT"));
 
-        if symbols.len() == 1 {
-            symbols.get(0).unwrap().clone()
-        } else {
-            // We have found no or multiple remaining symbols
-            // If we have multiple symbols, mayde demangle the remaining ones to find the correct one
-            panic!("Symbol {} not found in {}", policy.name, policy.lib);
+        match symbols.len() {
+            // It's possible that certain functions are required by policy
+            // but not loaded in binary because they were not used
+            0 => {
+                return None;
+            }
+
+            // We have found exactly one matching symbol
+            1 => symbols.get(0).unwrap().clone(),
+
+            // Multiple symbols have been found that should not be possible
+            _ => {
+                panic!("Multiple symbol found for {}: {:?}", policy.name, symbols);
+            }
         }
     } else {
         policy.name.clone()
     };
 
-    let func_ptr = 
+    let func_ptr =
         // Get the function pointer
         // Search in the exports first
         Module::find_export_by_name(Some(&lib.name), &function_name).unwrap_or_else(|| {
@@ -339,7 +355,7 @@ fn find_symbol_in_modules(policy: &FunctionPolicy) -> NativePointer {
             policy.name, policy.lib
         );
     }
-    func_ptr
+    Some(func_ptr)
 }
 
 #[cfg(unix)]

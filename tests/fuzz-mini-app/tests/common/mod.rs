@@ -12,6 +12,7 @@ pub(crate) fn start_crashing_fuzz_process(test_name: &str) {
     let exe = std::env::current_exe().expect("Failed to extract current executable");
     let status = std::process::Command::new(exe)
         .args(["--ignored", test_name])
+        .stdout(std::process::Stdio::null())
         .status()
         .expect("Unable to run program");
 
@@ -31,6 +32,7 @@ pub(crate) fn start_non_crashing_fuzz_process(test_name: &str) {
     let exe = std::env::current_exe().expect("Failed to extract current executable");
     let status = std::process::Command::new(exe)
         .args(["--ignored", test_name])
+        .stdout(std::process::Stdio::null())
         .status()
         .expect("Unable to run program");
 
