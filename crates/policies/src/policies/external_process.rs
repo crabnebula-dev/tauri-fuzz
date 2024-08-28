@@ -6,7 +6,7 @@ use std::sync::Arc;
 
 /// These are the functions that the Rust `Command` API gives to start an external
 /// binary in a new process
-const MONITORED_FUNCTIONS_AT_ENTRY: [&str; 3] = [
+const MONITORED_RUST_API_AT_ENTRY: [&str; 3] = [
     "std::process::Command::output",
     "std::process::Command::status",
     "std::process::Command::spawn",
@@ -14,7 +14,7 @@ const MONITORED_FUNCTIONS_AT_ENTRY: [&str; 3] = [
 
 /// These are the functions that the Rust `Command` API gives to get the return value
 /// of an external binary that has been started
-const MONITORED_FUNCTIONS_AT_EXIT: [&str; 5] = [
+const MONITORED_RUST_API_AT_EXIT: [&str; 5] = [
     "std::process::Command::output",
     "std::process::Command::status",
     "std::process::Child::wait",
@@ -52,7 +52,7 @@ mod not_msvc {
             .expect("Failed to get binary path")
             .to_string_lossy()
             .to_string();
-        MONITORED_FUNCTIONS_AT_ENTRY
+        MONITORED_RUST_API_AT_ENTRY
             .iter()
             .map(move |f| {
                 let name: String = (*f).into();
@@ -97,7 +97,7 @@ mod not_msvc {
             .expect("Failed to get binary path")
             .to_string_lossy()
             .to_string();
-        MONITORED_FUNCTIONS_AT_EXIT
+        MONITORED_RUST_API_AT_EXIT
             .iter()
             .map(|f| {
                 let name: String = (*f).into();
@@ -107,6 +107,77 @@ mod not_msvc {
                     name,
                     lib: current_bin.clone(),
                     rule: Rule::OnLeave(Arc::new(block_output_with_error)),
+                    description,
+                    nb_parameters: 2,
+                    is_rust_function: true,
+                }
+            })
+            .collect()
+    }
+
+    // Block calls to external binaries with the Rust api command function when they return an
+    // error
+    fn block_rust_api_return_error(
+        function_name: &str,
+        register: usize,
+    ) -> Result<bool, RuleError> {
+        match function_name {
+            "std::process::Command::output" | "std::process::Child::wait_with_output" => {
+                let output: &std::process::Output = unsafe {
+                    let ptr = register as *const std::io::Result<std::process::Output>;
+                    ptr.as_ref()
+                        .unwrap()
+                        .as_ref()
+                        .expect("Failed to execute process")
+                    // ptr.as_ref().unwrap().expect("Failed to execute process")
+                };
+                let status = output.status;
+                Ok(status.success())
+            }
+            "std::process::Command::status" | "std::process::Child::wait" => {
+                let exit_status: &std::process::ExitStatus = unsafe {
+                    let ptr = register as *const std::io::Result<std::process::ExitStatus>;
+                    ptr.as_ref()
+                        .unwrap()
+                        .as_ref()
+                        .expect("Failed to execute process")
+                };
+                Ok(exit_status.success())
+            }
+            "std::process::Child::try_wait" => {
+                let exit_status: &Option<std::process::ExitStatus> = unsafe {
+                    let ptr = register as *const std::io::Result<Option<std::process::ExitStatus>>;
+                    ptr.as_ref()
+                        .unwrap()
+                        .as_ref()
+                        .expect("Failed to execute process")
+                };
+                match exit_status {
+                    None => Ok(true),
+                    Some(status) => Ok(status.success()),
+                }
+            }
+            _ => unreachable!("This function is not monitored"),
+        }
+    }
+
+    pub fn block_on_rust_api_error_status() -> FuzzPolicy {
+        let current_bin = std::env::current_exe()
+            .expect("Failed to get binary path")
+            .to_string_lossy()
+            .to_string();
+        MONITORED_RUST_API_AT_EXIT
+            .iter()
+            .map(|f| {
+                let name: String = (*f).into();
+                let description = format!("External binary {} returned with error status", f);
+
+                FunctionPolicy {
+                    name: name.clone(),
+                    lib: current_bin.clone(),
+                    rule: Rule::OnLeave(Arc::new(move |return_value| {
+                        block_rust_api_return_error(&name, return_value)
+                    })),
                     description,
                     nb_parameters: 2,
                     is_rust_function: true,

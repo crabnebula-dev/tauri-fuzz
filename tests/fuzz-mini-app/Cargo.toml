@@ -17,3 +17,4 @@ tauri-utils = { workspace = true }
 libafl = { workspace = true }
 tauri-plugin-fs = { workspace = true}
 serde = { version = "1.0.197" }
+color-backtrace = "0.6.1"

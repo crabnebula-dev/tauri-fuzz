@@ -32,6 +32,7 @@ pub fn ls_with_rust_command_status(input: String) -> Option<i32> {
 pub fn ls_with_rust_command_spawn(input: String) -> Option<i32> {
     info!("[ls_with_rust_command] Entering with input: {:?}", input);
     let mut ls = std::process::Command::new("ls")
+        .arg(&input)
         .spawn()
         .unwrap_or_else(|_| {
             panic!(

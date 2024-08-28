@@ -62,8 +62,6 @@ pub fn fuzz_main<H>(
         } else {
             color_backtrace::install();
             env_logger::init();
-            log::info!("Starting");
-
             fuzz(harness, options, tauri_cmd_address, policy)
         };
         match res {

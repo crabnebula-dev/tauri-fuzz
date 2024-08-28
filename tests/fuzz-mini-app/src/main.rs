@@ -5,15 +5,16 @@ use libafl::prelude::ExitKind;
 mod utils;
 use utils::*;
 
-const COMMAND_NAME: &str = "ls_with_rust_command_status";
-const COMMAND_PTR: *const () = mini_app::external_process::ls_with_rust_command_status as *const ();
+const COMMAND_NAME: &str = "ls_with_rust_command_spawn";
+const COMMAND_PTR: *const () = mini_app::external_process::ls_with_rust_command_spawn as *const ();
 
 pub fn main() {
+    color_backtrace::install();
     let w = setup_mock();
     let harness = |random_input: &BytesInput| {
         let request =
             // create_invoke_request_with_input_as_string(COMMAND_NAME, random_input.bytes());
-            create_invoke_request_with_input_as_string(COMMAND_NAME, "-la".as_bytes());
+            create_invoke_request_with_input_as_string(COMMAND_NAME, "lasdjfkl".as_bytes());
         invoke_command_minimal(w.clone(), request);
         ExitKind::Ok
     };
@@ -24,7 +25,7 @@ pub fn main() {
         &options,
         COMMAND_PTR as usize,
         // policies::external_process::block_on_entry(vec!["ls".to_string()]),
-        policies::external_process::block_on_error_status(),
+        policies::external_process::block_on_rust_api_error_status(),
         true,
     );
 }

@@ -67,8 +67,6 @@ pub type ConditionOnParameters = Arc<dyn Fn(&[usize]) -> Result<bool, RuleError>
 pub type ConditionOnReturnValue = Arc<dyn Fn(usize) -> Result<bool, RuleError>>;
 
 /// Rule that the function has to adhere to respect the policy
-// TODO to improve perf we can separate entry rule and leave rule into two different types, the UX
-// is not as good then
 #[derive(Clone)]
 pub enum Rule {
     /// Rule is checked on function entry given a condition on parameters
