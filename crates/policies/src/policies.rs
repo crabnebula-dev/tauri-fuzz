@@ -11,5 +11,5 @@ pub fn no_policy() -> FuzzPolicy {
 }
 
 pub(crate) fn block_on_entry() -> ConditionOnParameters {
-    std::sync::Arc::new(|_| Ok(false))
+    std::sync::Arc::new(|_| Ok(true))
 }

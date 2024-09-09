@@ -111,9 +111,9 @@ impl FunctionListener {
         }
     }
 
-    fn is_policy_respected(&self, invoc_context: &InvocationContext) -> bool {
+    fn policy_should_block(&self, invoc_context: &InvocationContext) -> bool {
         let policy_context = self.policy_context_from_invoc_context(invoc_context);
-        self.policy.is_respected(&policy_context)
+        self.policy.should_block(&policy_context)
     }
 }
 
@@ -126,7 +126,7 @@ impl InvocationListener for FunctionListener {
             // The fuzzer panic_hook will need to access it.
             // Otherwise we'd have a deadlock
             // drop(flag);
-            if !self.is_policy_respected(&context) {
+            if self.policy_should_block(&context) {
                 panic!(
                     "Intercepting call to [{}].\n{}",
                     self.function_name,
@@ -146,7 +146,7 @@ impl InvocationListener for FunctionListener {
             // The fuzzer panic_hook will need to access it.
             // Otherwise we'd have a deadlock
             // drop(flag);
-            if !self.is_policy_respected(&context) {
+            if self.policy_should_block(&context) {
                 panic!(
                     "Intercepting returning function [{}].\n{}",
                     self.function_name,

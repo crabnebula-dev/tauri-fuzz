@@ -25,7 +25,7 @@ pub fn main() {
         &options,
         COMMAND_PTR as usize,
         // policies::external_process::block_on_entry(vec!["ls".to_string()]),
-        policies::external_process::block_on_rust_api_error_status(),
+        policies::external_process::block_on_libc_wait_error_status(),
         true,
     );
 }

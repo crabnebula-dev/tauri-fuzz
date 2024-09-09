@@ -35,10 +35,10 @@ mod file_policy_impl {
     const ACCESS_MODE_MASK: usize = 3;
 
     // Check if the flag is READ_ONLY
-    fn read_only_flag(params: &[usize]) -> Result<bool, RuleError> {
+    fn block_non_read_only(params: &[usize]) -> Result<bool, RuleError> {
         let flag = params[1];
         let res = (flag & ACCESS_MODE_MASK) == READ_ONLY_FLAG;
-        Ok(res)
+        Ok(!res)
     }
 
     pub fn read_only_access() -> FuzzPolicy {
@@ -51,7 +51,7 @@ mod file_policy_impl {
                 FunctionPolicy {
                     name,
                     lib: LIBC.into(),
-                    rule: Rule::OnEntry(Arc::new(read_only_flag)),
+                    rule: Rule::OnEntry(Arc::new(block_non_read_only)),
                     description,
                     nb_parameters: 2,
                     is_rust_function: false,
@@ -61,10 +61,10 @@ mod file_policy_impl {
     }
 
     // Check if the flag is WRITE_ONLY
-    fn is_write_only_flag(params: &[usize]) -> Result<bool, RuleError> {
+    fn block_non_write_only(params: &[usize]) -> Result<bool, RuleError> {
         let flag = params[1];
         let res = (flag & ACCESS_MODE_MASK) == WRITE_ONLY_FLAG;
-        Ok(res)
+        Ok(!res)
     }
 
     pub fn write_only_access() -> FuzzPolicy {
@@ -77,7 +77,7 @@ mod file_policy_impl {
                 FunctionPolicy {
                     name,
                     lib: LIBC.into(),
-                    rule: Rule::OnEntry(Arc::new(is_write_only_flag)),
+                    rule: Rule::OnEntry(Arc::new(block_non_write_only)),
                     description,
                     nb_parameters: 2,
                     is_rust_function: false,
@@ -87,13 +87,13 @@ mod file_policy_impl {
     }
 
     /// Checks if the filename contained in the first register is part of the blocked files
-    fn rule_no_access_to_filenames(
+    fn block_access_to_filenames(
         blocked_files: &[String],
         registers: &[usize],
     ) -> Result<bool, RuleError> {
         let filename = unsafe { crate::policies::utils::nth_argument_as_str(registers, 0) };
 
-        Ok(!blocked_files
+        Ok(blocked_files
             .iter()
             .any(|blocked_filename| filename.ends_with(blocked_filename)))
     }
@@ -113,7 +113,7 @@ mod file_policy_impl {
                     name,
                     lib: LIBC.into(),
                     rule: Rule::OnEntry(Arc::new(move |registers| {
-                        rule_no_access_to_filenames(&blocked_files_clone, registers)
+                        block_access_to_filenames(&blocked_files_clone, registers)
                     })),
                     description,
                     nb_parameters: 2,
@@ -156,7 +156,7 @@ mod file_policy_impl {
         vec![FunctionPolicy {
             name: OPEN_FILE.into(),
             lib: FILE_CRT.into(),
-            rule: Rule::OnEntry(Arc::new(is_read_only_flag)),
+            rule: Rule::OnEntry(Arc::new(block_non_read_only_flag)),
             description: format!("Access to [{FILE_CRT}::{OPEN_FILE}] restricted to read-only"),
             nb_parameters: 11,
             is_rust_function: false,
@@ -168,10 +168,10 @@ mod file_policy_impl {
     // NOTE: flag values seems to differ from the documentation:
     // https://learn.microsoft.com/en-us/windows/win32/api/winternl/nf-winternl-ntcreatefile
     // Refer to the diary for more details
-    fn is_read_only_flag(params: &[usize]) -> Result<bool, RuleError> {
+    fn block_non_read_only_flag(params: &[usize]) -> Result<bool, RuleError> {
         let flag = params[1] as u32;
         let res = (flag & GENERIC_MASK) == GENERIC_READ;
-        Ok(res)
+        Ok(!res)
     }
 
     /// Policy where file access can only be write_only
@@ -179,7 +179,7 @@ mod file_policy_impl {
         vec![FunctionPolicy {
             name: OPEN_FILE.into(),
             lib: FILE_CRT.into(),
-            rule: Rule::OnEntry(Arc::new(is_write_only_flag)),
+            rule: Rule::OnEntry(Arc::new(block_non_write_only_flag)),
             description: format!("Access to [{FILE_CRT}::{OPEN_FILE}] restricted to read-only"),
             nb_parameters: 11,
             is_rust_function: false,
@@ -189,14 +189,14 @@ mod file_policy_impl {
     // Checks if the flag is WRITE_ONLY
     // NOTE: flag values seems to differ from the documentation. Refer to the diary for more
     // details
-    fn is_write_only_flag(params: &[usize]) -> Result<bool, RuleError> {
+    fn block_non_write_only_flag(params: &[usize]) -> Result<bool, RuleError> {
         let flag = params[1] as u32;
         let res = (flag & GENERIC_MASK) == GENERIC_WRITE;
-        Ok(res)
+        Ok(!res)
     }
 
     /// Checks if the filename contained in the first register is part of the blocked files
-    fn rule_no_access_to_filenames(
+    fn block_access_to_filenames(
         blocked_files: &Vec<String>,
         registers: &[usize],
     ) -> Result<bool, RuleError> {
@@ -217,7 +217,7 @@ mod file_policy_impl {
                 })?;
 
             let file_path = String::from_utf16_lossy(unicode_data.as_slice());
-            Ok(!blocked_files
+            Ok(blocked_files
                 .iter()
                 .any(|blocked_filename| file_path.ends_with(blocked_filename)))
         }
@@ -230,7 +230,7 @@ mod file_policy_impl {
             name: OPEN_FILE.into(),
             lib: FILE_CRT.into(),
             rule: Rule::OnEntry(Arc::new(move |registers| {
-                rule_no_access_to_filenames(blocked_files, registers)
+                block_access_to_filenames(blocked_files, registers)
             })),
             description: format!("Access to files {:?} denied", blocked_files),
             nb_parameters: 11,

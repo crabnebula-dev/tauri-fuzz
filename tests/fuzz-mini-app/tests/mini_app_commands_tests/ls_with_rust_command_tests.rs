@@ -4,17 +4,22 @@ use crate::common::*;
 // The "hidden_*"  test will be started in a separate process and the exit status will be captured
 // by the parent process/test.
 #[test]
-fn block_ls_with_rust_command_at_entry() {
+fn block_ls_with_rust_api_at_entry() {
     start_crashing_fuzz_process("hidden_block_ls_with_rust_command_output_at_entry");
     start_crashing_fuzz_process("hidden_block_ls_with_rust_command_status_at_entry");
     start_crashing_fuzz_process("hidden_block_ls_with_rust_command_spawn_at_entry");
 }
 
 #[test]
-fn block_ls_with_rust_command_error_status() {
+fn block_ls_with_rust_api_error_status() {
     start_crashing_fuzz_process("hidden_block_ls_with_rust_command_output_error_status");
     start_crashing_fuzz_process("hidden_block_ls_with_rust_command_status_error_status");
     start_crashing_fuzz_process("hidden_block_ls_with_rust_command_wait_error_status");
+}
+
+#[test]
+fn block_ls_with_libc_error_status() {
+    start_crashing_fuzz_process("hidden_block_ls_with_libc_error_status")
 }
 
 #[test]
@@ -84,6 +89,18 @@ fn hidden_block_ls_with_rust_command_wait_error_status() {
         "ls_with_rust_command_spawn",
         Some(mini_app::external_process::ls_with_rust_command_spawn as usize),
         policies::external_process::block_on_rust_api_error_status(),
+        vec![("input", "zafjkl")],
+        None,
+    )
+}
+
+#[test]
+#[ignore]
+fn hidden_block_ls_with_libc_error_status() {
+    fuzz_command_with_arg(
+        "ls_with_rust_command_output",
+        Some(mini_app::external_process::ls_with_rust_command_output as usize),
+        policies::external_process::block_on_libc_wait_error_status(),
         vec![("input", "zafjkl")],
         None,
     )

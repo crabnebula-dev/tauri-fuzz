@@ -953,3 +953,12 @@ InvokeRequest {
   - Limit of our current approach is that we can only detect invocation of external binaries from the Rust API
     - we don't detect invocation of ext binaries through libc `fork` + `execve`
     - but we could monitor `wait` and `waitpid` to track error status
+
+#### libc wait
+
+- we want to also capture error status of child processes that were invoked through the libc API
+  - from my knowledge these child processes are invoked using `fork` then `execve`
+  - one way to get the return status of these child processes is to capture calls to `wait` from the parent process
+- the issue with `wait` is that the child exit status is returned through mutating a variable that was sent as argument
+  and not through the return value
+  - to fix that we may need to store the pointer that was provided as argument to be able to check it on exit

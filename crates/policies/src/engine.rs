@@ -30,15 +30,15 @@ pub struct FunctionPolicy {
 }
 
 impl FunctionPolicy {
-    /// Check the function policy in the specified context
-    pub fn is_respected(&self, context: &Context) -> bool {
-        let is_respected = self.rule.is_respected(context);
-        match is_respected {
-            Ok(true) => true,
-            Ok(false) => {
+    /// Check the function policy in the specified context and if the invocation should be blocked
+    pub fn should_block(&self, context: &Context) -> bool {
+        let should_block = self.rule.should_block(context);
+        match should_block {
+            Ok(false) => false,
+            Ok(true) => {
                 log::error!("{}", &self.policy_infringement_message(context));
                 println!("{}", self.policy_infringement_message(context));
-                false
+                true
             }
             Err(e) => panic!(
                 "Error in policy evaluation: {:?}.\nRule: {:?}.\nContext: {:?}",
@@ -73,14 +73,18 @@ pub enum Rule {
     OnEntry(ConditionOnParameters),
 
     /// Rule is checked on function exit given the return value
-    OnLeave(ConditionOnReturnValue),
+    OnExit(ConditionOnReturnValue),
+
+    /// Rule is checked both on function entry and exit
+    OnEntryAndExit(ConditionOnParameters, ConditionOnReturnValue),
 }
 
 impl Debug for Rule {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             Rule::OnEntry(_) => write!(f, "Rule::OnEntry"),
-            Rule::OnLeave(_) => write!(f, "Rule::OnLeave"),
+            Rule::OnExit(_) => write!(f, "Rule::OnExit"),
+            Rule::OnEntryAndExit(_, _) => write!(f, "Rule::OnEntryAndExit"),
         }
     }
 }
@@ -123,18 +127,23 @@ impl Rule {
     /// Evaluate if rule is true given a context
     /// If it returns true it means that the rule has been verified and does not respect the policy
     /// We don't evaluate "entry" rules when given a "leave" context and vice-versa.
-    fn is_respected(&self, context: &Context) -> Result<bool, RuleError> {
+    fn should_block(&self, context: &Context) -> Result<bool, RuleError> {
         match self {
             // Evaluate the function on entry
-            OnEntry(condition) => match context {
-                EntryContext(parameters) => condition(parameters),
-                LeaveContext(_) => Ok(true),
+            OnEntry(block_condition) => match context {
+                EntryContext(parameters) => block_condition(parameters),
+                LeaveContext(_) => Ok(false),
             },
 
             // We block the function on entry
-            OnLeave(condition) => match context {
-                EntryContext(_) => Ok(true),
-                LeaveContext(return_value) => condition(*return_value),
+            OnExit(block_condition) => match context {
+                EntryContext(_) => Ok(false),
+                LeaveContext(return_value) => block_condition(*return_value),
+            },
+            // We block the function on entry
+            OnEntryAndExit(entry_condition, exit_condition) => match context {
+                EntryContext(parameters) => entry_condition(parameters),
+                LeaveContext(return_value) => exit_condition(*return_value),
             },
         }
     }
@@ -149,38 +158,38 @@ mod tests {
         // Block on function entry
         let rule = Rule::OnEntry(crate::block_on_entry());
         let context = EntryContext(vec![]);
-        assert!(!rule.is_respected(&context).unwrap());
+        assert!(rule.should_block(&context).unwrap());
 
         // Check parameters
         let rule1 = Rule::OnEntry(Arc::new(|params| Ok(params[0] == 1)));
         let rule2 = Rule::OnEntry(Arc::new(|params| Ok(params[1] % 2 == 0)));
         let rule3 = Rule::OnEntry(Arc::new(|params| Ok(params[2] == 4)));
         let context = EntryContext(vec![1, 2, 3]);
-        assert!(rule1.is_respected(&context).unwrap());
-        assert!(rule2.is_respected(&context).unwrap());
-        assert!(!rule3.is_respected(&context).unwrap());
+        assert!(rule1.should_block(&context).unwrap());
+        assert!(rule2.should_block(&context).unwrap());
+        assert!(!rule3.should_block(&context).unwrap());
     }
 
     #[test]
     fn rule_on_return_value() {
-        let rule = Rule::OnLeave(Arc::new(|v| Ok(v == 1)));
-        let rule2 = Rule::OnLeave(Arc::new(|v| Ok(v == 4)));
+        let rule = Rule::OnExit(Arc::new(|v| Ok(v == 1)));
+        let rule2 = Rule::OnExit(Arc::new(|v| Ok(v == 4)));
         let context = LeaveContext(1);
-        assert!(rule.is_respected(&context).unwrap());
-        assert!(!rule2.is_respected(&context).unwrap());
+        assert!(rule.should_block(&context).unwrap());
+        assert!(!rule2.should_block(&context).unwrap());
     }
 
     #[test]
     fn rule_wrong_context() {
         // Entry context with leave rule
         let context = EntryContext(vec![]);
-        let rule = Rule::OnLeave(Arc::new(|_| Ok(false)));
-        assert!(rule.is_respected(&context).unwrap());
+        let rule = Rule::OnExit(Arc::new(|_| Ok(false)));
+        assert!(!rule.should_block(&context).unwrap());
 
         // Leave context with entry rule
         let context = LeaveContext(0);
         let rule = Rule::OnEntry(crate::block_on_entry());
-        assert!(rule.is_respected(&context).unwrap());
+        assert!(!rule.should_block(&context).unwrap());
 
         // Entry context with not enough parameters
         let rule = Rule::OnEntry(Arc::new(|params| {
@@ -191,6 +200,6 @@ mod tests {
             }
         }));
         let context = EntryContext(vec![1, 2]);
-        assert!(rule.is_respected(&context).is_err());
+        assert!(rule.should_block(&context).is_err());
     }
 }
