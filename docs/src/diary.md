@@ -944,7 +944,7 @@ InvokeRequest {
       - all the above functions call this private function
       - unfortunately this function is private and we can't attach to it with Frida
       - actually it seems we can! Just found this in the symbols
-      ```
+      ```ignore
       "SymbolDetails _ZN3std3sys3pal4unix7process13process_inner71_$LT$impl$u20$std..sys..pal..unix..process..process_common..Command$GT$5spawn17hffc9080bc0517252E: [0x0000555740c67360, 0x0000555740c680c1]",
       ```
   - we can also detect error status of external process
