@@ -4,7 +4,7 @@ pub use crate::fuzzer::{fuzz_main, fuzz_test};
 pub use crate::fuzzer_options::SimpleFuzzerConfig;
 
 #[cfg(feature = "tauri")]
-pub mod tauri_utils;
+pub mod tauri;
 
 mod from_random_bytes;
 

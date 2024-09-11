@@ -1,4 +1,5 @@
-use crate::common::*;
+use fuzz_mini_app::utils::fuzz_command_with_arg;
+use fuzzer::tauri::start_crashing_fuzz_process;
 // This is a trick to test fuzzers with multi-threaded and get fuzzer output when crashing.
 // Frida-gum does not support multi-threads therefore we start fuzzing in different processes.
 // The "hidden_*"  test will be started in a separate process and the exit status will be captured

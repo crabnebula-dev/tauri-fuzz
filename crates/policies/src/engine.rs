@@ -37,7 +37,7 @@ impl FunctionPolicy {
             Ok(false) => false,
             Ok(true) => {
                 log::error!("{}", &self.policy_infringement_message(context));
-                println!("{}", self.policy_infringement_message(context));
+                // println!("{}", self.policy_infringement_message(context));
                 true
             }
             Err(e) => panic!(
@@ -134,10 +134,26 @@ pub enum RuleError {
 /// Parameters are None when the evaluating after the execution of the targeted function
 /// The return value is None when evaluating at the beginning of the function and Some when
 /// evaluating at the end of the function.
-#[derive(Debug)]
 pub enum Context {
     EntryContext(Vec<usize>),
     LeaveContext(usize),
+}
+
+impl Debug for Context {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Context::EntryContext(parameters) => {
+                write!(f, "Function entry with parameters: {:?}", parameters)
+            }
+            Context::LeaveContext(return_value) => {
+                write!(
+                    f,
+                    "Function exit with return value as usize: {:?}",
+                    return_value
+                )
+            }
+        }
+    }
 }
 
 use Context::*;

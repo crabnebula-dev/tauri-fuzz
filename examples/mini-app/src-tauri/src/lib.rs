@@ -1,6 +1,6 @@
 #![allow(unused_imports)]
 pub mod tauri_commands;
-use fuzzer::tauri_utils::{create_invoke_request, invoke_command, CommandArgs};
+use fuzzer::tauri::{create_invoke_request, invoke_command, CommandArgs};
 use tauri::{
     test::{mock_builder, mock_context, noop_assets},
     WebviewWindow,

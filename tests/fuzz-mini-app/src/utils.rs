@@ -1,6 +1,12 @@
 #![allow(dead_code)]
 #![allow(unused_imports)]
-use fuzzer::tauri_utils::{create_invoke_request, setup_context_with_plugin, CommandArgs};
+use fuzzer::tauri::{
+    create_invoke_request, invoke_command_minimal, setup_context_with_plugin, CommandArgs,
+};
+use fuzzer::SimpleFuzzerConfig;
+use libafl::executors::ExitKind;
+use libafl::inputs::BytesInput;
+use policies::engine::FuzzPolicy;
 use std::path::PathBuf;
 use tauri::test::{mock_builder, mock_context, noop_assets, MockRuntime};
 use tauri::webview::InvokeRequest;
@@ -107,4 +113,37 @@ where
     let mut args = CommandArgs::new();
     args.insert(arg_name, input);
     create_invoke_request(None, command_name, args)
+}
+
+pub fn fuzz_command_with_arg<T>(
+    command_name: &str,
+    command_ptr: Option<usize>,
+    policy: FuzzPolicy,
+    args: Vec<(&str, T)>,
+    tauri_plugin: Option<String>,
+) where
+    T: serde::ser::Serialize + Clone,
+{
+    let options = SimpleFuzzerConfig::from_toml(fuzz_config(), command_name, fuzz_dir()).into();
+    let webview = setup_mock();
+    let harness = |_input: &BytesInput| {
+        let mut command_args = CommandArgs::new();
+        for arg in args.clone().into_iter() {
+            command_args.insert(arg.0, arg.1.clone());
+        }
+        let request = create_invoke_request(tauri_plugin.clone(), command_name, command_args);
+        invoke_command_minimal(webview.clone(), request);
+        ExitKind::Ok
+    };
+
+    let monitored_code = command_ptr.unwrap_or(std::ptr::addr_of!(harness) as usize);
+
+    fuzzer::fuzz_main(
+        harness,
+        &options,
+        monitored_code,
+        // command_ptr,
+        policy,
+        true,
+    )
 }
