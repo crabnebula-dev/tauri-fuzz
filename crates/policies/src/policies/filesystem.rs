@@ -28,16 +28,10 @@ mod file_policy_impl {
             .collect()
     }
 
-    // FLAGS value for the [open], [fopen] functions
-    const READ_ONLY_FLAG: usize = 0;
-    const WRITE_ONLY_FLAG: usize = 1;
-    const READ_WRITE_FLAG: usize = 2;
-    const ACCESS_MODE_MASK: usize = 3;
-
     // Check if the flag is READ_ONLY
     fn block_non_read_only(params: &[usize]) -> Result<bool, RuleError> {
         let flag = params[1];
-        let res = (flag & ACCESS_MODE_MASK) == READ_ONLY_FLAG;
+        let res = (flag & libc::O_ACCMODE as usize) == libc::O_RDONLY as usize;
         Ok(!res)
     }
 
@@ -63,7 +57,7 @@ mod file_policy_impl {
     // Check if the flag is WRITE_ONLY
     fn block_non_write_only(params: &[usize]) -> Result<bool, RuleError> {
         let flag = params[1];
-        let res = (flag & ACCESS_MODE_MASK) == WRITE_ONLY_FLAG;
+        let res = (flag & libc::O_ACCMODE as usize) == libc::O_WRONLY as usize;
         Ok(!res)
     }
 

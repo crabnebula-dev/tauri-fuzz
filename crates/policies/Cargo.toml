@@ -9,6 +9,9 @@ edition = "2021"
 log = "0.4"
 thiserror = "1.0"
 
+[target.'cfg(not(target_env = "msvc"))'.dependencies]
+libc = "0.2"
+
 [target.'cfg(target_env = "msvc")'.dependencies]
 windows-sys = { version = "0.52", features = ["Win32", "Win32_Foundation", "Wdk", "Wdk_Foundation"] }
 nt-string = "0.1"

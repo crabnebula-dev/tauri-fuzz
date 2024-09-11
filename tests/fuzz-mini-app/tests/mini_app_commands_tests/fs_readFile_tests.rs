@@ -7,7 +7,6 @@ use crate::common::*;
 // The "hidden_*"  test will be started in a separate process and the exit status will be captured
 // by the parent process/test.
 #[test]
-#[ignore]
 fn fs_readFile_no_policy() {
     start_non_crashing_fuzz_process("hidden_fs_readFile_no_policy")
 }
@@ -24,10 +23,10 @@ fn hidden_fs_readFile_no_policy() {
 }
 
 #[test]
-#[ignore]
 fn fs_readFile_block_files() {
     start_crashing_fuzz_process("hidden_fs_readFile_block_files")
 }
+
 #[test]
 #[ignore]
 fn hidden_fs_readFile_block_files() {

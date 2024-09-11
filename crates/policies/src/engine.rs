@@ -31,7 +31,7 @@ pub struct FunctionPolicy {
 
 impl FunctionPolicy {
     /// Check the function policy in the specified context and if the invocation should be blocked
-    pub fn should_block(&self, context: &Context) -> bool {
+    pub fn should_block(&mut self, context: &Context) -> bool {
         let should_block = self.rule.should_block(context);
         match should_block {
             Ok(false) => false,
@@ -65,6 +65,13 @@ pub type ConditionOnParameters = Arc<dyn Fn(&[usize]) -> Result<bool, RuleError>
 /// ConditionOnReturnValue is a closure on the value contained in the return value register
 /// This can contain a value but also a pointer depending on the type of the return value.
 pub type ConditionOnReturnValue = Arc<dyn Fn(usize) -> Result<bool, RuleError>>;
+/// ConditionOnParameters but with an additional argument that can be used as storage to pass
+/// information for later usage
+pub type ConditionOnParametersWithStorage =
+    Arc<dyn Fn(&[usize], &mut Option<usize>) -> Result<bool, RuleError>>;
+/// ConditionOnReturnValue but with an additional argument that can be used for the analysis
+pub type ConditionOnReturnValueWithStorage =
+    Arc<dyn Fn(usize, &mut Option<usize>) -> Result<bool, RuleError>>;
 
 /// Rule that the function has to adhere to respect the policy
 #[derive(Clone)]
@@ -76,7 +83,15 @@ pub enum Rule {
     OnExit(ConditionOnReturnValue),
 
     /// Rule is checked both on function entry and exit
-    OnEntryAndExit(ConditionOnParameters, ConditionOnReturnValue),
+    /// Last argument is used to store information that was gathered at entry and used at exit.
+    /// For example we need to check the value of a pointer that was passed as an argument.
+    /// This is common practice in C to store results of a function in mutable pointer given as
+    /// argument
+    OnEntryAndExit(
+        ConditionOnParametersWithStorage,
+        ConditionOnReturnValueWithStorage,
+        Option<usize>,
+    ),
 }
 
 impl Debug for Rule {
@@ -84,7 +99,7 @@ impl Debug for Rule {
         match self {
             Rule::OnEntry(_) => write!(f, "Rule::OnEntry"),
             Rule::OnExit(_) => write!(f, "Rule::OnExit"),
-            Rule::OnEntryAndExit(_, _) => write!(f, "Rule::OnEntryAndExit"),
+            Rule::OnEntryAndExit(_, _, _) => write!(f, "Rule::OnEntryAndExit"),
         }
     }
 }
@@ -108,6 +123,10 @@ pub enum RuleError {
     /// Generic error that happened during the rule evaluation
     #[error("Error during evaluation: `{0}`")]
     EvaluationError(String),
+
+    /// A value was expected to be found in storage when evaluating a rule at a function exit
+    #[error("No value stored for rule evaluation at exit: `{0}`")]
+    ExpectedStorageEmpty(String),
 }
 
 /// Context when evaluating if a function is respecting the specified policy.
@@ -127,7 +146,7 @@ impl Rule {
     /// Evaluate if rule is true given a context
     /// If it returns true it means that the rule has been verified and does not respect the policy
     /// We don't evaluate "entry" rules when given a "leave" context and vice-versa.
-    fn should_block(&self, context: &Context) -> Result<bool, RuleError> {
+    fn should_block(&mut self, context: &Context) -> Result<bool, RuleError> {
         match self {
             // Evaluate the function on entry
             OnEntry(block_condition) => match context {
@@ -141,9 +160,9 @@ impl Rule {
                 LeaveContext(return_value) => block_condition(*return_value),
             },
             // We block the function on entry
-            OnEntryAndExit(entry_condition, exit_condition) => match context {
-                EntryContext(parameters) => entry_condition(parameters),
-                LeaveContext(return_value) => exit_condition(*return_value),
+            OnEntryAndExit(entry_condition, exit_condition, stored_value) => match context {
+                EntryContext(parameters) => entry_condition(parameters, stored_value),
+                LeaveContext(return_value) => exit_condition(*return_value, stored_value),
             },
         }
     }
@@ -156,14 +175,14 @@ mod tests {
     #[test]
     fn rule_on_parameters() {
         // Block on function entry
-        let rule = Rule::OnEntry(crate::block_on_entry());
+        let mut rule = Rule::OnEntry(crate::block_on_entry());
         let context = EntryContext(vec![]);
         assert!(rule.should_block(&context).unwrap());
 
         // Check parameters
-        let rule1 = Rule::OnEntry(Arc::new(|params| Ok(params[0] == 1)));
-        let rule2 = Rule::OnEntry(Arc::new(|params| Ok(params[1] % 2 == 0)));
-        let rule3 = Rule::OnEntry(Arc::new(|params| Ok(params[2] == 4)));
+        let mut rule1 = Rule::OnEntry(Arc::new(|params| Ok(params[0] == 1)));
+        let mut rule2 = Rule::OnEntry(Arc::new(|params| Ok(params[1] % 2 == 0)));
+        let mut rule3 = Rule::OnEntry(Arc::new(|params| Ok(params[2] == 4)));
         let context = EntryContext(vec![1, 2, 3]);
         assert!(rule1.should_block(&context).unwrap());
         assert!(rule2.should_block(&context).unwrap());
@@ -172,8 +191,8 @@ mod tests {
 
     #[test]
     fn rule_on_return_value() {
-        let rule = Rule::OnExit(Arc::new(|v| Ok(v == 1)));
-        let rule2 = Rule::OnExit(Arc::new(|v| Ok(v == 4)));
+        let mut rule = Rule::OnExit(Arc::new(|v| Ok(v == 1)));
+        let mut rule2 = Rule::OnExit(Arc::new(|v| Ok(v == 4)));
         let context = LeaveContext(1);
         assert!(rule.should_block(&context).unwrap());
         assert!(!rule2.should_block(&context).unwrap());
@@ -183,16 +202,16 @@ mod tests {
     fn rule_wrong_context() {
         // Entry context with leave rule
         let context = EntryContext(vec![]);
-        let rule = Rule::OnExit(Arc::new(|_| Ok(false)));
+        let mut rule = Rule::OnExit(Arc::new(|_| Ok(false)));
         assert!(!rule.should_block(&context).unwrap());
 
         // Leave context with entry rule
         let context = LeaveContext(0);
-        let rule = Rule::OnEntry(crate::block_on_entry());
+        let mut rule = Rule::OnEntry(crate::block_on_entry());
         assert!(!rule.should_block(&context).unwrap());
 
         // Entry context with not enough parameters
-        let rule = Rule::OnEntry(Arc::new(|params| {
+        let mut rule = Rule::OnEntry(Arc::new(|params| {
             if params.len() < 3 {
                 Err(RuleError::NumberOfParametersDontMatch(params.len()))
             } else {
@@ -201,5 +220,26 @@ mod tests {
         }));
         let context = EntryContext(vec![1, 2]);
         assert!(rule.should_block(&context).is_err());
+    }
+
+    #[test]
+    fn rule_on_entry_and_exit() {
+        let entry_context = EntryContext(vec![1, 2, 3]);
+        let leave_context = LeaveContext(4);
+        let mut rule = Rule::OnEntryAndExit(
+            Arc::new(|_parameters, storage| {
+                *storage = Some(4);
+                Ok(false)
+            }),
+            Arc::new(|_return_value, storage| {
+                let stored_value = *storage;
+                assert!(stored_value.is_some());
+                assert_eq!(4, stored_value.unwrap());
+                Ok(false)
+            }),
+            None,
+        );
+        assert!(!rule.should_block(&entry_context).unwrap());
+        assert!(!rule.should_block(&leave_context).unwrap());
     }
 }

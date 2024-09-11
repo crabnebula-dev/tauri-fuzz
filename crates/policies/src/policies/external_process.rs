@@ -26,7 +26,7 @@ fn block_monitored_binaries_on_entry(
     blocked_binaries: &[String],
     registers: &[usize],
 ) -> Result<bool, RuleError> {
-    // This is unsafe because we assume that registers at index 2 is a point to a Rust `Command`
+    // This is unsafe because we assume that registers at index 2 is a pointer to a Rust `Command`
     let binary = unsafe {
         let ptr = registers[1] as *const Command;
         ptr.as_ref()
@@ -186,30 +186,72 @@ mod not_msvc {
 
     const MONITORED_LIBC_API_ERROR_STATUS: [&str; 3] = ["wait", "waitid", "waitpid"];
 
-    fn block_libc_return_error(function_name: &str, register: usize) -> Result<bool, RuleError> {
-        // println!("titi");
-        println!("{}: {}", function_name, register as i32);
-        Ok(register as i32 != -1)
+    /// We store the status pointer that was given as argument. This will be used to get the child
+    /// process exit status
+    fn get_status_pointer(
+        function_name: &str,
+        parameters: &[usize],
+        storage: &mut Option<usize>,
+    ) -> Result<bool, RuleError> {
+        let status_ptr = match function_name {
+            "wait" => parameters[0],
+            "waitpid" => parameters[1],
+            "waitid" => unimplemented!(),
+            _ => unreachable!(),
+        };
+        *storage = Some(status_ptr);
+        Ok(false)
+    }
+
+    /// wait status was stored in `storage`
+    /// Get child process exit status from `storage` and check if it's an error
+    fn block_libc_return_error(
+        _function_name: &str,
+        register: usize,
+        storage: &mut Option<usize>,
+    ) -> Result<bool, RuleError> {
+        if register as isize == -1 {
+            // There was an error while waiting for child process
+            return Ok(true);
+        }
+        let status_ptr: *const usize = match storage {
+            Some(v) => *v as *const usize,
+            None => {
+                return Err(RuleError::ExpectedStorageEmpty(
+                    "Status pointer was not stored for evaluation of error".to_string(),
+                ))
+            }
+        };
+        unsafe {
+            let child_exit_status = libc::WEXITSTATUS(*status_ptr as i32);
+            Ok(child_exit_status != 0)
+        }
     }
 
     /// Block calls to  `wait`, `waitid` and `waitpid` when they get an error status
     /// -1 should be returned in case of failure
     pub fn block_on_libc_wait_error_status() -> FuzzPolicy {
-        println!("toto");
         MONITORED_LIBC_API_ERROR_STATUS
             .iter()
             .map(|f| {
                 let name: String = (*f).into();
+                let name2: String = name.clone();
                 let description = format!("External binary {} returned with error status", f);
 
                 FunctionPolicy {
                     name: name.clone(),
                     lib: LIBC.into(),
-                    rule: Rule::OnExit(Arc::new(move |register| {
-                        block_libc_return_error(&name, register)
-                    })),
+                    rule: Rule::OnEntryAndExit(
+                        Arc::new(move |parameters, storage| {
+                            get_status_pointer(&name, parameters, storage)
+                        }),
+                        Arc::new(move |return_value, storage| {
+                            block_libc_return_error(&name2, return_value, storage)
+                        }),
+                        None,
+                    ),
                     description,
-                    nb_parameters: 0,
+                    nb_parameters: 3,
                     is_rust_function: false,
                 }
             })

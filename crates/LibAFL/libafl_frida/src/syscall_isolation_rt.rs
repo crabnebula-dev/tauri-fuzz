@@ -111,7 +111,7 @@ impl FunctionListener {
         }
     }
 
-    fn policy_should_block(&self, invoc_context: &InvocationContext) -> bool {
+    fn policy_should_block(&mut self, invoc_context: &InvocationContext) -> bool {
         let policy_context = self.policy_context_from_invoc_context(invoc_context);
         self.policy.should_block(&policy_context)
     }

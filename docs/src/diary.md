@@ -938,6 +938,7 @@ InvokeRequest {
 ### Default policy
 
 - We have a new approach where we monitor the `std::process::Command` API
+
   - we detect any new creation process
     - we track `Command::status`, `Command::output`, `Command::spawn`
     - ideally we could track a single function: `std::sys::windows/unix::process::Command`
@@ -953,6 +954,21 @@ InvokeRequest {
   - Limit of our current approach is that we can only detect invocation of external binaries from the Rust API
     - we don't detect invocation of ext binaries through libc `fork` + `execve`
     - but we could monitor `wait` and `waitpid` to track error status
+
+- We monitor `wait` and `waitpid`
+  - this is a superset of monitoring rust `std::process::Command`
+  - we had to modify the policy engine to add a storage that can store function paramater at entry
+    that can then be reused when analysing the function at exit
+    - this is necessary due to common C pattern that store results of a function in a mutable pointer given as parameter
+  - Question: Do libc usually call `wait` or `waitpid` after spawning a child process?
+    - they should otherwise it would create zombie process
+  - Can we do better?
+    - ideally we would track `fork + execve` but it seems too complex with Frida
+    - external process can be called by other means than creating a child process
+      - for example in SQL an RPC is used to talk to SQL server and no `fork` is ever used
+      - we also need to track networking then =(
+    - we are using the assumption that a child process will return 0 as exit status when the execution
+      went well. Is it always true?
 
 #### libc wait
 
