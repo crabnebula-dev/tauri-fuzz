@@ -50,8 +50,7 @@ const TAURI_PROTOCOL_URL: &str = "http://tauri.localhost";
 ///
 /// # Arguments
 ///
-/// * `tauri_module` the module the invoked command is part of. Use `None` for a custom Tauri
-/// command
+/// * `tauri_module` the module the invoked command is part of. Use `None` for a custom Tauri command
 /// * `cmd_name` name of the Tauri command invoked
 /// * `command_args` arguments that are used for the Tauri command invocation
 ///
