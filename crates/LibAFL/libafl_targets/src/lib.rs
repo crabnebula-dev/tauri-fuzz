@@ -1,5 +1,6 @@
 //! `libafl_targets` contains runtime code, injected in the target itself during compilation.
 #![no_std]
+#![allow(warnings)]
 #![deny(rustdoc::broken_intra_doc_links)]
 #![deny(clippy::all)]
 #![deny(clippy::pedantic)]

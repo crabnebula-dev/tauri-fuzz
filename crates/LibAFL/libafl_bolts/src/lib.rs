@@ -2,6 +2,7 @@
 * Welcome to `LibAFL_bolts`
 */
 #![doc = include_str!("../README.md")]
+#![allow(warnings)]
 /*! */
 #![cfg_attr(feature = "document-features", doc = document_features::document_features!())]
 #![allow(incomplete_features)]
