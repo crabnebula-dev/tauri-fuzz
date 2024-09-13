@@ -459,22 +459,54 @@ that are being called - uses a technique called _dynamic recompilation_ - while 
   - error message triggered is `state() called before manage() for given type`
   - we can't use our helper function `mock_builder_minimal`
   - use `mock_builder` instead
-- The `InvokePayload` looks like
+- The `InvokeRequest` looks like
 
 ```rust,ignore
-InvokePayload {
-    cmd: "tauri",
-    tauri_module: Some("Fs"),           // module name
-    callback: CallbackFn(0),
-    error: CallbackFn(1),
-    inner: Object {
-        "message": Object {
-            "cmd": String("readFile"),  // command name
-            "path": String("..."),      // command parameter
-            "options": Object {},       // command parameter
-        },
+InvokeRequest {
+    cmd: "plugin:fs|read_file",
+    callback: CallbackFn(
+        2482586317,
+    ),
+    error: CallbackFn(
+        1629968881,
+    ),
+    url: Url {
+        scheme: "http",
+        cannot_be_a_base: false,
+        username: "",
+        password: None,
+        host: Some(
+            Ipv4(
+                127.0.0.1,
+            ),
+        ),
+        port: Some(
+            1430,
+        ),
+        path: "/",
+        query: None,
+        fragment: None,
     },
-}k
+    body: Json(
+        Object {
+            "options": Object {
+                "dir": String("toto"),
+            },
+            "path": String("foo.txt"),
+        },
+    ),
+    headers: {
+        "content-type": "application/json",
+        "origin": "http://127.0.0.1:1430",
+        "referer": "http://127.0.0.1:1430/",
+        "accept": "*/*",
+        "user-agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15",
+        "tauri-callback": "2482586317",
+        "tauri-error": "1629968881",
+        "tauri-invoke-key": "[Ic/:jX^L^q#hDgJd7)U",
+    },
+    invoke_key: "[Ic/:jX^L^q#hDgJd7)U",
+}
 ```
 
 - Don't forget to configure the `allowlist` to allow the scope
@@ -957,7 +989,7 @@ InvokeRequest {
 
 - We monitor `wait` and `waitpid`
   - this is a superset of monitoring rust `std::process::Command`
-  - we had to modify the policy engine to add a storage that can store function paramater at entry
+  - we had to modify the policy engine to add a storage that can store function parameter at entry
     that can then be reused when analysing the function at exit
     - this is necessary due to common C pattern that store results of a function in a mutable pointer given as parameter
   - Question: Do libc usually call `wait` or `waitpid` after spawning a child process?
@@ -977,4 +1009,18 @@ InvokeRequest {
   - one way to get the return status of these child processes is to capture calls to `wait` from the parent process
 - the issue with `wait` is that the child exit status is returned through mutating a variable that was sent as argument
   and not through the return value
-  - to fix that we may need to store the pointer that was provided as argument to be able to check it on exit
+- to fix that we may need to store the pointer that was provided as argument to be able to check it on exit
+  - we implemented that and it works great
+
+### Bug with plugin fs_readFile
+
+- For unknown reason when accessing the filesystem with `tauri_plugin_fs` the interception does not occur
+  - this does not occur when accessing the filesystem with other functions
+- Possible reasons for that:
+  - `tauri_plugin_fs::read_file` does not call `open`
+    - this is unlikely since `tauri_plugin_fs` uses this Rust code
+      `let file = std::fs::OpenOptions::from(open_options.options)`
+  - Tauri plugins are executed in a context which are not tracked by Frida
+    - In another process?
+    - Let's check the Tauri changelog
+- We solve this in another PR

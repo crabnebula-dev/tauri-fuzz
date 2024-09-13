@@ -1,7 +1,8 @@
 #![allow(dead_code)]
 #![allow(unused_imports)]
 use fuzzer::tauri::{
-    create_invoke_request, invoke_command_minimal, setup_context_with_plugin, CommandArgs,
+    create_invoke_request, invoke_command, invoke_command_minimal, setup_context_with_plugin,
+    CommandArgs,
 };
 use fuzzer::SimpleFuzzerConfig;
 use libafl::executors::ExitKind;
@@ -26,7 +27,7 @@ pub fn fuzz_dir() -> PathBuf {
 #[allow(dead_code)]
 pub fn path_to_foo() -> PathBuf {
     let mut assets_dir = std::path::PathBuf::from(std::env!("CARGO_MANIFEST_DIR"));
-    assets_dir.pop();
+    assets_dir.push("tests");
     assets_dir.push("assets");
     assets_dir.push("foo.txt");
     assets_dir
@@ -56,8 +57,8 @@ commands.allow = [
 }"#;
 
     // Prepare context with right permissions and capability
-    // let mut context = mock_context(noop_assets());
-    // setup_context_with_plugin(&mut context, "fs", FS_READ_FILE_PERMISSION, CAPABILITY);
+    let mut context: tauri::Context<MockRuntime> = mock_context(noop_assets());
+    setup_context_with_plugin(&mut context, "fs", FS_READ_FILE_PERMISSION, CAPABILITY);
 
     let app = mock_builder()
         .invoke_handler(tauri::generate_handler![
@@ -74,13 +75,13 @@ commands.allow = [
             mini_app::demo::tauri_cmd_with_backdoor,
             mini_app::demo::sql_injection_vulnerability,
         ])
-        // .build(context)
-        .build(mock_context(noop_assets()))
+        .plugin(tauri_plugin_fs::init())
+        .build(context)
         .expect("Failed to init Tauri app");
 
     // Modify the scope of the fs plugin
-    // let scope = app.fs_scope();
-    // scope.allow_file(path_to_foo().to_str().unwrap());
+    let scope = app.fs_scope();
+    scope.allow_file(path_to_foo().to_str().unwrap());
 
     let webview = tauri::WebviewWindowBuilder::new(&app, "main", Default::default())
         .build()
@@ -133,6 +134,9 @@ pub fn fuzz_command_with_arg<T>(
         }
         let request = create_invoke_request(tauri_plugin.clone(), command_name, command_args);
         invoke_command_minimal(webview.clone(), request);
+        // // If we want to get a response
+        // let res = invoke_command::<String, String>(&webview.clone(), request);
+        // println!("{:?}", res);
         ExitKind::Ok
     };
 

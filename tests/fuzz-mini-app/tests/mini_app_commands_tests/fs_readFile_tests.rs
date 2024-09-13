@@ -1,4 +1,5 @@
 #![allow(non_snake_case)]
+// use crate::mini_app_commands_tests::path_to_foo;
 use fuzz_mini_app::utils::fuzz_command_with_arg;
 use fuzz_mini_app::utils::path_to_foo;
 use fuzzer::tauri::{start_crashing_fuzz_process, start_non_crashing_fuzz_process};
@@ -15,11 +16,11 @@ fn fs_readFile_no_policy() {
 #[ignore]
 fn hidden_fs_readFile_no_policy() {
     fuzz_command_with_arg(
-        "fs_readFile",
+        "read_file",
         None,
         policies::no_policy(),
         vec![("path", path_to_foo())],
-        Some("Fs".into()),
+        Some("fs".into()),
     )
 }
 
@@ -32,10 +33,10 @@ fn fs_readFile_block_files() {
 #[ignore]
 fn hidden_fs_readFile_block_files() {
     fuzz_command_with_arg(
-        "fs_readFile",
+        "read_file",
         None,
         policies::filesystem::no_file_access(),
         vec![("path", path_to_foo())],
-        Some("Fs".into()),
+        Some("fs".into()),
     )
 }

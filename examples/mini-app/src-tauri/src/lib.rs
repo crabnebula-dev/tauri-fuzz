@@ -21,7 +21,8 @@ pub fn run() {
 
     info!("Start tracing");
 
-    let app = mock_builder()
+    // let app = mock_builder()
+    tauri::Builder::default()
         .plugin(tauri_plugin_fs::init())
         .invoke_handler(tauri::generate_handler![
             crate::file_access::write_foo_file,
@@ -31,33 +32,33 @@ pub fn run() {
             crate::external_process::ls_with_rust_command_output,
             crate::external_process::ls_with_shell,
         ])
-        // .setup(move |app| {
-        //     tauri::WebviewWindowBuilder::new(app, "main", Default::default())
-        //         .build()
-        //         .unwrap();
-        //     Ok(())
-        // })
-        .build(tauri::generate_context!())
+        .setup(move |app| {
+            tauri::WebviewWindowBuilder::new(app, "main", Default::default())
+                .build()
+                .unwrap();
+            Ok(())
+        })
+        .run(tauri::generate_context!())
         .expect("Failed to init Tauri app");
-    let webview = tauri::WebviewWindowBuilder::new(&app, "main", Default::default())
-        .build()
-        .unwrap();
 
-    // app.run(|_, _| {});
+    // let webview = tauri::WebviewWindowBuilder::new(&app, "main", Default::default())
+    //     .build()
+    //     .unwrap();
+    //
 
     // call_fs_readFile(webview);
 
-    let mut args = CommandArgs::new();
-    args.insert("input", "-la");
-    let payload = create_invoke_request(None, "ls_with_rust_command", args);
-    let res = invoke_command::<String, String>(&webview, payload);
-    println!("{:#?}", res);
-
-    let mut args = CommandArgs::new();
-    args.insert("input", "-la");
-    let payload = create_invoke_request(None, "ls_with_shell", args);
-    let res = invoke_command::<String, String>(&webview, payload);
-    println!("{:#?}", res);
+    // let mut args = CommandArgs::new();
+    // args.insert("input", "-la");
+    // let payload = create_invoke_request(None, "ls_with_rust_command", args);
+    // let res = invoke_command::<String, String>(&webview, payload);
+    // println!("{:#?}", res);
+    //
+    // let mut args = CommandArgs::new();
+    // args.insert("input", "-la");
+    // let payload = create_invoke_request(None, "ls_with_shell", args);
+    // let res = invoke_command::<String, String>(&webview, payload);
+    // println!("{:#?}", res);
 
     // path.push("test_assets");
     // path.push("foo.txt");
@@ -66,3 +67,9 @@ pub fn run() {
     //
     // let res = invoke_command::<String, String>(&webview, payload);
 }
+
+// fn start_graphical() {
+//     app.run(|_, _| {});
+// }
+//
+// fn with_mockruntime() {}
