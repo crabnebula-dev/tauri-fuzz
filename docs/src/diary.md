@@ -1024,3 +1024,10 @@ InvokeRequest {
     - In another process?
     - Let's check the Tauri changelog
 - We solve this in another PR
+- From our investigation it seems that listener to the harness does not function
+  - it works when giving it a pointer to the Tauri commands we want to fuzz
+  - it does not seem to work when giving it the whole harness
+  - the address of the harness we give to the fuzzer and the one found in the binary seem to differ, I don't know the cause
+  - I believe because we improved the code to be polymorphic
+    - Due to monomorphisation there should be multiple implementation of our generic function
+  - We changed the way we take harness pointer, make it a function rather than a closure

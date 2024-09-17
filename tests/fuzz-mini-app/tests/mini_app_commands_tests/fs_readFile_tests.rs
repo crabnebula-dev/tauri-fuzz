@@ -9,15 +9,15 @@ use fuzzer::tauri::{start_crashing_fuzz_process, start_non_crashing_fuzz_process
 // The "hidden_*"  test will be started in a separate process and the exit status will be captured
 // by the parent process/test.
 #[test]
-fn fs_readFile_no_policy() {
+fn allow_fs_readFile() {
     start_non_crashing_fuzz_process("hidden_fs_readFile_no_policy");
-    start_non_crashing_fuzz_process("hidden_fs_readFile_writeonly_policy");
+    start_non_crashing_fuzz_process("hidden_fs_readFile_readonly_policy");
 }
 
 #[test]
-fn fs_readFile_block_files() {
+fn block_fs_readFile() {
     start_crashing_fuzz_process("hidden_fs_readFile_block_files");
-    start_crashing_fuzz_process("hidden_fs_readFile_readonly_policy");
+    start_crashing_fuzz_process("hidden_fs_readFile_writeonly_policy");
 }
 
 #[test]
