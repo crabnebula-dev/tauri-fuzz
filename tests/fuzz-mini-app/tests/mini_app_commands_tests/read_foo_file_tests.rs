@@ -6,12 +6,21 @@ use fuzzer::tauri::{start_crashing_fuzz_process, start_non_crashing_fuzz_process
 // The "hidden_*"  test will be started in a separate process and the exit status will be captured
 // by the parent process/test.
 #[test]
-fn block_all_file_access() {
-    start_crashing_fuzz_process("hidden_block_all_file_access")
+fn block_read_foo() {
+    start_crashing_fuzz_process("hidden_block_read_foo_with_nofileaccess_policy");
+    start_crashing_fuzz_process("hidden_block_read_foo_with_filename_policy");
 }
+
+// Read-only access should not block `read_foo`
+#[test]
+fn allow_read_foo() {
+    start_non_crashing_fuzz_process("hidden_allow_read_foo_with_no_policy");
+    start_non_crashing_fuzz_process("hidden_allow_read_foo_with_readonly_policy");
+}
+
 #[test]
 #[ignore]
-fn hidden_block_all_file_access() {
+fn hidden_block_read_foo_with_nofileaccess_policy() {
     fuzz_command_with_arg(
         "read_foo_file",
         Some(mini_app::file_access::read_foo_file as usize),
@@ -21,14 +30,9 @@ fn hidden_block_all_file_access() {
     )
 }
 
-// Block reading foo with no access to files with name "foo.txt"
-#[test]
-fn block_by_filename() {
-    start_crashing_fuzz_process("hidden_block_by_filename")
-}
 #[test]
 #[ignore]
-fn hidden_block_by_filename() {
+fn hidden_block_read_foo_with_filename_policy() {
     fuzz_command_with_arg(
         "read_foo_file",
         Some(mini_app::file_access::read_foo_file as usize),
@@ -38,18 +42,25 @@ fn hidden_block_by_filename() {
     )
 }
 
-// Read-only access should not block `read_foo`
-#[test]
-fn allow_by_readonly_policy() {
-    start_non_crashing_fuzz_process("hidden_allow_by_readonly_policy")
-}
 #[test]
 #[ignore]
-fn hidden_allow_by_readonly_policy() {
+fn hidden_allow_read_foo_with_readonly_policy() {
     fuzz_command_with_arg(
         "read_foo_file",
         Some(mini_app::file_access::read_foo_file as usize),
         policies::filesystem::read_only_access(),
+        Vec::<(&str, ())>::new(),
+        None,
+    )
+}
+
+#[test]
+#[ignore]
+fn hidden_allow_read_foo_with_no_policy() {
+    fuzz_command_with_arg(
+        "read_foo_file",
+        Some(mini_app::file_access::read_foo_file as usize),
+        policies::no_policy(),
         Vec::<(&str, ())>::new(),
         None,
     )

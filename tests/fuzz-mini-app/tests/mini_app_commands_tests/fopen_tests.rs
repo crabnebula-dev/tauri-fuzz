@@ -9,6 +9,12 @@ use fuzzer::tauri::{start_crashing_fuzz_process, start_non_crashing_fuzz_process
 fn crash_fopen() {
     start_crashing_fuzz_process("hidden_crash_fopen")
 }
+
+#[test]
+fn no_crash_fopen() {
+    start_non_crashing_fuzz_process("hidden_no_crash_fopen")
+}
+
 #[test]
 #[ignore]
 fn hidden_crash_fopen() {
@@ -19,11 +25,6 @@ fn hidden_crash_fopen() {
         vec![("filename", "/tmp/foo"), ("mode", "w")],
         None,
     )
-}
-
-#[test]
-fn no_crash_fopen() {
-    start_non_crashing_fuzz_process("hidden_no_crash_fopen")
 }
 #[test]
 #[ignore]

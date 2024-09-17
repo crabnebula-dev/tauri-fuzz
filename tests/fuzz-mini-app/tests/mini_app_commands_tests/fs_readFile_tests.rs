@@ -10,8 +10,16 @@ use fuzzer::tauri::{start_crashing_fuzz_process, start_non_crashing_fuzz_process
 // by the parent process/test.
 #[test]
 fn fs_readFile_no_policy() {
-    start_non_crashing_fuzz_process("hidden_fs_readFile_no_policy")
+    start_non_crashing_fuzz_process("hidden_fs_readFile_no_policy");
+    start_non_crashing_fuzz_process("hidden_fs_readFile_writeonly_policy");
 }
+
+#[test]
+fn fs_readFile_block_files() {
+    start_crashing_fuzz_process("hidden_fs_readFile_block_files");
+    start_crashing_fuzz_process("hidden_fs_readFile_readonly_policy");
+}
+
 #[test]
 #[ignore]
 fn hidden_fs_readFile_no_policy() {
@@ -25,17 +33,36 @@ fn hidden_fs_readFile_no_policy() {
 }
 
 #[test]
-fn fs_readFile_block_files() {
-    start_crashing_fuzz_process("hidden_fs_readFile_block_files")
-}
-
-#[test]
 #[ignore]
 fn hidden_fs_readFile_block_files() {
     fuzz_command_with_arg(
         "read_file",
         None,
         policies::filesystem::no_file_access(),
+        vec![("path", path_to_foo())],
+        Some("fs".into()),
+    )
+}
+
+#[test]
+#[ignore]
+fn hidden_fs_readFile_writeonly_policy() {
+    fuzz_command_with_arg(
+        "read_file",
+        None,
+        policies::filesystem::write_only_access(),
+        vec![("path", path_to_foo())],
+        Some("fs".into()),
+    )
+}
+
+#[test]
+#[ignore]
+fn hidden_fs_readFile_readeonly_policy() {
+    fuzz_command_with_arg(
+        "read_file",
+        None,
+        policies::filesystem::read_only_access(),
         vec![("path", path_to_foo())],
         Some("fs".into()),
     )
