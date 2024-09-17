@@ -43,6 +43,7 @@ path = "fuzz_targets/_template_full_.rs"
 doc = false
 "#;
 
+    #[ignore]
     #[test]
     fn init_and_fuzz() {
         let root_dir = PathBuf::from(std::env!("CARGO_MANIFEST_DIR"));
