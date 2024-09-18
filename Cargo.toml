@@ -46,8 +46,9 @@ tauri-build = { version = "2.0.0-beta", features = [] }
 tauri-utils = { version = "2.0.0-beta", features = [] }
 tauri-plugin-fs = "2.0.0-beta"
 
-# tauri = { path = "../tauri/crates/tauri", features = ["test", "tracing"] }
-# tauri-runtime = { path = "../tauri/crates/tauri-runtime", features = [] }
-# tauri-build = { path = "../tauri/crates/tauri-build", features = [] }
-# tauri-utils = { path = "../tauri/crates/tauri-utils", features = [] }
+
+# tauri = { path = "../tauri/core/tauri", features = ["test", "tracing"] }
+# tauri-runtime = { path = "../tauri/core/tauri-runtime", features = [] }
+# tauri-build = { path = "../tauri/core/tauri-build", features = [] }
+# tauri-utils = { path = "../tauri/core/tauri-utils", features = [] }
 # tauri-plugin-fs = { path = "../plugins-workspace/plugins/fs" }
