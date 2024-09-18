@@ -127,27 +127,37 @@ pub fn fuzz_command_with_arg<T>(
 {
     let options = SimpleFuzzerConfig::from_toml(fuzz_config(), command_name, fuzz_dir()).into();
     let webview = setup_mock();
-    let harness = |_input: &BytesInput| {
-        let mut command_args = CommandArgs::new();
-        for arg in args.clone().into_iter() {
-            command_args.insert(arg.0, arg.1.clone());
-        }
-        let request = create_invoke_request(tauri_plugin.clone(), command_name, command_args);
-        invoke_command_minimal(webview.clone(), request);
-        // // If we want to get a response
-        // let res = invoke_command::<String, String>(&webview.clone(), request);
-        // println!("{:?}", res);
-        ExitKind::Ok
-    };
-
-    let monitored_code = command_ptr.unwrap_or(std::ptr::addr_of!(harness) as usize);
-
+    let monitored_code = command_ptr.unwrap_or(fuzz_harness::<T> as usize);
     fuzzer::fuzz_main(
-        harness,
+        |input| fuzz_harness(&webview, command_name, &args, &tauri_plugin, input),
         &options,
         monitored_code,
-        // command_ptr,
         policy,
         true,
     )
 }
+
+pub fn fuzz_harness<T>(
+    // pub fn fuzz_harness(
+    webview: &tauri::WebviewWindow<MockRuntime>,
+    command_name: &str,
+    args: &[(&str, T)],
+    // args: &[(&str, PathBuf)],
+    tauri_plugin: &Option<String>,
+    _input: &BytesInput,
+) -> ExitKind
+where
+    T: serde::ser::Serialize + Clone,
+{
+    let mut command_args = CommandArgs::new();
+    for arg in args.iter() {
+        command_args.insert(arg.0, arg.1.clone());
+    }
+    let request = create_invoke_request(tauri_plugin.clone(), command_name, command_args);
+    invoke_command_minimal(webview.clone(), request);
+    // // If we want to get a response
+    // let res = invoke_command::<String, String>(&webview.clone(), request);
+    // println!("{:?}", res);
+    ExitKind::Ok
+}
+
