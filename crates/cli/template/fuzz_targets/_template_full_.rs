@@ -25,9 +25,10 @@ fn main() {
     let options = SimpleFuzzerConfig::from_toml(fuzz_config_file, COMMAND_NAME, fuzz_dir).into();
     fuzzer::fuzz_main(
         harness,
-        options,
+        &options,
         harness as *const () as usize,
-        policies::file_policy::no_file_access(),
+        policies::filesystem::no_file_access(),
+        false,
     );
 }
 

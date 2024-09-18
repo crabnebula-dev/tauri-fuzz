@@ -7,7 +7,7 @@ let greetMsgEl;
 
 async function tauri1(v) {
   greetMsgEl.textContent = invoke("tauri_cmd_1", { input: v });
-  greetMsgEl.textContent = await readFile("tauri_cmd_1", {
+  greetMsgEl.textContent = await readFile("foo.txt", {
     dir: "toto",
   });
 }

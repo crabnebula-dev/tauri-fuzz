@@ -4,7 +4,7 @@ pub use crate::fuzzer::{fuzz_main, fuzz_test};
 pub use crate::fuzzer_options::SimpleFuzzerConfig;
 
 #[cfg(feature = "tauri")]
-pub mod tauri_utils;
+pub mod tauri;
 
 mod from_random_bytes;
 
@@ -35,7 +35,7 @@ macro_rules! define_fuzz_target {
             let fuzz_dir = ::std::path::PathBuf::from(::std::env!("CARGO_MANIFEST_DIR"));
             let fuzz_config_file = fuzz_dir.join("fuzzer_config.toml");
             let options = SimpleFuzzerConfig::from_toml(fuzz_config_file, COMMAND_NAME, fuzz_dir).into();
-            ::fuzzer::fuzz_main(harness, options, harness as *const () as usize, $policy);
+            ::fuzzer::fuzz_main(harness, &options, harness as *const () as usize, $policy, false);
         }
 
         fn setup_mock() -> WebviewWindow<MockRuntime> {

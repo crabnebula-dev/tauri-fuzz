@@ -1,6 +1,7 @@
 /*!
 Welcome to `LibAFL`
 */
+#![allow(warnings)]
 #![doc = include_str!("../README.md")]
 /*! */
 #![cfg_attr(feature = "document-features", doc = document_features::document_features!())]

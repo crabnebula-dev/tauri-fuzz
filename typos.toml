@@ -5,6 +5,7 @@ extend-exclude = [
   "docs/presentation/images/*.svg",
   "/docs/presentation/dist/*",
   "/docs/presentation/test/",
+  "*log"
 ]
 
 [default.extend-identifiers]

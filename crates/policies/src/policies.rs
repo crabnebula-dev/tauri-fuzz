@@ -1,13 +1,15 @@
-use crate::engine::{FuzzPolicy, RuleError};
-pub mod file_policy;
+use crate::engine::{ConditionOnParameters, FuzzPolicy};
+pub mod external_process;
+pub mod filesystem;
+mod utils;
 
 #[cfg(unix)]
-pub(crate) const LIBC: &str = "libc";
+pub(crate) const LIBC: &str = "libc.";
 
 pub fn no_policy() -> FuzzPolicy {
     vec![]
 }
 
-pub(crate) fn block_on_entry(_: &[usize]) -> Result<bool, RuleError> {
-    Ok(false)
+pub(crate) fn block_on_entry() -> ConditionOnParameters {
+    std::sync::Arc::new(|_| Ok(true))
 }

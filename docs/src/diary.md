@@ -459,22 +459,54 @@ that are being called - uses a technique called _dynamic recompilation_ - while 
   - error message triggered is `state() called before manage() for given type`
   - we can't use our helper function `mock_builder_minimal`
   - use `mock_builder` instead
-- The `InvokePayload` looks like
+- The `InvokeRequest` looks like
 
 ```rust,ignore
-InvokePayload {
-    cmd: "tauri",
-    tauri_module: Some("Fs"),           // module name
-    callback: CallbackFn(0),
-    error: CallbackFn(1),
-    inner: Object {
-        "message": Object {
-            "cmd": String("readFile"),  // command name
-            "path": String("..."),      // command parameter
-            "options": Object {},       // command parameter
-        },
+InvokeRequest {
+    cmd: "plugin:fs|read_file",
+    callback: CallbackFn(
+        2482586317,
+    ),
+    error: CallbackFn(
+        1629968881,
+    ),
+    url: Url {
+        scheme: "http",
+        cannot_be_a_base: false,
+        username: "",
+        password: None,
+        host: Some(
+            Ipv4(
+                127.0.0.1,
+            ),
+        ),
+        port: Some(
+            1430,
+        ),
+        path: "/",
+        query: None,
+        fragment: None,
     },
-}k
+    body: Json(
+        Object {
+            "options": Object {
+                "dir": String("toto"),
+            },
+            "path": String("foo.txt"),
+        },
+    ),
+    headers: {
+        "content-type": "application/json",
+        "origin": "http://127.0.0.1:1430",
+        "referer": "http://127.0.0.1:1430/",
+        "accept": "*/*",
+        "user-agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15",
+        "tauri-callback": "2482586317",
+        "tauri-error": "1629968881",
+        "tauri-invoke-key": "[Ic/:jX^L^q#hDgJd7)U",
+    },
+    invoke_key: "[Ic/:jX^L^q#hDgJd7)U",
+}
 ```
 
 - Don't forget to configure the `allowlist` to allow the scope
@@ -803,4 +835,192 @@ InvokeRequest {
 - `ProcessMonitor` to see all the events related to a process
 - `DependencyWalker` to investigate issue related to modules/dlls
 
-####
+### Default policy
+
+- We want to have a default policy that catches any calls to an external binary that returns an error
+  - our intuition is a call to an external binary that can result into a syntax error
+    also has a chance to be vulnerable to an exploit
+  - with the fuzzer there is a high chance "vulnerable" calls to external process will result in syntax error
+- We want to attach to Rust `std::process::Command::spawn/output`
+  - I don't see the symbol of these functions in the binary, I don't really get why
+- Maybe the solution is to attach to `execv` family of calls and monitor the return status of the call
+  - this is lower level that rust `Command`, we can catch more external interactions from the app we monitor
+  - I believe this is called by rust `Command` but I need to check that
+- All functions from `exec` family calls `execve`
+  - from this implementation of libc [https://github.com/zerovm/glibc/blob/master/posix/execv.c](https://github.com/zerovm/glibc/blob/master/posix/execv.c)
+- Fuzzer crashes when monitoring `execv`
+
+  - it does not crash when monitoring other functions
+  - it crashes in the fuzzer code
+    - with fuzz_test
+      - with a rule that never blocks
+        - it crashes in the harness and is captured by the fuzzer
+      - with a rule that always blocks
+        - it crashes in the harness too
+        - actually the harness has time to finish, corruption appears after the harness
+        - `*** stack smashing detected ***: terminated`
+    - with fuzz_main
+      - with a rule that always blocks
+        - it crashes in the harness when the tauri command is finished but the harness has not finished yet
+        - `*** stack smashing detected ***: terminated`
+      - with a rule that never blocks
+        - it crashes in the harness when the tauri command is finished but the harness has not finished yet
+        - `*** stack smashing detected ***: terminated`
+  - I think that after the harness the fuzzer calls execve before the flag is removed
+  - Call order starting from when the harness is being called
+    - in `libafl::Executor::run_target`: `let ret = (self.harness_fn.borrow_mut())(input);`
+    - `libafl::executors::inprocess::GenericInProcessExecutor`
+    - `core::ops::function::FnMut::call_mut`
+    - `ls_with_rust::harness` with `ls_with_rust` the binary being executed
+      - `_gum_function_context_begin_invocation`
+        - `gum_tls_key_get_value`
+        - `pthread_getspecific`
+        - `gum_tls_key_set_value`
+        - `get_interceptor_thread_context`
+        - `gum_thread_get_system_error`
+        - `gum_invocation_stack_push`
+          - `gum_sign_code_pointer`
+        - `gum_rust_invocation_listener_on_enter`
+          - `frida_gum::interceptor::invocation_listener::call_on_enter`
+            - `libafl_frida::syscall_isolation_rt::HarnessListener::on_enter`
+        - `gum_thread_set_system_error`
+          - `__errno_location@plt`
+        - `gum_tls_key_set_value`
+        - `pthread_setspecific`
+      - harness code ...
+    - pure asm code that push registers on the stack
+      - that looks like context switch with context being saved on the stack
+    - `_gum_function_context_end_invocation`
+      - `gum_tls_key_set_value`
+        - `pthread_setspecific@plt`
+      - `gum_thread_get_system_error`
+        - `__errno_location@plt`
+      - `get_interceptor_thread_context`
+        - `_frida_g_private_get`
+          - `g_private_get_impl`
+          - `pthread_getspecific@plt`
+      - `gum_sign_code_pointer`
+      - `gum_rust_invocation_listener_on_leave`
+        - `frida_gum::interceptor::invocation_listener::call_on_leave`
+          - `frida_gum::interceptor::invocation_listener::InvocationContext::from_raw`
+          - `libafl_frida::syscall_isolation_rt::HarnessListener::on_leave`
+      - `gum_thread_set_system_error`
+        - `_errno_location@plt`
+      - `_frida_g_array_set_size`
+      - `gum_tls_key_set_value`
+        - `pthread_setspecific`
+    - pure asm code that pop stack values into registers
+      - restore context switch
+  - `__execvpe_common.isra`: here we crash
+
+- Correct execution trace at the end of the harness:
+  - pure asm code that push registers on the stack
+    - that looks like context switch with context being saved on the stack
+  - `_gum_function_context_end_invocation`
+    - `gum_tls_key_set_value`
+      - `pthread_setspecific@plt`
+    - `gum_thread_get_system_error`
+      - `__errno_location@plt`
+    - `get_interceptor_thread_context`
+      - `_frida_g_private_get`
+        - `g_private_get_impl`
+        - `pthread_getspecific@plt`
+    - `gum_sign_code_pointer`
+    - `gum_rust_invocation_listener_on_leave`
+      - `frida_gum::interceptor::invocation_listener::call_on_leave`
+        - `frida_gum::interceptor::invocation_listener::InvocationContext::from_raw`
+        - `libafl_frida::syscall_isolation_rt::HarnessListener::on_leave`
+    - `gum_thread_set_system_error`
+      - `_errno_location@plt`
+    - `_frida_g_array_set_size`
+    - `gum_tls_key_set_value`
+      - `pthread_setspecific`
+  - pure asm code that pop stack values into registers
+  - here we don't crash contrary to above
+- New approach where we detach the frida listeners of monitored functions instead of deactivating them
+  - Contrary to what the docs says, calling `Gum::obtain` produce a deadlock (in doc it's supposed to do a no-op)
+  - Without `Gum::obtain` we can't detach the monitored function listeners
+- Weirdest thing ever: the crash does not appear anymore with gdb when putting a breakpoint on `execve`
+- I'm temporarily giving up on monitoring `execv`
+  - I still think it's the
+- Trying with `__execve` instead of `execve`
+  - maybe C weak links mess up with Frida
+  - not working either
+- Ok I just notice that my approach was wrong anyway
+  - `execve` usually called in the child process after being forked
+  - Frida rust bindings do not support monitoring the child process anyway
+  - I still don't know why there was a bug
+
+### Improving engine code
+
+- Our rules now use `Fn` closure trait rather than `fn` object
+- this allow us to make rules that are more flexible with captured variables and arguments
+- the main issue was to use `Box<dyn Fn>>` that were also implementing `Clone`
+  - inspiration from Tauri code with all the callbacks
+  - this thread helped us solve the issue: https://users.rust-lang.org/t/how-to-clone-a-boxed-closure/31035/7
+  - replace `Box` by `Arc`
+  - we could also create manual cloneable `Box<dyn Fn>>` like this example
+    - https://play.rust-lang.org/?version=stable&mode=debug&edition=2018&gist=6ca48c4cff92370c907ecf4c548ee33c
+
+### Improve tests
+
+- Refactor tests to avoid too much repetition
+- All tests are gathered in a single crate to avoid too much disk usage
+
+### Default policy
+
+- We have a new approach where we monitor the `std::process::Command` API
+
+  - we detect any new creation process
+    - we track `Command::status`, `Command::output`, `Command::spawn`
+    - ideally we could track a single function: `std::sys::windows/unix::process::Command`
+      - all the above functions call this private function
+      - unfortunately this function is private and we can't attach to it with Frida
+      - actually it seems we can! Just found this in the symbols
+      ```ignore
+      "SymbolDetails _ZN3std3sys3pal4unix7process13process_inner71_$LT$impl$u20$std..sys..pal..unix..process..process_common..Command$GT$5spawn17hffc9080bc0517252E: [0x0000555740c67360, 0x0000555740c680c1]",
+      ```
+  - we can also detect error status of external process
+    - we track `Command::output`, `Command::status`, `Child::wait`, `Child::try_wait`, `Child::wait_with_output`,
+    - an issue is that we don't know from which binary we returned from
+  - Limit of our current approach is that we can only detect invocation of external binaries from the Rust API
+    - we don't detect invocation of ext binaries through libc `fork` + `execve`
+    - but we could monitor `wait` and `waitpid` to track error status
+
+- We monitor `wait` and `waitpid`
+  - this is a superset of monitoring rust `std::process::Command`
+  - we had to modify the policy engine to add a storage that can store function parameter at entry
+    that can then be reused when analysing the function at exit
+    - this is necessary due to common C pattern that store results of a function in a mutable pointer given as parameter
+  - Question: Do libc usually call `wait` or `waitpid` after spawning a child process?
+    - they should otherwise it would create zombie process
+  - Can we do better?
+    - ideally we would track `fork + execve` but it seems too complex with Frida
+    - external process can be called by other means than creating a child process
+      - for example in SQL an RPC is used to talk to SQL server and no `fork` is ever used
+      - we also need to track networking then =(
+    - we are using the assumption that a child process will return 0 as exit status when the execution
+      went well. Is it always true?
+
+#### libc wait
+
+- we want to also capture error status of child processes that were invoked through the libc API
+  - from my knowledge these child processes are invoked using `fork` then `execve`
+  - one way to get the return status of these child processes is to capture calls to `wait` from the parent process
+- the issue with `wait` is that the child exit status is returned through mutating a variable that was sent as argument
+  and not through the return value
+- to fix that we may need to store the pointer that was provided as argument to be able to check it on exit
+  - we implemented that and it works great
+
+### Bug with plugin fs_readFile
+
+- For unknown reason when accessing the filesystem with `tauri_plugin_fs` the interception does not occur
+  - this does not occur when accessing the filesystem with other functions
+- Possible reasons for that:
+  - `tauri_plugin_fs::read_file` does not call `open`
+    - this is unlikely since `tauri_plugin_fs` uses this Rust code
+      `let file = std::fs::OpenOptions::from(open_options.options)`
+  - Tauri plugins are executed in a context which are not tracked by Frida
+    - In another process?
+    - Let's check the Tauri changelog
+- We solve this in another PR

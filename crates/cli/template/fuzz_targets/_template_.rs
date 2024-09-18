@@ -13,5 +13,5 @@ fuzzer::define_fuzz_target! {
     parameters: {
         name: String,
     },
-    policy: policies::file_policy::no_file_access(),
+    policy: policies::filesystem::no_file_access(),
 }

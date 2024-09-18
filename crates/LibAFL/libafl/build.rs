@@ -15,7 +15,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 fn main() -> Result<(), Box<dyn Error>> {
     println!("cargo:rerun-if-changed=build.rs");
     assert!(
-        cfg!(all(not(docrs), not(feature = "nautilus"))),
+        cfg!(all(not(docsrs), not(feature = "nautilus"))),
         "The 'nautilus' feature of libafl requires a nightly compiler"
     );
     #[cfg(feature = "unicode")]

@@ -49,18 +49,22 @@ use policies::engine::FuzzPolicy;
 /// The main fn, usually parsing parameters, and starting the fuzzer
 pub fn fuzz_main<H>(
     harness: H,
-    options: FuzzerOptions,
+    options: &FuzzerOptions,
     tauri_cmd_address: usize,
     policy: FuzzPolicy,
+    as_test: bool,
 ) where
     H: FnMut(&BytesInput) -> ExitKind,
 {
-    color_backtrace::install();
-    env_logger::init();
-    log::info!("Starting");
     unsafe {
-        // match fuzz_test(harness, &options, tauri_cmd_address, policy) {
-        match fuzz(harness, &options, tauri_cmd_address, policy) {
+        let res = if as_test {
+            fuzz_test(harness, options, tauri_cmd_address, policy)
+        } else {
+            color_backtrace::install();
+            env_logger::init();
+            fuzz(harness, options, tauri_cmd_address, policy)
+        };
+        match res {
             Ok(()) | Err(Error::ShuttingDown) => println!("Finished fuzzing. Good bye."),
             Err(e) => panic!("Error during fuzzing: {e:?}"),
         }
