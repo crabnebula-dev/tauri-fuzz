@@ -58,17 +58,6 @@ impl InterceptionSwitch {
     }
 }
 
-/// A listener to the Tauri command we are fuzzing
-// The harness listener is used to indicate the fuzzer if the
-// code being executed is the fuzz target or the fuzzer code
-// #[derive(Clone)]
-// struct HarnessListener {
-//     /// Pointer to the function
-//     function_pointer: NativePointer,
-//     /// Flag to indicate when we have started the harness
-//     activated: Arc<Mutex<bool>>,
-// }
-
 impl InvocationListener for SyscallIsolationRuntime {
     /// When entering the fuzzed code set the flag to true
     fn on_enter(&mut self, _context: InvocationContext) {
@@ -126,6 +115,7 @@ impl InvocationListener for FunctionListener {
             // The fuzzer panic_hook will need to access it.
             // Otherwise we'd have a deadlock
             // drop(flag);
+
             if self.policy_should_block(&context) {
                 panic!(
                     "Intercepting call to [{}].\n{}",
@@ -296,7 +286,6 @@ fn find_symbol_in_modules(policy: &FunctionPolicy) -> Option<NativePointer> {
 
     let function_name = if policy.is_rust_function {
         // If the function is a Rust we have to find it among mangled names
-        // let func_name = policy.name.to_string();
         let parsed_tokens = policy.name.split("::");
 
         let mut symbols: Vec<String> = Module::enumerate_symbols(&lib.name)
