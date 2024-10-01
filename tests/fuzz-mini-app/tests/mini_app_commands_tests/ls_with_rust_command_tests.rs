@@ -1,4 +1,4 @@
-// // Copyright 2024-2022 CrabNebula Ltd.
+// // Copyright 2024-2022 CrabNebula Ltd., Alexandre Dang
 // // SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
 
 use fuzz_mini_app::utils::fuzz_command_with_arg;
