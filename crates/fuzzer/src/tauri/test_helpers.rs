@@ -1,3 +1,6 @@
+// // Copyright 2024-2022 CrabNebula Ltd.
+// // SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 // This is a trick to detect a crash while fuzzing when doing tests.
 // The fuzzer exits the process with an error code rather than panicking.
 // This test will be started as a new process and its exit status will be captured.

@@ -1,3 +1,6 @@
+// // Copyright 2024-2022 CrabNebula Ltd.
+// // SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 #![cfg_attr(
     all(not(debug_assertions), target_os = "windows"),
     windows_subsystem = "windows"

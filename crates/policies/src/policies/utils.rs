@@ -1,3 +1,6 @@
+// // Copyright 2024-2022 CrabNebula Ltd.
+// // SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 use std::ffi::CStr;
 
 /// This is unsafe because we assume that the registers chosen contain a C string

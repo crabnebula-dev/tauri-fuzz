@@ -1,3 +1,6 @@
+// // Copyright 2024-2022 CrabNebula Ltd.
+// // SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 /// Collection of helper functions that connects the fuzzer and Tauri
 use serde::de::DeserializeOwned;
 use serde::ser::Serialize;

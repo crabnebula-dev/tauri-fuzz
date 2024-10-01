@@ -1,3 +1,6 @@
+// // Copyright 2024-2022 CrabNebula Ltd.
+// // SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 use fuzz_mini_app::utils::fuzz_command_with_arg;
 use fuzzer::tauri::start_crashing_fuzz_process;
 // This is a trick to test fuzzers with multi-threaded and get fuzzer output when crashing.

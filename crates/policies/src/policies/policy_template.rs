@@ -1,3 +1,6 @@
+// // Copyright 2024-2022 CrabNebula Ltd.
+// // SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 /// A template to create a `FuzzPolicy`
 
 // A function that will create our `FuzzPolicy` at runtime

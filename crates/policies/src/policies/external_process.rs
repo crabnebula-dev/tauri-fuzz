@@ -1,3 +1,6 @@
+// // Copyright 2024-2022 CrabNebula Ltd.
+// // SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 use crate::engine::{FunctionPolicy, FuzzPolicy, Rule, RuleError};
 #[cfg(not(target_env = "msvc"))]
 pub use not_msvc::*;

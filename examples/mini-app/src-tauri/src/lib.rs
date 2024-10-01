@@ -1,3 +1,6 @@
+// // Copyright 2024-2022 CrabNebula Ltd.
+// // SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 #![allow(unused_imports)]
 pub mod tauri_commands;
 use fuzzer::tauri::{create_invoke_request, invoke_command, CommandArgs};

@@ -1,3 +1,6 @@
+// // Copyright 2024-2022 CrabNebula Ltd.
+// // SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 #![allow(non_snake_case)]
 // use crate::mini_app_commands_tests::path_to_foo;
 use fuzz_mini_app::utils::fuzz_command_with_arg;
