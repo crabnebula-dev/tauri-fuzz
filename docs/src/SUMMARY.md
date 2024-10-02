@@ -11,7 +11,7 @@
   - [Benchmarks for Fuzzers](./biblio/benchmarks.md)
   - [System Calls Interception](./biblio/syscall_interception.md)
 - [User Guide](./user_guide/intro.md)
-  - [Fuzz your Tauri App](./user_guide/integrate_fuzzing_in_my_app.md)
+  - [Getting Started](./user_guide/getting_started.md)
   - [Available Policies](./user_guide/available_policies.md)
   - [Write your Custom Policy](./user_guide/write_custom_policy.md)
   - [Fuzzer CLI](./user_guide/fuzzer_cli.md)
