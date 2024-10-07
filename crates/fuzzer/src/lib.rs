@@ -1,3 +1,6 @@
+// // Copyright 2023-2024 CrabNebula Ltd., Alexandre Dang
+// // SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 mod fuzzer;
 mod fuzzer_options;
 pub use crate::fuzzer::{fuzz_main, fuzz_test};

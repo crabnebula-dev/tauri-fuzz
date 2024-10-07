@@ -1,3 +1,6 @@
+// // Copyright 2023-2024 CrabNebula Ltd., Alexandre Dang
+// // SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 /// Tauri commands that can be fuzzed for a demo
 use std::fs::File;
 use std::io::Read;

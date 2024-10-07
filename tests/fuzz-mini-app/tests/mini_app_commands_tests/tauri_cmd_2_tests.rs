@@ -1,3 +1,6 @@
+// // Copyright 2023-2024 CrabNebula Ltd., Alexandre Dang
+// // SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 use fuzz_mini_app::utils::fuzz_command_with_arg;
 use fuzzer::tauri::{start_crashing_fuzz_process, start_non_crashing_fuzz_process};
 
