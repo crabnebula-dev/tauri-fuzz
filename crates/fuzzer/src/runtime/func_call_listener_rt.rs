@@ -22,7 +22,6 @@ use libafl_frida::helper::FridaRuntime;
 use policies::engine::{Context, FunctionPolicy, FuzzPolicy};
 use rangemap::RangeMap;
 
-
 /// `Frida`-based binary-only instrumentation that intercepts calls to system calls
 pub struct FunctionListenerRuntime {
     /// A listener to the harness function we are fuzzing
@@ -34,7 +33,7 @@ pub struct FunctionListenerRuntime {
     /// Pointer to the harness code
     harness_pointer: NativePointer,
     /// Flag to avoid initializing twice
-    is_init: Arc<Mutex<bool>>
+    is_init: Arc<Mutex<bool>>,
 }
 
 #[derive(Debug)]
@@ -168,12 +167,12 @@ impl FridaRuntime for FunctionListenerRuntime {
         //
         // if !is_tauri_app_instrumented {
         //     panic!("{} not instrumented", self.tauri_app.name)
-        // } 
+        // }
 
         // If the runtime is already initialized skip
         if *self.is_init.lock().unwrap() {
             log::trace!("SyscallIsolationRuntime already initialized, skipping");
-            return
+            return;
         }
 
         log::trace!("Initiating the SyscallIsolationRuntime");
@@ -203,9 +202,7 @@ impl FridaRuntime for FunctionListenerRuntime {
         Ok(())
     }
 
-    fn deinit(&mut self, _gum: &Gum) {
-        
-    }
+    fn deinit(&mut self, _gum: &Gum) {}
 
     fn post_exec<I: Input + HasTargetBytes>(&mut self, _input: &I) -> Result<(), Error> {
         self.switch.lock().unwrap().deactivate();
@@ -217,7 +214,6 @@ impl FunctionListenerRuntime {
     /// Creates a [`SyscallIsolationRuntime`]
     /// Setup listeners for the monitored libc functions provided.
     /// Setup listener for the tauri command being fuzzed.
-    #[must_use]
     pub fn new(fuzz_policy: FuzzPolicy, harness_address: usize) -> Result<Self, Error> {
         log::debug!("{:#?}", modules_info());
 
@@ -260,7 +256,7 @@ impl FunctionListenerRuntime {
             harness_pointer: NativePointer(harness_address as *mut core::ffi::c_void),
             function_listeners: listeners,
             switch,
-            is_init: Arc::new(Mutex::new(false))
+            is_init: Arc::new(Mutex::new(false)),
         };
 
         Ok(res)
@@ -303,7 +299,7 @@ fn find_symbol_in_modules(policy: &FunctionPolicy) -> Option<NativePointer> {
             }
 
             // We have found exactly one matching symbol
-            1 => symbols.get(0).unwrap().clone(),
+            1 => symbols.first().unwrap().clone(),
 
             // Multiple symbols have been found that should not be possible
             _ => {
@@ -372,7 +368,7 @@ fn module_details_owned_to_string(module: &ModuleDetailsOwned) -> String {
 fn modules_info() -> Vec<String> {
     Module::enumerate_modules()
         .iter()
-        .map(|module| module_details_owned_to_string(module))
+        .map(module_details_owned_to_string)
         .collect::<Vec<String>>()
 }
 
@@ -380,7 +376,7 @@ fn modules_info() -> Vec<String> {
 fn symbols_in_module(module_name: &str) -> Vec<String> {
     Module::enumerate_symbols(module_name)
         .iter()
-        .map(|module| symbol_details_to_string(module))
+        .map(symbol_details_to_string)
         .collect::<Vec<String>>()
 }
 
@@ -388,7 +384,7 @@ fn symbols_in_module(module_name: &str) -> Vec<String> {
 fn exports_in_module(module_name: &str) -> Vec<String> {
     Module::enumerate_exports(module_name)
         .iter()
-        .map(|module| export_details_to_string(module))
+        .map(export_details_to_string)
         .collect::<Vec<String>>()
 }
 

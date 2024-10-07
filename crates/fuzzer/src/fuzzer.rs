@@ -99,10 +99,10 @@ where
             let gum = Gum::obtain();
 
             // Our function listener runtime
-            let mut function_listener_rt = FunctionListenerRuntime::new(policy.clone(), tauri_cmd_address).unwrap();
+            let mut function_listener_rt =
+                FunctionListenerRuntime::new(policy.clone(), tauri_cmd_address).unwrap();
             // We init it manually because it may be skipped by libafl_frida if Frida stalker is not enabled
             function_listener_rt.init(&gum, &RangeMap::default(), &Rc::new(ModuleMap::new(&gum)));
-
 
             let coverage = CoverageRuntime::new();
             let cmplog = CmpLogRuntime::new();
@@ -120,7 +120,8 @@ where
                 "edges",
                 frida_helper.map_mut_ptr().unwrap(),
                 MAP_SIZE,
-            )).track_indices();
+            ))
+            .track_indices();
 
             // Create an observation channel to keep track of the execution time
             let time_observer = TimeObserver::new("time");
@@ -161,7 +162,8 @@ where
             let mutator = StdScheduledMutator::new(havoc_mutations().merge(tokens_mutations()));
 
             // A minimization+queue policy to get testcasess from the corpus
-            let scheduler = IndexesLenTimeMinimizerScheduler::new(&edges_observer, QueueScheduler::new());
+            let scheduler =
+                IndexesLenTimeMinimizerScheduler::new(&edges_observer, QueueScheduler::new());
 
             // A fuzzer with feedbacks and a corpus scheduler
             let mut fuzzer = StdFuzzer::new(scheduler, feedback, objective);
@@ -274,7 +276,8 @@ where
     let gum = Gum::obtain();
     let coverage = CoverageRuntime::new();
     let cmplog = CmpLogRuntime::new();
-    let mut function_listener_rt = FunctionListenerRuntime::new(policy.clone(), tauri_cmd_address).unwrap();
+    let mut function_listener_rt =
+        FunctionListenerRuntime::new(policy.clone(), tauri_cmd_address).unwrap();
     // We init it manually because it may be skipped by libafl_frida if Frida stalker is not enabled
     function_listener_rt.init(&gum, &RangeMap::default(), &Rc::new(ModuleMap::new(&gum)));
 
@@ -291,7 +294,8 @@ where
         "edges",
         frida_helper.map_mut_ptr().unwrap(),
         MAP_SIZE,
-    )).track_indices();
+    ))
+    .track_indices();
 
     // Create an observation channel to keep track of the execution time
     let time_observer = TimeObserver::new("time");

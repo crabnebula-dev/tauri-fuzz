@@ -56,7 +56,7 @@ impl FunctionPolicy {
 }
 
 // NOTE: we used `Arc` for simplicity in `ConditionOnParameters` and `ConditionOnReturnValue` but
-// maybe using clonable `Box` can improve performance such as in this example:
+// maybe using cloneable `Box` can improve performance such as in this example:
 // https://play.rust-lang.org/?version=stable&mode=debug&edition=2018&gist=6ca48c4cff92370c907ecf4c548ee33c
 
 /// ConditionOnParameters is a closure on the registers containing the parameters of the function.

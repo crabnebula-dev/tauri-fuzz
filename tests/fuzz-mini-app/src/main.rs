@@ -1,8 +1,8 @@
-#![allow(unused_variables)]
+#![allow(unused_variables, unused_imports)]
 mod utils;
-use utils::*;
 use mini_app::basic::direct_panic;
 use mini_app::file_access::read_foo_file;
+use utils::*;
 
 pub fn main() {
     color_backtrace::install();
@@ -27,7 +27,6 @@ pub fn main() {
         // vec![("path", path_to_foo())],
         vec![],
         // Some("fs".into()),
-        None
+        None,
     );
-
 }
