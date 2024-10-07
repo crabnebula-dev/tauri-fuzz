@@ -1,5 +1,5 @@
-// // Copyright 2023-2024 CrabNebula Ltd., Alexandre Dang
-// // SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+// Copyright 2023-2024 CrabNebula Ltd., Alexandre Dang
+// SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
 
 #![allow(dead_code)]
 #![allow(unused_imports)]
