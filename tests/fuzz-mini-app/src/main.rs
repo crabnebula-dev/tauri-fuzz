@@ -1,4 +1,8 @@
+// Copyright 2023-2024 CrabNebula Ltd., Alexandre Dang
+// SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 #![allow(unused_variables, unused_imports)]
+
 mod utils;
 use mini_app::basic::direct_panic;
 use mini_app::file_access::read_foo_file;

@@ -1,3 +1,6 @@
+// // Copyright 2023-2024 CrabNebula Ltd., Alexandre Dang
+// // SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 //! A libfuzzer-like fuzzer with llmp-multithreading support and restarts
 
 //! The example harness is built for libpng.
