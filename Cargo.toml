@@ -13,11 +13,6 @@ members = [
 exclude = ["./crates/LibAFL"]
 
 [workspace.dependencies]
-# frida-gum = { path = "../frida-rust/frida-gum", features = [
-#   "auto-download",
-#   "event-sink",
-#   "invocation-listener",
-# ] }
 frida-gum = { version = "0.13.2", features = [
   "auto-download",
   "event-sink",
@@ -33,11 +28,11 @@ policies = { path = "./crates/policies" }
 fuzzer = { path = "./crates/fuzzer" }
 mini-app = { path = "./examples/mini-app/src-tauri" }
 
-tauri = { version = "2.0.0-rc", features = ["test", "tracing"] }
-tauri-runtime = { version = "2.0.0-rc", features = [] }
-tauri-build = { version = "2.0.0-rc", features = [] }
-tauri-utils = { version = "2.0.0-rc", features = [] }
-tauri-plugin-fs = "2.0.0-rc"
+tauri = { version = "2.0", features = ["test", "tracing"] }
+tauri-runtime = { version = "2.0", features = [] }
+tauri-build = { version = "2.0", features = [] }
+tauri-utils = { version = "2.0", features = [] }
+tauri-plugin-fs = "2.0"
 
 # tauri = { path = "../tauri/crates/tauri", features = ["test", "tracing"] }
 # tauri-runtime = { path = "../tauri/crates/tauri-runtime", features = [] }

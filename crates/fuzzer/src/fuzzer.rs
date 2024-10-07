@@ -5,7 +5,7 @@
 // #[global_allocator]
 // static GLOBAL: MiMalloc = MiMalloc;
 
-use frida_gum::Gum;
+use frida_gum::{Gum, ModuleMap};
 use libafl::generators::{Generator, RandPrintablesGenerator};
 use libafl::observers::CanTrack;
 use libafl::{
@@ -36,6 +36,7 @@ use libafl_bolts::{
     tuples::{tuple_list, Merge},
 };
 
+use libafl_frida::helper::FridaRuntime;
 use libafl_frida::{
     cmplog_rt::CmpLogRuntime,
     coverage_rt::{CoverageRuntime, MAP_SIZE},
@@ -45,6 +46,8 @@ use libafl_frida::{
 };
 use libafl_targets::cmplog::CmpLogObserver;
 use policies::engine::FuzzPolicy;
+use rangemap::RangeMap;
+use std::rc::Rc;
 
 use crate::runtime::FunctionListenerRuntime;
 
@@ -95,8 +98,11 @@ where
         (|state: Option<_>, mut mgr: LlmpRestartingEventManager<_, _, _>, _core_id| {
             let gum = Gum::obtain();
 
-            let syscall_blocker =
-                FunctionListenerRuntime::new(policy.clone(), tauri_cmd_address).unwrap();
+            // Our function listener runtime
+            let mut function_listener_rt = FunctionListenerRuntime::new(policy.clone(), tauri_cmd_address).unwrap();
+            // We init it manually because it may be skipped by libafl_frida if Frida stalker is not enabled
+            function_listener_rt.init(&gum, &RangeMap::default(), &Rc::new(ModuleMap::new(&gum)));
+
 
             let coverage = CoverageRuntime::new();
             let cmplog = CmpLogRuntime::new();
@@ -104,7 +110,7 @@ where
             let mut frida_helper = FridaInstrumentationHelper::new(
                 &gum,
                 options,
-                tuple_list!(coverage, cmplog, drcov, syscall_blocker),
+                tuple_list!(coverage, cmplog, drcov, function_listener_rt),
             );
 
             // log::info!("Frida helper instantiated: {:#?}", frida_helper);
@@ -268,13 +274,14 @@ where
     let gum = Gum::obtain();
     let coverage = CoverageRuntime::new();
     let cmplog = CmpLogRuntime::new();
-    // TODO Change the way to pass the tauri app lib name
-    let syscall_blocker = FunctionListenerRuntime::new(policy.clone(), tauri_cmd_address).unwrap();
+    let mut function_listener_rt = FunctionListenerRuntime::new(policy.clone(), tauri_cmd_address).unwrap();
+    // We init it manually because it may be skipped by libafl_frida if Frida stalker is not enabled
+    function_listener_rt.init(&gum, &RangeMap::default(), &Rc::new(ModuleMap::new(&gum)));
 
     let mut frida_helper = FridaInstrumentationHelper::new(
         &gum,
         options,
-        tuple_list!(coverage, cmplog, syscall_blocker),
+        tuple_list!(coverage, cmplog, function_listener_rt),
     );
 
     // log::info!("Frida helper instantiated: {:#?}", frida_helper);

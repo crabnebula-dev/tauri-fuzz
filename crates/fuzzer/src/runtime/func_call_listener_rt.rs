@@ -33,6 +33,8 @@ pub struct FunctionListenerRuntime {
     switch: Arc<Mutex<InterceptionSwitch>>,
     /// Pointer to the harness code
     harness_pointer: NativePointer,
+    /// Flag to avoid initializing twice
+    is_init: Arc<Mutex<bool>>
 }
 
 #[derive(Debug)]
@@ -166,9 +168,17 @@ impl FridaRuntime for FunctionListenerRuntime {
         //
         // if !is_tauri_app_instrumented {
         //     panic!("{} not instrumented", self.tauri_app.name)
-        // }
+        // } 
+
+        // If the runtime is already initialized skip
+        if *self.is_init.lock().unwrap() {
+            log::trace!("SyscallIsolationRuntime already initialized, skipping");
+            return
+        }
+
         log::trace!("Initiating the SyscallIsolationRuntime");
 
+        *self.is_init.lock().unwrap() = true;
         let mut interceptor = Interceptor::obtain(gum);
         // Create interceptor for the harness
         interceptor.attach(self.harness_pointer, self);
@@ -184,7 +194,6 @@ impl FridaRuntime for FunctionListenerRuntime {
         let old_hook = std::panic::take_hook();
         let switch = self.switch.clone();
         std::panic::set_hook(Box::new(move |panic_info| {
-            // *flag.lock().unwrap() = false;
             switch.lock().unwrap().deactivate();
             old_hook(panic_info);
         }));
@@ -251,6 +260,7 @@ impl FunctionListenerRuntime {
             harness_pointer: NativePointer(harness_address as *mut core::ffi::c_void),
             function_listeners: listeners,
             switch,
+            is_init: Arc::new(Mutex::new(false))
         };
 
         Ok(res)
