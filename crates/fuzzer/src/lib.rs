@@ -1,5 +1,6 @@
 mod fuzzer;
 mod fuzzer_options;
+mod runtime;
 pub use crate::fuzzer::{fuzz_main, fuzz_test};
 pub use crate::fuzzer_options::SimpleFuzzerConfig;
 

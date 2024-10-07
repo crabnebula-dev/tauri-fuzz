@@ -7,6 +7,7 @@
 
 use frida_gum::Gum;
 use libafl::generators::{Generator, RandPrintablesGenerator};
+use libafl::observers::CanTrack;
 use libafl::{
     corpus::{testcase::Testcase, CachedOnDiskCorpus, Corpus, OnDiskCorpus},
     events::{launcher::Launcher, llmp::LlmpRestartingEventManager, EventConfig},
@@ -41,10 +42,11 @@ use libafl_frida::{
     drcov_rt::DrCovRuntime,
     executor::FridaInProcessExecutor,
     helper::FridaInstrumentationHelper,
-    syscall_isolation_rt::SyscallIsolationRuntime,
 };
 use libafl_targets::cmplog::CmpLogObserver;
 use policies::engine::FuzzPolicy;
+
+use crate::runtime::FunctionListenerRuntime;
 
 /// The main fn, usually parsing parameters, and starting the fuzzer
 pub fn fuzz_main<H>(
@@ -87,14 +89,14 @@ where
 
     let shmem_provider = StdShMemProvider::new()?;
 
-    let mut run_client = |state: Option<_>, mgr: LlmpRestartingEventManager<_, _>, core_id| {
+    let mut run_client = |state: Option<_>, mgr: LlmpRestartingEventManager<_, _, _>, core_id| {
         // The restarting state will spawn the same process again as child, then restarted it each time it crashes.
 
-        (|state: Option<_>, mut mgr: LlmpRestartingEventManager<_, _>, _core_id| {
+        (|state: Option<_>, mut mgr: LlmpRestartingEventManager<_, _, _>, _core_id| {
             let gum = Gum::obtain();
 
             let syscall_blocker =
-                SyscallIsolationRuntime::new(policy.clone(), tauri_cmd_address).unwrap();
+                FunctionListenerRuntime::new(policy.clone(), tauri_cmd_address).unwrap();
 
             let coverage = CoverageRuntime::new();
             let cmplog = CmpLogRuntime::new();
@@ -112,7 +114,7 @@ where
                 "edges",
                 frida_helper.map_mut_ptr().unwrap(),
                 MAP_SIZE,
-            ));
+            )).track_indices();
 
             // Create an observation channel to keep track of the execution time
             let time_observer = TimeObserver::new("time");
@@ -120,10 +122,12 @@ where
             // Feedback to rate the interestingness of an input
             // This one is composed by two Feedbacks in OR
             let mut feedback = feedback_or!(
+                // Feedback related to program crash
+                CrashFeedback::new(),
                 // New maximization map feedback linked to the edges observer and the feedback state
-                MaxMapFeedback::tracking(&edges_observer, true, false),
+                MaxMapFeedback::new(&edges_observer),
                 // Time feedback, this one does not need a feedback state
-                TimeFeedback::with_observer(&time_observer)
+                TimeFeedback::new(&time_observer)
             );
 
             let mut objective = feedback_or_fast!(CrashFeedback::new(), TimeoutFeedback::new());
@@ -151,7 +155,7 @@ where
             let mutator = StdScheduledMutator::new(havoc_mutations().merge(tokens_mutations()));
 
             // A minimization+queue policy to get testcasess from the corpus
-            let scheduler = IndexesLenTimeMinimizerScheduler::new(QueueScheduler::new());
+            let scheduler = IndexesLenTimeMinimizerScheduler::new(&edges_observer, QueueScheduler::new());
 
             // A fuzzer with feedbacks and a corpus scheduler
             let mut fuzzer = StdFuzzer::new(scheduler, feedback, objective);
@@ -237,7 +241,7 @@ where
         .stdout_file(Some(&options.stdout))
         .remote_broker_addr(options.remote_broker_addr)
         // Store state after crashing, useful if we want to restart the fuzzer at a later time
-        .serialize_state(false)
+        // .serialize_state(false)
         .build();
 
     launcher.launch()
@@ -265,7 +269,7 @@ where
     let coverage = CoverageRuntime::new();
     let cmplog = CmpLogRuntime::new();
     // TODO Change the way to pass the tauri app lib name
-    let syscall_blocker = SyscallIsolationRuntime::new(policy.clone(), tauri_cmd_address).unwrap();
+    let syscall_blocker = FunctionListenerRuntime::new(policy.clone(), tauri_cmd_address).unwrap();
 
     let mut frida_helper = FridaInstrumentationHelper::new(
         &gum,
@@ -280,7 +284,7 @@ where
         "edges",
         frida_helper.map_mut_ptr().unwrap(),
         MAP_SIZE,
-    ));
+    )).track_indices();
 
     // Create an observation channel to keep track of the execution time
     let time_observer = TimeObserver::new("time");
@@ -288,10 +292,12 @@ where
     // Feedback to rate the interestingness of an input
     // This one is composed by two Feedbacks in OR
     let mut feedback = feedback_or!(
+        // Feedback related to program crash
+        CrashFeedback::new(),
         // New maximization map feedback linked to the edges observer and the feedback state
-        MaxMapFeedback::tracking(&edges_observer, true, false),
+        MaxMapFeedback::new(&edges_observer),
         // Time feedback, this one does not need a feedback state
-        TimeFeedback::with_observer(&time_observer)
+        TimeFeedback::new(&time_observer)
     );
 
     let mut objective = feedback_or_fast!(CrashFeedback::new(), TimeoutFeedback::new());
@@ -317,7 +323,7 @@ where
     let mutator = StdScheduledMutator::new(havoc_mutations().merge(tokens_mutations()));
 
     // A minimization+queue policy to get testcasess from the corpus
-    let scheduler = IndexesLenTimeMinimizerScheduler::new(QueueScheduler::new());
+    let scheduler = IndexesLenTimeMinimizerScheduler::new(&edges_observer, QueueScheduler::new());
 
     // A fuzzer with feedbacks and a corpus scheduler
     let mut fuzzer = StdFuzzer::new(scheduler, feedback, objective);

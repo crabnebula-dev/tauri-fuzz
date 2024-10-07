@@ -1,3 +1,5 @@
+//! Module with utilities functions to fuzz Tauri applications
+
 mod test_helpers;
 mod utils;
 
