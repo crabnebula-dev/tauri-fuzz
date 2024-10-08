@@ -1,5 +1,5 @@
-// // Copyright 2023-2024 CrabNebula Ltd., Alexandre Dang
-// // SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+// Copyright 2023-2024 CrabNebula Ltd., Alexandre Dang
+// SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
 
 fn main() {
     let target_os = std::env::var("CARGO_CFG_TARGET_OS");

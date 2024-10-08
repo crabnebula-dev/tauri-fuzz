@@ -19,27 +19,20 @@ frida-gum = { version = "0.13.2", features = [
   "invocation-listener",
 ] }
 
+libafl = "0.13"
+libafl_bolts = "0.13"
+libafl_frida = {version = "0.13", features = ["cmplog"]}
+libafl_targets = { version = "0.13", features = ["sancov_cmplog"]}
 
-libafl = { path = "./crates/LibAFL/libafl", features = [
-  "std",
-  "llmp_compression",
-  "llmp_bind_public",
-  "frida_cli",
-] }
-libafl_bolts = { path = "./crates/LibAFL/libafl_bolts" }
-libafl_frida = { path = "./crates/LibAFL/libafl_frida", features = ["cmplog"] }
-libafl_targets = { path = "./crates/LibAFL/libafl_targets", features = [
-  "sancov_cmplog",
-] }
 policies = { path = "./crates/policies" }
 fuzzer = { path = "./crates/fuzzer" }
 mini-app = { path = "./examples/mini-app/src-tauri" }
 
-tauri = { version = "2.0.0-rc", features = ["test", "tracing"] }
-tauri-runtime = { version = "2.0.0-rc", features = [] }
-tauri-build = { version = "2.0.0-rc", features = [] }
-tauri-utils = { version = "2.0.0-rc", features = [] }
-tauri-plugin-fs = "2.0.0-rc"
+tauri = { version = "2.0", features = ["test", "tracing"] }
+tauri-runtime = { version = "2.0", features = [] }
+tauri-build = { version = "2.0", features = [] }
+tauri-utils = { version = "2.0", features = [] }
+tauri-plugin-fs = "2.0"
 
 [workspace.package]
 authors = ["CrabNebula Ltd.", "Alexandre Dang"]
