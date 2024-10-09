@@ -12,8 +12,8 @@
 ///
 /// Note: you may need to implement [FromRandomBytes] for your command argument types.
 ///
-use fuzzer::tauri_utils::{create_invoke_request, invoke_command_minimal, CommandArgs};
-use fuzzer::{FromRandomBytes, SimpleFuzzerConfig};
+use appfuzz_rt::tauri_utils::{create_invoke_request, invoke_command_minimal, CommandArgs};
+use appfuzz_rt::{FromRandomBytes, SimpleFuzzerConfig};
 use libafl::inputs::{BytesInput, HasBytesVec};
 use libafl::prelude::ExitKind;
 use tauri::test::{mock_builder, mock_context, noop_assets, MockRuntime};
@@ -26,7 +26,7 @@ fn main() {
     let fuzz_dir = std::path::PathBuf::from(std::env!("CARGO_MANIFEST_DIR"));
     let fuzz_config_file = fuzz_dir.join("fuzzer_config.toml");
     let options = SimpleFuzzerConfig::from_toml(fuzz_config_file, COMMAND_NAME, fuzz_dir).into();
-    fuzzer::fuzz_main(
+    appfuzz_rt::fuzz_main(
         harness,
         &options,
         harness as *const () as usize,

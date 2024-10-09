@@ -2,7 +2,7 @@
 resolver = "2"
 members = [
   # Crates
-  "crates/fuzzer",
+  "crates/appfuzz_rt",
   "crates/policies",
   "crates/cli",
   # Examples
@@ -25,7 +25,7 @@ libafl_frida = {version = "0.13", features = ["cmplog"]}
 libafl_targets = { version = "0.13", features = ["sancov_cmplog"]}
 
 policies = { path = "./crates/policies" }
-fuzzer = { path = "./crates/fuzzer" }
+appfuzz_rt = { path = "./crates/appfuzz_rt" }
 mini-app = { path = "./examples/mini-app/src-tauri" }
 
 tauri = { version = "2.0", features = ["test", "tracing"] }

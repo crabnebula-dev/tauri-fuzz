@@ -1,8 +1,7 @@
 // Copyright 2023-2024 CrabNebula Ltd., Alexandre Dang
 // SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
 
-//! Functionality for [`frida`].
-//! With it, a fuzzer can detect any access to a system call
+//! A fuzzing runtime that monitor calls to specific functions depending on the policy provided
 
 #[allow(unused_imports)]
 use std::{

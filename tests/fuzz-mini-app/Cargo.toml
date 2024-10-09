@@ -13,7 +13,7 @@ tauri-build = { workspace = true }
 [dependencies]
 mini-app = { workspace = true }
 policies = { workspace = true }
-fuzzer = { workspace = true, features = ["tauri"] }
+appfuzz_rt = { workspace = true, features = ["tauri"] }
 frida-gum = { workspace = true }
 tauri = { workspace = true }
 tauri-utils = { workspace = true }
