@@ -7,6 +7,9 @@ edition = { workspace = true }
 license = { workspace = true }
 repository = { workspace = true }
 
+[build-dependencies]
+tauri-build = { workspace = true }
+
 [dependencies]
 mini-app = { workspace = true }
 policies = { workspace = true }

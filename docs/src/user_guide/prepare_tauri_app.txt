@@ -1,0 +1,51 @@
+The Tauri app backend must be compiled as a crate such that the Tauri commands are **exposed** to the fuzzer.
+
+For example we want to fuzz the Tauri commands called `read_foo_file`:
+
+<details>
+<summary> `mini-app/src-tauri/Cargo.toml` </summary>
+
+```toml,ignore
+[package]
+name = "mini-app"
+version = "0.0.0"
+description = "A Tauri App"
+
+# This section is automatic in Tauri v2
+[lib]
+crate-type = ["staticlib", "cdylib", "rlib"]
+```
+
+</details>
+
+<details>
+<summary> `mini-app/src-tauri/lib.rs` </summary>
+
+```rust,ignore
+/// define the module
+pub mod tauri_commands;
+
+/// publicly re-export the Taur command `read_foo_file`
+pub use tauri_commands::file_access::read_foo_file
+```
+
+</details>
+
+<details>
+<summary>
+`mini-app/src-tauri/src-tauri/tauri_commands/file_access.rs`
+</summary>
+
+```rust,ignore
+#[tauri::command]
+/// Mark the function as public
+pub fn read_foo_file() -> String {
+    let path        = get_foo_path();
+    let mut content = String::new();
+    let mut file    = File::open(path).unwrap();
+    file.read_to_string(&mut content).unwrap();
+    content
+}
+```
+
+</details>

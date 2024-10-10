@@ -5,9 +5,9 @@
 ///
 /// Steps:
 /// 1. Copy this file and rename it
-/// 2. Change `COMMAND_NAME` const value on line 25
-/// 3. Change the path to your command in `tauri::generate_handler` on line 44
-/// 4. Modify `create_request` to create arguments for your command on line 63
+/// 2. Change `COMMAND_NAME` const value on line 23
+/// 3. Change the path to your command in `tauri::generate_handler` on line 41
+/// 4. Modify `create_request` to create arguments for your command on line 59
 /// 5. Finally add the new fuzz target in [[bin]] table in Cargo.toml of your project
 ///
 /// Note: you may need to implement [FromRandomBytes] for your command argument types.
@@ -40,9 +40,9 @@ fn main() {
 // Setup the Tauri application mockruntime and an associated "main" webview
 fn setup_mock() -> WebviewWindow<MockRuntime> {
     let app = mock_builder()
-        .invoke_handler(
-            tauri::generate_handler![{{crate_name_underscored}}::file_access::read_foo_file],
-        )
+        .invoke_handler(tauri::generate_handler![
+            mini_app::file_access::read_foo_file
+        ])
         .build(mock_context(noop_assets()))
         .expect("Failed to init Tauri app");
     let webview = tauri::WebviewWindowBuilder::new(&app, "main", Default::default())

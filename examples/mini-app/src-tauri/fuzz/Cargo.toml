@@ -24,3 +24,9 @@ libafl = "0.13"
 name = "fuzz_read_foo"
 path = "fuzz_targets/fuzz_read_foo.rs"
 doc = false
+
+# Uncomment this block to add `fuzz_read_foo_full` as a fuzz target
+[[bin]]
+name = "fuzz_read_foo_full"
+path = "fuzz_targets/fuzz_read_foo_full.rs"
+doc = false
