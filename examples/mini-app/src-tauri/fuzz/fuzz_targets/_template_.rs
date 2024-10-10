@@ -14,7 +14,7 @@ appfuzz_rt::fuzz_tauri_command! {
     // Name of the tauri command you want to fuzz
     command: "read_foo_file",
     // Pointer to the tauri command you want to fuzz
-    path: {{crate_name_underscored}}::file_access::read_foo_file,
+    path: mini_app::file_access::read_foo_file,
     // Parameters names and types to the tauri command
     parameters: {
         name: String,

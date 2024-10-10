@@ -3,8 +3,11 @@
 
 //! Module with utilities functions to fuzz Tauri applications
 
+mod from_random_bytes;
+mod macros;
 mod test_helpers;
 mod utils;
 
+pub use from_random_bytes::FromRandomBytes;
 pub use test_helpers::*;
 pub use utils::*;

@@ -12,6 +12,12 @@ members = [
 ]
 exclude = ["./crates/LibAFL"]
 
+[workspace.package]
+authors = ["CrabNebula Ltd.", "Alexandre Dang"]
+edition = "2021"
+license = "PolyForm-Noncommercial-1.0.0"
+repository = "https://github.com/crabnebula-dev/tauri-fuzzer"
+
 [workspace.dependencies]
 frida-gum = { version = "0.13.2", features = [
   "auto-download",
@@ -34,10 +40,5 @@ tauri-build = { version = "2.0", features = [] }
 tauri-utils = { version = "2.0", features = [] }
 tauri-plugin-fs = "2.0"
 
-[workspace.package]
-authors = ["CrabNebula Ltd.", "Alexandre Dang"]
-edition = "2021"
-license = "PolyForm-Noncommercial-1.0.0"
-repository = "https://github.com/crabnebula-dev/tauri-fuzzer"
 
 

@@ -1,0 +1,26 @@
+[package]
+name = "mini-app-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2021"
+
+[workspace]
+
+[build-dependencies]
+tauri-build = "2.0"
+
+[dependencies]
+mini-app = { path = ".." }
+# We use the workspace crates for this particular case but you should use the upstream versions
+policies = { path = "../../../../crates/policies"}
+appfuzz_rt = { path = "../../../../crates/appfuzz_rt", features = ["tauri"] }
+# policies = { git = "ssh://git@github.com/crabnebula-dev/tauri-fuzzer.git" }
+# appfuzz_rt = { git = "ssh://git@github.com/crabnebula-dev/tauri-fuzzer.git", features = ["tauri"] }
+tauri = { version = "2.0", features = ["test"]}
+libafl = "0.13"
+
+# Uncomment this block to add `fuzz_read_foo` as a fuzz target
+[[bin]]
+name = "fuzz_read_foo"
+path = "fuzz_targets/fuzz_read_foo.rs"
+doc = false

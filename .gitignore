@@ -2,4 +2,3 @@
 */target/
 Cargo.lock
 gen/
-examples/mini-app/src-tauri/fuzz/

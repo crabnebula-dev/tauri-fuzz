@@ -1,6 +1,7 @@
 # AppFuzz Runtime
 
-This is a runtime environment when fuzzing to detect security boundaries violations in applications.
+This is a runtime environment to use when fuzzing.
+This runtime is specialized in detecting security boundaries violations in applications.
 
 ## The project
 

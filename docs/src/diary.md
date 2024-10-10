@@ -1,3 +1,9 @@
+# Diary
+
+This is a diary that records the events and thoughts processes that went during the project.
+This is mostly used to reorganize our thoughts and also keep a trace of how we handled certain issues
+when we bump into them again at a later time.
+
 ## 1
 
 Playing with the Tauri mock runtime
@@ -1036,3 +1042,4 @@ InvokeRequest {
 
 - the project is more about having a runtime that detects anomalies during fuzzing than creating a fuzzer in itself
 - we can decouple the project from LibAFL furthermore and remove our fork of LibAFL to be sync with the upstream version
+- for convenience we still are couple with `libafl_frida` by implementing the

@@ -38,7 +38,7 @@ fn main() {
 // Setup the Tauri application mockruntime and an associated "main" webview
 fn setup_mock() -> WebviewWindow<MockRuntime> {
     let app = mock_builder()
-        .invoke_handler(tauri::generate_handler![{{crate_name_underscored}}::file_access::read_foo])
+        .invoke_handler(tauri::generate_handler![mini_app::file_access::read_foo])
         .build(mock_context(noop_assets()))
         .expect("Failed to init Tauri app");
     let webview = tauri::WebviewWindowBuilder::new(&app, "main", Default::default())
