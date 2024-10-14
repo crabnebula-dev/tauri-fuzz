@@ -76,43 +76,43 @@ pub fn block_on_entry(blocked_binaries: Vec<String>) -> FuzzPolicy {
 }
 
 // Check error status when the we get a Rust `std::process::Output` as return value
-fn block_output_with_error(_register: usize) -> Result<bool, RuleError> {
-    // // This is unsafe because we assume that register contain a pointer to
-    // // `std::process::Output`
-    // let exit_status = unsafe {
-    //     let ptr = register as *const std::process::Output;
-    //     println!("Output {:?}", ptr.as_ref().unwrap());
-    //     ptr.as_ref().unwrap().status
-    // };
-    //
-    // println!("Exit status {:?}", exit_status);
-    // Ok(exit_status.success())
+// fn block_output_with_error(_register: usize) -> Result<bool, RuleError> {
+// // This is unsafe because we assume that register contain a pointer to
+// // `std::process::Output`
+// let exit_status = unsafe {
+//     let ptr = register as *const std::process::Output;
+//     println!("Output {:?}", ptr.as_ref().unwrap());
+//     ptr.as_ref().unwrap().status
+// };
+//
+// println!("Exit status {:?}", exit_status);
+// Ok(exit_status.success())
 
-    todo!(); // We don't get anything from casting the *const Output
-}
+// todo!(); // We don't get anything from casting the *const Output
+// }
 
-pub fn block_on_error_status() -> FuzzPolicy {
-    let current_bin = std::env::current_exe()
-        .expect("Failed to get binary path")
-        .to_string_lossy()
-        .to_string();
-    MONITORED_RUST_API_ERROR_STATUS
-        .iter()
-        .map(|f| {
-            let name: String = (*f).into();
-            let description = format!("External binary {} returned with error status", f);
-
-            FunctionPolicy {
-                name,
-                lib: current_bin.clone(),
-                rule: Rule::OnExit(Arc::new(block_output_with_error)),
-                description,
-                nb_parameters: 2,
-                is_rust_function: true,
-            }
-        })
-        .collect()
-}
+// pub fn block_on_error_status() -> FuzzPolicy {
+//     let current_bin = std::env::current_exe()
+//         .expect("Failed to get binary path")
+//         .to_string_lossy()
+//         .to_string();
+//     MONITORED_RUST_API_ERROR_STATUS
+//         .iter()
+//         .map(|f| {
+//             let name: String = (*f).into();
+//             let description = format!("External binary {} returned with error status", f);
+//
+//             FunctionPolicy {
+//                 name,
+//                 lib: current_bin.clone(),
+//                 rule: Rule::OnExit(Arc::new(block_output_with_error)),
+//                 description,
+//                 nb_parameters: 2,
+//                 is_rust_function: true,
+//             }
+//         })
+//         .collect()
+// }
 
 // Block calls to external binaries with the Rust api command function when they return an
 // error

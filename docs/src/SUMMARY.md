@@ -2,8 +2,11 @@
 
 - [Introduction](./introduction.md)
   - [Prerequisites](./prerequisites.md)
-    <!-- - [Principle](./principle.md) -->
-    <!-- - [Guide to fuzz my Tauri app](./guide_fuzz_my_app.md) -->
+  - [Slides](./presentation.md)
+- [Principles](./principles.md)
+  - [Fuzzing Applications](./principles/fuzzing_applications.md)
+  - [Policies](./principles/policies.md)
+  - [Fuzzing Runtime](./principles/runtime.md)
 - [User Guide](./user_guide/intro.md)
   - [Quick Start](./user_guide/quick_start.md)
   - [Manual Steps](./user_guide/manual_fuzzing.md)
