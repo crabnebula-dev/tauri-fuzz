@@ -4,7 +4,7 @@ You should see this result repeatedly on your terminal:
 <details>
 <summary>Fuzzing results</summary>
 
-```
+```ignore
 [ERROR policies::engine] Policy was broken at function [open].
     Description: Access to [open] denied
     Rule: Rule::OnEntry
