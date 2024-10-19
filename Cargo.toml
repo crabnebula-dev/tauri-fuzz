@@ -2,9 +2,9 @@
 resolver = "2"
 members = [
   # Crates
-  "crates/appfuzz_rt",
-  "crates/policies",
-  "crates/cli",
+  "crates/tauri-fuzz",
+  "crates/tauri-fuzz-policies",
+  "crates/tauri-fuzz-cli",
   # Examples
   "examples/mini-app/src-tauri",
   # Tests
@@ -16,7 +16,7 @@ exclude = ["./crates/LibAFL"]
 authors = ["CrabNebula Ltd.", "Alexandre Dang"]
 edition = "2021"
 license = "PolyForm-Noncommercial-1.0.0"
-repository = "https://github.com/crabnebula-dev/tauri-fuzzer"
+repository = "https://github.com/crabnebula-dev/tauri-fuzz"
 
 [workspace.dependencies]
 frida-gum = { version = "0.13.2", features = [
@@ -30,8 +30,8 @@ libafl_bolts = "0.13"
 libafl_frida = {version = "0.13", features = ["cmplog"]}
 libafl_targets = { version = "0.13", features = ["sancov_cmplog"]}
 
-policies = { path = "./crates/policies" }
-appfuzz_rt = { path = "./crates/appfuzz_rt" }
+tauri-fuzz-policies = { path = "./crates/tauri-fuzz-policies" }
+tauri-fuzz = { path = "./crates/tauri-fuzz" }
 mini-app = { path = "./examples/mini-app/src-tauri" }
 
 tauri = { version = "2.0", features = ["test", "tracing"] }

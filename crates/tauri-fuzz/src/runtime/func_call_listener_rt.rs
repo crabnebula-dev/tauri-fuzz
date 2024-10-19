@@ -21,8 +21,8 @@ use libafl::{
 };
 use libafl_frida::helper::FridaRuntime;
 
-use policies::engine::{Context, FunctionPolicy, FuzzPolicy};
 use rangemap::RangeMap;
+use tauri_fuzz_policies::engine::{Context, FunctionPolicy, FuzzPolicy};
 
 /// `Frida`-based binary-only instrumentation that intercepts calls to system calls
 pub struct FunctionListenerRuntime {

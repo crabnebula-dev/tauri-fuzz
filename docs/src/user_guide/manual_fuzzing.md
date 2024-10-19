@@ -67,14 +67,14 @@ Project
 
 </details>
 
-### With the CLI `cargo-tauri-fuzz`
+### With the CLI `tauri-fuzz-cli`
 
-> This section requires the CLI utility `cargo-tauri-fuzz`
-> The project contains a CLI package `cargo-tauri-fuzz` that helps setting up fuzzing for your Tauri app.
+> This section requires the CLI utility `tauri-fuzz-cli`
+> The project contains a CLI package `tauri-fuzz-cli` that helps setting up fuzzing for your Tauri app.
 > The CLI package resides in `crates/cli`.
 > If any issue arises from using the CLI we recommend you read the next section
 
-Execute `cargo-tauri-fuzz init` in `mini-app/src-tauri`.
+Execute `tauri-fuzz-cli init` in `mini-app/src-tauri`.
 
 ### Setup the fuzz directory manually
 
@@ -153,7 +153,7 @@ touch mini-app/src-tauri/fuzz_targets/_template_full_.rs
 
 We will finally create our fuzz target.
 We fuzz the Tauri commands `read_foo_file` which tries to read the file `foo.txt`.
-The fuzz policy that we will choose is `policies::file_policy::no_file_access()`
+The fuzz policy that we will choose is `tauri-fuzz-policies::file_policy::no_file_access()`
 that do not allow access to the filesystem.
 
 There are two ways to write the fuzz target:
@@ -211,7 +211,7 @@ fn create_payload(_bytes: &[u8]) -> InvokePayload {
 - specify the [policy](./available_policies.md) you want to apply
 
 ```rust,ignore
-policies::file_policy::no_file_access()
+tauri-fuzz-policies::file_policy::no_file_access()
 ```
 
 ## Start Fuzzing

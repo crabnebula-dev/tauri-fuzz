@@ -3,7 +3,7 @@
 
 #![allow(non_snake_case)]
 // use crate::mini_app_commands_tests::path_to_foo;
-use appfuzz_rt::tauri::{start_crashing_fuzz_process, start_non_crashing_fuzz_process};
+use tauri_fuzz::tauri::{start_crashing_fuzz_process, start_non_crashing_fuzz_process};
 use fuzz_mini_app::utils::fuzz_command_with_arg;
 use fuzz_mini_app::utils::path_to_foo;
 
@@ -29,7 +29,7 @@ fn hidden_fs_readFile_no_policy() {
     fuzz_command_with_arg(
         "read_file",
         None,
-        policies::no_policy(),
+        tauri_fuzz_policies::no_policy(),
         vec![("path", path_to_foo())],
         Some("fs".into()),
     )
@@ -41,7 +41,7 @@ fn hidden_fs_readFile_block_files() {
     fuzz_command_with_arg(
         "read_file",
         None,
-        policies::filesystem::no_file_access(),
+        tauri_fuzz_policies::filesystem::no_file_access(),
         vec![("path", path_to_foo())],
         Some("fs".into()),
     )
@@ -53,7 +53,7 @@ fn hidden_fs_readFile_writeonly_policy() {
     fuzz_command_with_arg(
         "read_file",
         None,
-        policies::filesystem::write_only_access(),
+        tauri_fuzz_policies::filesystem::write_only_access(),
         vec![("path", path_to_foo())],
         Some("fs".into()),
     )
@@ -65,7 +65,7 @@ fn hidden_fs_readFile_readeonly_policy() {
     fuzz_command_with_arg(
         "read_file",
         None,
-        policies::filesystem::read_only_access(),
+        tauri_fuzz_policies::filesystem::read_only_access(),
         vec![("path", path_to_foo())],
         Some("fs".into()),
     )

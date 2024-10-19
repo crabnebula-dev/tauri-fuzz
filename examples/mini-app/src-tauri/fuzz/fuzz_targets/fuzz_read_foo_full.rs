@@ -1,6 +1,11 @@
 // Copyright 2023-2024 CrabNebula Ltd., Alexandre Dang
 // SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
 
+use libafl::inputs::{BytesInput, HasMutatorBytes};
+use libafl::prelude::ExitKind;
+use tauri::test::{mock_builder, mock_context, noop_assets, MockRuntime};
+use tauri::webview::InvokeRequest;
+use tauri::WebviewWindow;
 /// This is a template to create a fuzz target
 ///
 /// Steps:
@@ -12,15 +17,10 @@
 ///
 /// Note: you may need to implement [FromRandomBytes] for your command argument types.
 ///
-use appfuzz_rt::tauri::{
+use tauri_fuzz::tauri::{
     create_invoke_request, invoke_command_minimal, CommandArgs, FromRandomBytes,
 };
-use appfuzz_rt::SimpleFuzzerConfig;
-use libafl::inputs::{BytesInput, HasMutatorBytes};
-use libafl::prelude::ExitKind;
-use tauri::test::{mock_builder, mock_context, noop_assets, MockRuntime};
-use tauri::webview::InvokeRequest;
-use tauri::WebviewWindow;
+use tauri_fuzz::SimpleFuzzerConfig;
 
 const COMMAND_NAME: &str = "read_foo_file";
 
@@ -28,11 +28,11 @@ fn main() {
     let fuzz_dir = std::path::PathBuf::from(std::env!("CARGO_MANIFEST_DIR"));
     let fuzz_config_file = fuzz_dir.join("fuzzer_config.toml");
     let options = SimpleFuzzerConfig::from_toml(fuzz_config_file, COMMAND_NAME, fuzz_dir).into();
-    appfuzz_rt::fuzz_main(
+    tauri_fuzz::fuzz_main(
         harness,
         &options,
         harness as *const () as usize,
-        policies::filesystem::no_file_access(),
+        tauri_fuzz_policies::filesystem::no_file_access(),
         false,
     );
 }

@@ -1,7 +1,9 @@
 # Write your own policy
 
-You can write a policy of your own that suits your needs. 
-To do so we recommend you write your policy in a new file in `fuzzer/policies` and make it public in the crate.
+TODO
+
+You can write a policy of your own that suits your needs.
+To do so we recommend you write your own policy.
 A template is available in `fuzzer/policies/policy_template.rs`.
 
 ```rust,ignore

@@ -12,10 +12,8 @@ tauri-build = "2.0"
 [dependencies]
 mini-app = { path = ".." }
 # We use the workspace crates for this particular case but you should use the upstream versions
-policies = { path = "../../../../crates/policies"}
-appfuzz_rt = { path = "../../../../crates/appfuzz_rt", features = ["tauri"] }
-# policies = { git = "ssh://git@github.com/crabnebula-dev/tauri-fuzzer.git" }
-# appfuzz_rt = { git = "ssh://git@github.com/crabnebula-dev/tauri-fuzzer.git", features = ["tauri"] }
+tauri-fuzz = { path = "../../../../crates/tauri-fuzz", features = ["tauri"] }
+tauri-fuzz-policies = { path = "../../../../crates/tauri-fuzz-policies"}
 tauri = { version = "2.0", features = ["test"]}
 libafl = "0.13"
 

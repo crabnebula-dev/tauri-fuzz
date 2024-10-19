@@ -8,8 +8,8 @@ macro_rules! fuzz_tauri_command {
         },
         policy: $policy:expr $(,)?
     ) => {
-        use appfuzz_rt::tauri::{create_invoke_request, invoke_command_minimal, CommandArgs};
-        use appfuzz_rt::SimpleFuzzerConfig;
+        use tauri_fuzz::tauri::{create_invoke_request, invoke_command_minimal, CommandArgs};
+        use tauri_fuzz::SimpleFuzzerConfig;
         use libafl::inputs::{BytesInput, HasMutatorBytes};
         use libafl::prelude::ExitKind;
         use tauri::test::{mock_builder, mock_context, noop_assets, MockRuntime};
@@ -23,7 +23,7 @@ macro_rules! fuzz_tauri_command {
             let fuzz_dir = ::std::path::PathBuf::from(::std::env!("CARGO_MANIFEST_DIR"));
             let fuzz_config_file = fuzz_dir.join("fuzzer_config.toml");
             let options = SimpleFuzzerConfig::from_toml(fuzz_config_file, COMMAND_NAME, fuzz_dir).into();
-            ::appfuzz_rt::fuzz_main(harness, &options, harness as *const () as usize, $policy, false);
+            ::tauri_fuzz::fuzz_main(harness, &options, harness as *const () as usize, $policy, false);
         }
 
         fn setup_mock() -> WebviewWindow<MockRuntime> {
@@ -48,7 +48,7 @@ macro_rules! fuzz_tauri_command {
             let mut params = CommandArgs::new();
 
             $(
-                let param: $param_type = <$param_type as ::appfuzz_rt::tauri::FromRandomBytes>::from_random_bytes(bytes).unwrap();
+                let param: $param_type = <$param_type as ::tauri_fuzz::tauri::FromRandomBytes>::from_random_bytes(bytes).unwrap();
                 params.insert(stringify!($param).to_string(), param);
             )*
 

@@ -48,9 +48,9 @@ use libafl_frida::{
     helper::FridaInstrumentationHelper,
 };
 use libafl_targets::cmplog::CmpLogObserver;
-use policies::engine::FuzzPolicy;
 use rangemap::RangeMap;
 use std::rc::Rc;
+use tauri_fuzz_policies::engine::FuzzPolicy;
 
 use crate::runtime::FunctionListenerRuntime;
 

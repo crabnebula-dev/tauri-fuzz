@@ -1,7 +1,7 @@
 // Copyright 2023-2024 CrabNebula Ltd., Alexandre Dang
 // SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
 
-use appfuzz_rt::tauri::{start_crashing_fuzz_process, start_non_crashing_fuzz_process};
+use tauri_fuzz::tauri::{start_crashing_fuzz_process, start_non_crashing_fuzz_process};
 use fuzz_mini_app::utils::fuzz_command_with_arg;
 
 // This is a trick to test fuzzers with multi-threaded and get fuzzer output when crashing.
@@ -24,7 +24,7 @@ fn hidden_crash_fopen() {
     fuzz_command_with_arg(
         "fopen",
         Some(mini_app::libc_calls::fopen as usize),
-        policies::filesystem::no_file_access(),
+        tauri_fuzz_policies::filesystem::no_file_access(),
         vec![("filename", "/tmp/foo"), ("mode", "w")],
         None,
     )
@@ -35,7 +35,7 @@ fn hidden_no_crash_fopen() {
     fuzz_command_with_arg(
         "fopen",
         Some(mini_app::libc_calls::fopen as usize),
-        policies::no_policy(),
+        tauri_fuzz_policies::no_policy(),
         vec![("filename", "/tmp/foo"), ("mode", "w")],
         None,
     )

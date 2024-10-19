@@ -125,7 +125,6 @@ mod file_policy_impl {
 mod file_policy_impl {
     use core::slice;
 
-    use super::BLOCKED_FILENAMES;
     use crate::engine::{FunctionPolicy, FuzzPolicy, Rule, RuleError};
     use crate::policies::block_on_entry;
     use nt_string::unicode_string::NtUnicodeStr;
@@ -227,7 +226,7 @@ mod file_policy_impl {
             name: OPEN_FILE.into(),
             lib: FILE_CRT.into(),
             rule: Rule::OnEntry(Arc::new(move |registers| {
-                block_access_to_filenames(blocked_files, registers)
+                block_access_to_filenames(&blocked_files, registers)
             })),
             description: format!("Access to files {:?} denied", blocked_files),
             nb_parameters: 11,

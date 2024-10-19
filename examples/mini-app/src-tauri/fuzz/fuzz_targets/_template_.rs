@@ -10,7 +10,7 @@
 //
 // Note: you may need to implement [FromRandomBytes] for your command argument types.
 
-appfuzz_rt::fuzz_tauri_command! {
+tauri_fuzz::fuzz_tauri_command! {
     // Name of the tauri command you want to fuzz
     command: "read_foo_file",
     // Pointer to the tauri command you want to fuzz
@@ -21,5 +21,5 @@ appfuzz_rt::fuzz_tauri_command! {
     },
     // Policy chosen for the fuzzing
     // Here the policy will not allow any access to the filesystem
-    policy: policies::filesystem::no_file_access(),
+    policy: tauri_fuzz_policies::filesystem::no_file_access(),
 }

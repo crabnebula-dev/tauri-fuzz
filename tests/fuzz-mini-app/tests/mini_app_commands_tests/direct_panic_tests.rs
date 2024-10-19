@@ -1,7 +1,7 @@
 // Copyright 2023-2024 CrabNebula Ltd., Alexandre Dang
 // SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
 
-use appfuzz_rt::tauri::start_crashing_fuzz_process;
+use tauri_fuzz::tauri::start_crashing_fuzz_process;
 use fuzz_mini_app::utils::fuzz_command_with_arg;
 // This is a trick to test fuzzers with multi-threaded and get fuzzer output when crashing.
 // Frida-gum does not support multi-threads therefore we start fuzzing in different processes.
@@ -17,7 +17,7 @@ fn hidden_direct_panic() {
     fuzz_command_with_arg(
         "direct_panic",
         Some(mini_app::basic::direct_panic as usize),
-        policies::no_policy(),
+        tauri_fuzz_policies::no_policy(),
         Vec::<(&str, ())>::new(),
         None,
     )

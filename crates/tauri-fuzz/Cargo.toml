@@ -1,5 +1,5 @@
 [package]
-name = "appfuzz_rt"
+name = "tauri-fuzz"
 version = "0.1.0"
 authors = { workspace = true }
 edition = { workspace = true }
@@ -14,7 +14,7 @@ libafl_targets = { workspace = true }
 frida-gum = { workspace = true }
 color-backtrace = "0.6.1"
 env_logger = "0.11.3"
-policies = { workspace = true }
+tauri-fuzz-policies = { workspace = true }
 serde = { version = "1.0.197" }
 serde_json = { version = "1.0.115", optional = true }
 tauri = { workspace = true, optional = true }

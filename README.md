@@ -1,4 +1,4 @@
-# AppFuzz Runtime
+# Tauri-fuzz
 
 This is a runtime environment to use when fuzzing.
 This runtime is specialized in detecting security boundaries violations in applications.
@@ -47,9 +47,9 @@ When fuzzing if such vulnerability appears it will likely be under the form of a
 
 ## Repository Architecture
 
-- `crates/cli` a cli to initialize fuzzing in a project
-- `crates/appfuzz_rt` the runtime used while fuzzing
-- `crates/policies` the security policies and the policy engine that will be used while fuzzing
+- `crates/tauri-fuzz-cli` a cli to initialize fuzzing in a project
+- `crates/tauri-fuzz` the runtime used while fuzzing
+- `crates/tauri-fuzz-policies` the security policies and the policy engine that will be used while fuzzing
 - `docs/` technical information and thoughts process behind the project
 - `examples/` examples to run the fuzzer on
 - `tests/` tests

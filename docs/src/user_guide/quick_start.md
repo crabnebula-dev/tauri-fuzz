@@ -38,14 +38,14 @@ mini-app
 
 ### Fuzzing our Tauri app, quick guide
 
-> This section requires the CLI utility `cargo-tauri-fuzz`
-> The project contains a CLI package `cargo-tauri-fuzz` that helps setting up fuzzing for your Tauri app.
-> The CLI package resides in `crates/cli`.
+> This section requires the CLI utility `tauri-fuzz-cli`
+> The project contains a CLI package `tauri-fuzz-cli` that helps setting up fuzzing for your Tauri app.
+> The CLI package resides in `crates/tauri-fuzz-cli`.
 > If any issue arises from using the CLI we recommend you follow the [manual steps guide](manual_fuzzing.md)
 
 #### 1. Create fuzz directory
 
-Execute `cargo-tauri-fuzz init` in `mini-app/src-tauri`.
+Execute `tauri-fuzz-cli init` in `mini-app/src-tauri`.
 
 <details>
 <summary>

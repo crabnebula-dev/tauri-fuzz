@@ -1,7 +1,7 @@
 // Copyright 2023-2024 CrabNebula Ltd., Alexandre Dang
 // SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
 
-use appfuzz_rt::tauri::{start_crashing_fuzz_process, start_non_crashing_fuzz_process};
+use tauri_fuzz::tauri::{start_crashing_fuzz_process, start_non_crashing_fuzz_process};
 use fuzz_mini_app::utils::fuzz_command_with_arg;
 
 // This is a trick to test fuzzers with multi-threaded and get fuzzer output when crashing.
@@ -27,7 +27,7 @@ fn hidden_block_read_foo_with_nofileaccess_policy() {
     fuzz_command_with_arg(
         "read_foo_file",
         Some(mini_app::file_access::read_foo_file as usize),
-        policies::filesystem::no_file_access(),
+        tauri_fuzz_policies::filesystem::no_file_access(),
         Vec::<(&str, ())>::new(),
         None,
     )
@@ -39,7 +39,7 @@ fn hidden_block_read_foo_with_filename_policy() {
     fuzz_command_with_arg(
         "read_foo_file",
         Some(mini_app::file_access::read_foo_file as usize),
-        policies::filesystem::no_access_to_filenames(vec!["foo.txt".to_string()]),
+        tauri_fuzz_policies::filesystem::no_access_to_filenames(vec!["foo.txt".to_string()]),
         Vec::<(&str, ())>::new(),
         None,
     )
@@ -51,7 +51,7 @@ fn hidden_allow_read_foo_with_readonly_policy() {
     fuzz_command_with_arg(
         "read_foo_file",
         Some(mini_app::file_access::read_foo_file as usize),
-        policies::filesystem::read_only_access(),
+        tauri_fuzz_policies::filesystem::read_only_access(),
         Vec::<(&str, ())>::new(),
         None,
     )
@@ -63,7 +63,7 @@ fn hidden_allow_read_foo_with_no_policy() {
     fuzz_command_with_arg(
         "read_foo_file",
         Some(mini_app::file_access::read_foo_file as usize),
-        policies::no_policy(),
+        tauri_fuzz_policies::no_policy(),
         Vec::<(&str, ())>::new(),
         None,
     )
