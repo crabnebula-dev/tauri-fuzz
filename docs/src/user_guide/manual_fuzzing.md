@@ -5,7 +5,7 @@ The different steps to fuzz a Tauri app are detailed here.
 
 We will fuzz a very minimal Tauri application.
 The repository features a minimal example called [`mini-app`](https://github.com/crabnebula-dev/tauri-fuzzer/tree/main/examples/mini-app).
-This example app will be used to showcase how to setup fuzzing with `AppFuzz Runtime`.
+This example app will be used to showcase how to setup fuzzing with `tauri-fuzz`.
 
 ## Prepare your Tauri App
 
@@ -69,6 +69,7 @@ Project
 
 ### With the CLI `tauri-fuzz-cli`
 
+> **[Note]**
 > This section requires the CLI utility `tauri-fuzz-cli`
 > The project contains a CLI package `tauri-fuzz-cli` that helps setting up fuzzing for your Tauri app.
 > The CLI package resides in `crates/cli`.
@@ -94,7 +95,7 @@ mkdir -p mini-app/src-tauri/fuzz
 </summary>
 
 ```toml, ignore
-{{#include ../../../crates/cli/template/Cargo.crate-manifest}}
+{{#include ../../../crates/tauri-fuzz-cli/template/Cargo.crate-manifest}}
 ```
 
 </details>
@@ -113,7 +114,7 @@ touch mini-app/src-tauri/fuzz_targets/_template_full_.rs
 </summary>
 
 ```toml, ignore
-{{#include ../../../crates/cli/template/fuzz_targets/_template_.rs}}
+{{#include ../../../crates/tauri-fuzz-cli/template/fuzz_targets/_template_.rs}}
 ```
 
 </details>
@@ -124,7 +125,7 @@ touch mini-app/src-tauri/fuzz_targets/_template_full_.rs
 </summary>
 
 ```toml, ignore
-{{#include ../../../crates/cli/template/fuzz_targets/_template_full_.rs}}
+{{#include ../../../crates/tauri-fuzz-cli/template/fuzz_targets/_template_full_.rs}}
 ```
 
 </details>
@@ -135,7 +136,7 @@ touch mini-app/src-tauri/fuzz_targets/_template_full_.rs
 <summary> `mini-app/src-tauri/fuzz/build.rs` </summary>
 
 ```toml,ignore
-{{#include ../../../crates/cli/template/build.rs}}
+{{#include ../../../crates/tauri-fuzz-cli/template/build.rs}}
 ```
 
 </details>
@@ -144,7 +145,7 @@ touch mini-app/src-tauri/fuzz_targets/_template_full_.rs
 <summary> `mini-app/src-tauri/fuzz/tauri.conf.json` </summary>
 
 ```toml,ignore
-{{#include ../../../crates/cli/template/tauri.conf.json}}
+{{#include ../../../crates/tauri-fuzz-cli/template/tauri.conf.json}}
 ```
 
 </details>
@@ -165,7 +166,7 @@ There are two ways to write the fuzz target:
 
 {{#include ./write_fuzz_target_with_macro.txt}}
 
-> [!Disclaimer]
+> **[Disclaimer]**
 > Our macro is not stable yet it may not work for complex cases.
 > For more control over the fuzzing we suggest that you write the fuzz target manually by following the next section.
 
@@ -179,7 +180,7 @@ We are going to copy and modify the template file provided by
 </summary>
 
 ```rust,ignore
-{{#include ../../../crates/cli/template/fuzz_targets/_template_full_.rs}}
+{{#include ../../../crates/tauri-fuzz-cli/template/fuzz_targets/_template_full_.rs}}
 ```
 
 </details>

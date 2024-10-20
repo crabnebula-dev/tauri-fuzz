@@ -16,6 +16,8 @@ Most fuzzers are dedicated to find memory bugs in C libraries.
 In our case we focus on security issues in applications.
 Specifically we check that applications can't break their assumed security boundaries.
 
+![Fuzzing applications security boundaries ](./docs/src/images/fuzzing_application_boundary.drawio.svg "Fuzzing applications security boundaries")
+
 #### Examples of cases where the runtime is relevant
 
 In general the runtime is useful to check the security boundaries of an app:

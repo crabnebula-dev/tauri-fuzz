@@ -6,7 +6,7 @@ From `mini-app/src-tauri/` directory:
 cargo-tauri-fuzz fuzz fuzz_read_foo
 ```
 
-From `mini-app/src-tauri/fuzz/` directory:
+Or from `mini-app/src-tauri/fuzz/` directory:
 
 ```bash
 cargo r --bin fuzz_read_foo

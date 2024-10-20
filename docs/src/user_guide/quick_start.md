@@ -4,7 +4,7 @@
 
 We will fuzz a very minimal Tauri application.
 The repository features a minimal example called [`mini-app`](https://github.com/crabnebula-dev/tauri-fuzzer/tree/main/examples/mini-app).
-This example app will be used to showcase how to setup fuzzing with `AppFuzz Runtime`.
+This example app will be used to showcase how to setup fuzzing with `tauri-fuzz`.
 
 ## Fuzzing a Tauri application
 
@@ -38,6 +38,7 @@ mini-app
 
 ### Fuzzing our Tauri app, quick guide
 
+> **[Note]**
 > This section requires the CLI utility `tauri-fuzz-cli`
 > The project contains a CLI package `tauri-fuzz-cli` that helps setting up fuzzing for your Tauri app.
 > The CLI package resides in `crates/tauri-fuzz-cli`.
@@ -93,7 +94,7 @@ Add `fuzz_read_foo` as a binary in `mini-app/src-tauri/fuzz/Cargo.toml`
 </summary>
 
 ```toml,ignore
-{{#include ../../../crates/cli/template/Cargo.crate-manifest}}
+{{#include ../../../crates/tauri-fuzz-cli/template/Cargo.crate-manifest}}
 ```
 
 </details>

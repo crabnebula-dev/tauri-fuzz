@@ -10,7 +10,7 @@
 Here we will fuzz the Tauri command `read_foo` against a policy that does not allow any file access.
 
 ```rust,ignore
-{{#include ../../../crates/cli/template/fuzz_targets/_template_.rs}}
+{{#include ../../../crates/tauri-fuzz-cli/template/fuzz_targets/_template_.rs}}
 ```
 
 </details>
