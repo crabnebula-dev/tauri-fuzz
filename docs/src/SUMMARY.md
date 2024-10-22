@@ -1,12 +1,13 @@
 # Summary
 
 - [Introduction](./introduction.md)
-  - [Prerequisites](./prerequisites.md)
-  - [Slides](./presentation.md)
+  - [tl;dr of `tauri-fuzz`](./introduction/tldr.md)
+  - [Prerequisites](./introduction/prerequisites.md)
+  - [Slides](./introduction/presentation.md)
 - [Principles](./principles.md)
-  - [Fuzzing Applications](./principles/fuzzing_applications.md)
+  - [Application Fuzzing](./principles/fuzzing_applications.md)
   - [Policies](./principles/policies.md)
-  - [Fuzzing Runtime](./principles/runtime.md)
+  - [Runtime](./principles/runtime.md)
 - [User Guide](./user_guide/intro.md)
   - [Quick Start](./user_guide/quick_start.md)
   - [Manual Steps](./user_guide/manual_fuzzing.md)

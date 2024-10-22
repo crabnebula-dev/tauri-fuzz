@@ -1,11 +1,10 @@
-# `tauri-fuzz`
+# [`tauri-fuzz`](https://github.com/crabnebula-dev/tauri-fuzz)
 
 The goal of this project is to provide a tool to easily fuzz [Tauri](https://tauri.app/) applications.
-`tauri-fuzz` fuzzes your Tauri app with a special runtime that detects when security boundaries are breached.
+[`tauri-fuzz`](https://github.com/crabnebula-dev/tauri-fuzz) fuzzes your Tauri app with a special runtime that detects when security boundaries are breached.
+By security boundaries we mean unsafe access to the host system ressources.
 
 ![Fuzzing applications security boundaries ](./images/fuzzing_application_boundary.drawio.svg "Fuzzing applications security boundaries")
-
-<figcaption>The Amazon Rainforest contains a multitude of species.</figcaption>
 
 > **[Disclaimer]** `tauri-fuzz` was tailored to be used with Tauri applications but the fuzzing principles should be
 > reusable to fuzz other types of applications.
@@ -20,13 +19,13 @@ One of the most popular way to automatically test your software is called fuzzin
 The principle of a fuzzer is to test a software by executing it with a very large amount of semi-random inputs and to detect any problematic behaviours during these runs.
 Currently most fuzzers are used to detect memory safety vulnerabilities for popular C libraries.
 
-### Why are fuzzers not used for web applications?
+### Why are fuzzers not used for applications?
 
 We see two main reasons:
 
 - Fuzzing can be hard to setup and requires experience and/or time to be used effectively.
-- Web applications are often developped with technology that are less prone to memory unsafeties. So
-  fuzzer default error detection mechanisms do not translate well for web applications.
+- Applications are often developped with technology that are less prone to memory unsafeties. So
+  fuzzer default error detection mechanisms do not translate well for applications.
 
 ### Goal of the project
 
@@ -54,5 +53,5 @@ In this configuration, anytime the fuzzed application try to use the filesystem 
 
 ### `tauri-fuzz-cli`
 
-A command line utility that simplifies the steps to fuzz a Tauri app.
+A command line utility that simplifies as much as possible the steps to fuzz a Tauri app.
 It handles both setting up the fuzzing environment and starting fuzzing instances for a Tauri app.
