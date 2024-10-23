@@ -10,10 +10,10 @@
 
 ## Supported platforms
 
-| Platform | Can theorically work | Tested on |
-| :------- | :------------------- | :-------- |
-| Linux    | ✅                   | ✅        |
-| Windows  | ✅                   | ✅        |
-| MacOS    | ✅                   | ❌        |
-| Android  | ❓                   | ❌        |
-| iOS      | ❓                   | ❌        |
+| Platform | Can theoretically work | Tested on |
+| :------- | :--------------------- | :-------- |
+| Linux    | ✅                     | ✅        |
+| Windows  | ✅                     | ✅        |
+| MacOS    | ✅                     | ❌        |
+| Android  | ❓                     | ❌        |
+| iOS      | ❓                     | ❌        |
