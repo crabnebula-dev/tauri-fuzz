@@ -27,6 +27,6 @@ We use the binary instrumentation toolkit [Frida](https://frida.re/) to monitor 
 [Frida interceptors](https://frida.re/docs/javascript-api/#interceptor) are used to inspect: arguments of function calls or return value of function return.
 The reasons why we used Frida are two folds:
 
-- Frida works on multiple platform: Linux, Windows, MacOS, Android, IOS. So `tauri-fuzz` can also be cross-platform.
+- Frida works on multiple platform: Linux, Windows, MacOS, Android, iOS. So `tauri-fuzz` can also be cross-platform.
 - [LibAFL](https://github.com/AFLplusplus/LibAFL) a state-of-the-art fuzzer also has integration with Frida. This allows us to build a performant fuzzer through LibAFL
   which shares the same binary instrumentation toolkit with our runtime.

@@ -5,6 +5,8 @@ This runtime is specialized in detecting security boundaries violations in appli
 
 ## The project
 
+![Fuzzing applications security boundaries ](./docs/src/images/fuzzing_application_boundary.drawio.svg "Fuzzing applications security boundaries")
+
 ### What is a fuzzer
 
 A fuzzer is an automatic testing tool commonly used for software.
@@ -20,9 +22,11 @@ Specifically we check that applications can't break their assumed security bound
 
 #### Examples of cases where the runtime is relevant
 
-In general the runtime is useful to check the security boundaries of an app:
+In general the runtime is useful to check the security boundaries of an application:
 
-- an app should have no or limited access to the filesystem
+For example:
+
+- an app should have no or limited access to the file system
 - an app has access to the shell but we want to make sure that it cannot be abused
 - an app should not make any remote connection except to specified servers (TODO)
 
@@ -37,25 +41,6 @@ In general the runtime is useful to check the security boundaries of an app:
   - Coupled to [LibAFL](https://github.com/AFLplusplus/LibAFL) for state of the art fuzzing
   - Portable on Windows, MacOS, Android, iOS (TODO)
 
-### Main default policy
-
-Several default policies are provided but one policy in particular stands out and can be useful almost anywhere:
-
-> The target code is not allowed to call external binaries in a way that the external binaries will return an error
-
-The assumption is that if an app is able to call a binary with inputs such that the binary returns
-an error then an attacker has the room to exploit this binary call to mount an attack.
-When fuzzing if such vulnerability appears it will likely be under the form of a syntax error due to the random nature of fuzzing.
-
-## Repository Architecture
-
-- `crates/tauri-fuzz-cli` a cli to initialize fuzzing in a project
-- `crates/tauri-fuzz` the runtime used while fuzzing
-- `crates/tauri-fuzz-policies` the security policies and the policy engine that will be used while fuzzing
-- `docs/` technical information and thoughts process behind the project
-- `examples/` examples to run the fuzzer on
-- `tests/` tests
-
 ## Documentation
 
 Technical documentation, research and thoughts process that happened during the development of this project are documented in the mdbook in `docs`.
@@ -67,9 +52,21 @@ $ cargo install mdbook
 $ cargo install mdbook-toc
 ```
 
-## Installation
+## Repository Architecture
 
-### Requirements
+- `crates/tauri-fuzz-cli` a cli to initialize fuzzing in a project
+- `crates/tauri-fuzz` the runtime used while fuzzing
+- `crates/tauri-fuzz-policies` the security policies and the policy engine that will be used while fuzzing
+- `docs/` technical information and thoughts process behind the project
+- `examples/` examples to run the fuzzer on
+- `tests/` tests
 
-Requirements for the fuzzer dependencies on [LibAFL repo](https://github.com/AFLplusplus/LibAFL)
-Requirements for Tauri fuzzing on [Tauri website](https://tauri.app/start/prerequisites/)
+## Supported platforms
+
+| Platform | Can theorically work | Tested on |
+| :------- | :------------------- | :-------- |
+| Linux    | ✅                   | ✅        |
+| Windows  | ✅                   | ✅        |
+| MacOS    | ✅                   | ❌        |
+| Android  | ❓                   | ❌        |
+| iOS      | ❓                   | ❌        |

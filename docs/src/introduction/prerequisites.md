@@ -16,4 +16,4 @@
 | Windows  | ✅                   | ✅        |
 | MacOS    | ✅                   | ❌        |
 | Android  | ❓                   | ❌        |
-| IOS      | ❓                   | ❌        |
+| iOS      | ❓                   | ❌        |
