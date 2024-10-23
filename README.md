@@ -5,8 +5,6 @@ This runtime is specialized in detecting security boundaries violations in appli
 
 ## The project
 
-![Fuzzing applications security boundaries ](./docs/src/images/fuzzing_application_boundary.drawio.svg "Fuzzing applications security boundaries")
-
 ### What is a fuzzer
 
 A fuzzer is an automatic testing tool commonly used for software.
