@@ -16,3 +16,7 @@ pub fn no_policy() -> FuzzPolicy {
 pub(crate) fn block_on_entry() -> ConditionOnParameters {
     std::sync::Arc::new(|_| Ok(true))
 }
+
+pub fn no_error_policy() -> FuzzPolicy {
+    todo!()
+}
