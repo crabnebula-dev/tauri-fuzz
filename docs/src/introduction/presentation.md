@@ -1,6 +1,6 @@
 # Slides
 
-> **[Disclaimer]** The presentation is not up to date
+<!-- > **[Disclaimer]** Some names of  of the presentation have changed -->
 
 Slide deck that was presented internally at CrabNebula.
 
