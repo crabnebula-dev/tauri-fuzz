@@ -226,7 +226,7 @@ mod file_policy_impl {
             name: OPEN_FILE.into(),
             lib: FILE_CRT.into(),
             rule: Rule::OnEntry(Arc::new(move |registers| {
-                block_access_to_filenames(&blocked_files, registers)
+                block_access_to_filenames(&blocked_files_clone, registers)
             })),
             description: format!("Access to files {:?} denied", blocked_files),
             nb_parameters: 11,

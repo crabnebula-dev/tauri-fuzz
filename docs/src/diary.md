@@ -736,6 +736,16 @@ InvokeRequest {
 - Big chances it is related to `tauri-build` which does a lot in windows
   - reintroduce a `build.rs` file with `tauri_build::build()`
   - Find a way to have a generic and minimal `tauri.conf.json` for the fuzz directory
+- Missing C lib or include
+  - Check for missing libraries from MSVC
+  - Edit environment variables
+    - for clues on where to search, check https://www.reddit.com/r/vscode/comments/itdbld/include_path_not_set_when_trying_to_compile_a_c/
+  - `fatal error C1083: Cannot open include file: 'stdint.h'`
+    - Missing some libraries from MSVC (clang++ tools)
+  - `fatal error LNK1104: cannot open file 'msvcprt.lib'`
+    - Edit the `LIB` environment variable
+  - `fatal error LNK1120: 7 unresolved externals`
+    - make sure to only include libs for x64 (in our case)
 
 #### `frida_gum` does not find any symbol or export in the Rust binary
 
