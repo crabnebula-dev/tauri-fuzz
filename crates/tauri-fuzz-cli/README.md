@@ -1,6 +1,6 @@
-# fuzzer-cli
+# tauri-fuzz-cli
 
-We created a cli to facilitate the setting up the fuzzing environment of your Tauri application.
+We created a cli `cargo-tauri-fuzz` to facilitate the setting up the fuzzing environment of your Tauri application.
 
 ## Setup the fuzz directory
 
