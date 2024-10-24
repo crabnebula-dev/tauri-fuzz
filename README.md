@@ -61,7 +61,7 @@ $ cargo install mdbook-toc
 
 ## Supported platforms
 
-| Platform | Can theorically work | Tested on |
+| Platform | Can theoretically work | Tested on |
 | :------- | :------------------- | :-------- |
 | Linux    | ✅                   | ✅        |
 | Windows  | ✅                   | ✅        |
