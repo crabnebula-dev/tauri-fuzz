@@ -5,7 +5,6 @@
 #![allow(unused_imports)]
 use libafl::executors::ExitKind;
 use libafl::inputs::BytesInput;
-use tauri_fuzz_policies::engine::FuzzPolicy;
 use std::path::PathBuf;
 use tauri::test::{mock_builder, mock_context, noop_assets, MockRuntime};
 use tauri::webview::InvokeRequest;
@@ -14,6 +13,7 @@ use tauri_fuzz::tauri::{
     CommandArgs,
 };
 use tauri_fuzz::SimpleFuzzerConfig;
+use tauri_fuzz_policies::engine::FuzzPolicy;
 use tauri_plugin_fs::FsExt;
 
 pub fn fuzz_config() -> PathBuf {

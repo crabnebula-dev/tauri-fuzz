@@ -193,7 +193,7 @@ mod file_policy_impl {
 
     /// Checks if the filename contained in the first register is part of the blocked files
     fn block_access_to_filenames(
-        blocked_files: &Vec<String>,
+        blocked_files: &[String],
         registers: &[usize],
     ) -> Result<bool, RuleError> {
         let obj_attr_ptr = registers[2] as *const OBJECT_ATTRIBUTES;
