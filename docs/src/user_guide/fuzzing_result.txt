@@ -1,0 +1,29 @@
+
+You should see this result repeatedly on your terminal:
+
+<details>
+<summary>Fuzzing results</summary>
+
+```ignore
+[ERROR policies::engine] Policy was broken at function [open].
+    Description: Access to [open] denied
+    Rule: Rule::OnEntry
+    Context: Function entry with parameters: [140736965046336, 524288]
+The application panicked (crashed).
+Message:  Intercepting call to [open].
+Policy was broken at function [open].
+Description: Access to [open] denied
+Rule: Rule::OnEntry
+Context: Function entry with parameters: [140736965046336, 524288]
+```
+</details>
+
+This is the expected result. The Tauri command we fuzz, `read_foo_file`, tries to read `foo.txt`
+but got intercepted since we are fuzzing with a policy that does not allow any access to the filesystem.
+
+More precisely the message specifies `Policy was broken at function [open]`. 
+Indeed `read_foo_file` tried to use the libc function `open` that is used to access files and got intercepted.
+
+
+The inputs used by the fuzzer which provokes a policy breach are stored in `mini-app/src-tauri/fuzz/fuzz_solutions`.
+Those inputs can be then investigated to understand why the policy breach happened.

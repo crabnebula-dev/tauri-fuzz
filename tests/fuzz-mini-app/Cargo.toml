@@ -12,14 +12,13 @@ tauri-build = { workspace = true }
 
 [dependencies]
 mini-app = { workspace = true }
-policies = { workspace = true }
-fuzzer = { workspace = true, features = ["tauri"] }
-frida-gum = { workspace = true }
+tauri-fuzz-policies = { workspace = true }
+tauri-fuzz = { workspace = true, features = ["tauri"] }
+
 tauri = { workspace = true }
 tauri-utils = { workspace = true }
 libafl = { workspace = true }
 tauri-plugin-fs = { workspace = true}
 serde = { version = "1.0.197" }
 color-backtrace = "0.6.1"
-log = "0.4"
 env_logger = "0.11"

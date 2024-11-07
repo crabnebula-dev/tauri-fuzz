@@ -1,0 +1,16 @@
+- Copy `mini-app/src-tauri/fuzz/fuzz_targets/_template_.rs` as `mini-app/src-tauri/fuzz/fuzz_targets/fuzz_read_foo.rs`
+- Fill `mini-app/src-tauri/fuzz/fuzz_targets/fuzz_read_foo.rs` with relevant information
+
+<details>
+<summary>
+`mini-app/src-tauri/fuzz/fuzz_targets/fuzz_read_foo.rs`
+
+</summary>
+
+Here we will fuzz the Tauri command `read_foo` against a policy that does not allow any file access.
+
+```rust,ignore
+{{#include ../../../crates/tauri-fuzz-cli/template/fuzz_targets/_template_.rs}}
+```
+
+</details>

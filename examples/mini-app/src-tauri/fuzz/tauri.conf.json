@@ -1,0 +1,10 @@
+{
+  "productName": "mini-app-fuzz",
+  "version": "0.0.0",
+  "identifier": "dev.crabnebula.mini-app-fuzz",
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": ["../icons/icon.ico"]
+  }
+}
