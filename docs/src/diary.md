@@ -751,6 +751,7 @@ InvokeRequest {
 
 - check symbols manually with equivalent of `nm` which is `dumpbin.exe`
   - use developer terminal to use `dumpbin.exe` easily
+    - developer terminal can be opened with Visual Studio in Tools > Command Line
   - Windows executables are stripped of any export symbols
 - Our previous approach used debug symbols to find the native pointer to the harness
   - debug symbols are not available on windows (in the file directly but separate ".pdb" file)
@@ -986,7 +987,6 @@ InvokeRequest {
 ### Default policy
 
 - We have a new approach where we monitor the `std::process::Command` API
-
   - we detect any new creation process
     - we track `Command::status`, `Command::output`, `Command::spawn`
     - ideally we could track a single function: `std::sys::windows/unix::process::Command`
@@ -1002,8 +1002,11 @@ InvokeRequest {
   - Limit of our current approach is that we can only detect invocation of external binaries from the Rust API
     - we don't detect invocation of ext binaries through libc `fork` + `execve`
     - but we could monitor `wait` and `waitpid` to track error status
-
+  - This is not possible currently on Windows
+    - Windows executables are stripped of their symbols and Frida is unable to find functions from the standard library
+    - This is ok because we provide a more comprehensive policy that targets functions from `ntdll.dll` and `kernel32.dll`
 - We monitor `wait` and `waitpid`
+
   - this is a superset of monitoring rust `std::process::Command`
   - we had to modify the policy engine to add a storage that can store function parameter at entry
     that can then be reused when analysing the function at exit
@@ -1017,6 +1020,22 @@ InvokeRequest {
       - we also need to track networking then =(
     - we are using the assumption that a child process will return 0 as exit status when the execution
       went well. Is it always true?
+
+- API for windows
+  - nice blogpost on process creation in Windows
+    - https://fourcore.io/blogs/how-a-windows-process-is-created-part-1
+  - browsing through Rust std we see that to create a child process Rust std uses
+    - `CreateProcessW` from `kernel32.dll`
+  - To wait for a child process, Rust std uses
+    - `WaitForSingleObject` from `kernel32.dll`
+    - Using the debugger to go deeper in the call stack we reach `NtWaitForSingleObject`
+      - `NtWaitForSingleObject` uses a syscall so it's the limit between user mode and kernel mode
+  - `kernel32.dll` supposedly is more or less a wrapper for `ntdll.dll` we try to fin
+  - Seems like `WaitForSingleObject` does not help us determine if a child process has failed or not
+    - we should try monitoring `GetExitCodeProcess`
+    - I don't know if this functions is actually used or not in programs and if monitoring it is worth it
+    - it's actually used in in Rust `Command::output/status`
+    - it works
 
 #### libc wait
 

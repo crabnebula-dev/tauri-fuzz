@@ -3,9 +3,9 @@
 
 #![allow(non_snake_case)]
 // use crate::mini_app_commands_tests::path_to_foo;
-use tauri_fuzz::tauri::{start_crashing_fuzz_process, start_non_crashing_fuzz_process};
 use fuzz_mini_app::utils::fuzz_command_with_arg;
 use fuzz_mini_app::utils::path_to_foo;
+use tauri_fuzz::tauri::{start_crashing_fuzz_process, start_non_crashing_fuzz_process};
 
 // This is a trick to test fuzzers with multi-threaded and get fuzzer output when crashing.
 // Frida-gum does not support multi-threads therefore we start fuzzing in different processes.
