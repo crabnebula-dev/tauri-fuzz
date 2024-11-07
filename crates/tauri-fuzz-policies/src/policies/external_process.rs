@@ -56,6 +56,7 @@ mod not_msvc {
     }
 
     /// Policy that blocks creation of child process that executes specified binaries
+    /// Only blocks child processes that were created through Rust API `std::Command::process`
     pub fn block_on_entry(blocked_binaries: Vec<String>) -> FuzzPolicy {
         let current_bin = std::env::current_exe()
             .expect("Failed to get binary path")
@@ -238,10 +239,17 @@ mod not_msvc {
 mod msvc {
     use super::*;
 
+    const KERNEL32: &str = "KERNEL32.DLL";
     /// Functions that we are monitoring coupled with the library in which they reside
     /// These functions are used to wait for child processes
     /// TODO: Maybe reimplement this but with same functions but from `ntdll.dll`
-    const MONITORED_WAIT_FUNCTIONS: [(&str, &str); 1] = [("GetExitCodeProcess", "KERNEL32.DLL")];
+    const MONITORED_WAIT_FUNCTIONS: [(&str, &str); 1] = [("GetExitCodeProcess", KERNEL32)];
+
+    /// Functions that we are monitoring coupled with the library in which they reside
+    /// These functions are used to create a child process
+    /// TODO: Maybe reimplement this but with same functions but from `ntdll.dll`
+    const MONITORED_CREATE_PROCESS_FUNCTIONS: [(&str, &str); 2] =
+        [("CreateProcessA", KERNEL32), ("CreateProcessW", KERNEL32)];
 
     /// Policy that will block the execution anytime a child process returns an error
     pub fn block_on_child_process_error_status() -> FuzzPolicy {
@@ -262,8 +270,10 @@ mod msvc {
             .collect::<FuzzPolicy>()
     }
 
-    // Store value of status pointer for later use
-    // when exiting the function
+    // Store value of status pointer positioned as 2nd parameter
+    // This will be used when exiting the function to check the exit status
+    // NOTE: not sure on the guarantees that parameter order is kept in C programs
+    // Use with caution
     fn store_status_ptr(
         parameters: &[usize],
         storage: &mut Option<usize>,
@@ -272,9 +282,9 @@ mod msvc {
         Ok(false)
     }
 
-    // Check status pointer from `GetExitCodeProcess` <https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getexitcodeprocess>
-    // NOTE: Convention is that success should have exit status to 0
-    // Though there are no guarantees that programs respect this convention
+    /// Check status pointer from `GetExitCodeProcess` <https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getexitcodeprocess>
+    /// NOTE: Convention is that success should have exit status to 0
+    /// Though there are no guarantees that programs respect this convention
     fn is_return_value_an_error(
         return_value: usize,
         storage: &mut Option<usize>,
@@ -305,7 +315,118 @@ mod msvc {
         }
     }
 
-    pub fn block_on_entry(blocked_binaries: Vec<String>) -> FuzzPolicy {}
+    /// Block child processes that are created through `MONITORED_CREATE_PROCESS_FUNCTIONS`
+    /// that runs a binary specified in `blocked_binaries`
+    pub fn block_on_entry(blocked_binaries: Vec<String>) -> FuzzPolicy {
+        MONITORED_CREATE_PROCESS_FUNCTIONS
+            .into_iter()
+            .map(|(f, lib)| {
+                let blocked_binaries_clone = blocked_binaries.clone();
+                FunctionPolicy {
+                    name: f.into(),
+                    lib: lib.into(),
+                    rule: Rule::OnEntry(Arc::new(move |registers| {
+                        block_monitored_binaries_on_entry(f, &blocked_binaries_clone, registers)
+                    })),
+                    description: format!(
+                        "[`{f}`] These executables are not allowed: {:?}",
+                        blocked_binaries
+                    ),
+                    nb_parameters: 10,
+                    is_rust_function: false,
+                }
+            })
+            .collect::<FuzzPolicy>()
+    }
+
+    use std::os::windows::prelude::OsStringExt;
+    fn block_monitored_binaries_on_entry(
+        function_name: &str,
+        blocked_binaries: &[String],
+        registers: &[usize],
+    ) -> Result<bool, RuleError> {
+        match function_name {
+            "CreateProcessA" => {
+                // Related docs: <https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createprocessa>
+
+                // Full path to executable
+                // Type is LPCSTR
+                let command_path = registers[0] as *const i8;
+                // Command as if it was executed in cmd.exe
+                // Type is LPSTR
+                let command_line = registers[1] as *const i8;
+
+                let block_command_path =
+                    contains_blocked_binaries(lpstr_to_string(command_path), blocked_binaries);
+                let block_command_line =
+                    contains_blocked_binaries(lpstr_to_string(command_line), blocked_binaries);
+
+                Ok(block_command_path || block_command_line)
+            }
+            "CreateProcessW" => {
+                // Related docs: <https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createprocessw>
+
+                // Full path to executable
+                // Type is LPCWSTR
+                let command_path = registers[0] as *const u16;
+                // Command as if it was executed in cmd.exe
+                // Type is LPWSTR
+                let command_line = registers[1] as *const u16;
+
+                let block_command_path =
+                    contains_blocked_binaries(lpwstr_to_string(command_path), blocked_binaries);
+                let block_command_line =
+                    contains_blocked_binaries(lpwstr_to_string(command_line), blocked_binaries);
+
+                Ok(block_command_path || block_command_line)
+            }
+            _ => unimplemented!(),
+        }
+    }
+
+    fn lpstr_to_string(windows_str: *const i8) -> Option<String> {
+        if windows_str.is_null() {
+            return None;
+        }
+
+        let c_str;
+        // The functions we are monitoring are supposed to be called with valid null-terminated strings
+        unsafe {
+            c_str = std::ffi::CStr::from_ptr(windows_str);
+        }
+        let rust_string = c_str.to_string_lossy().to_string();
+        println!("ANSI: {}", rust_string);
+        Some(rust_string)
+    }
+
+    fn lpwstr_to_string(windows_str: *const u16) -> Option<String> {
+        if windows_str.is_null() {
+            return None;
+        }
+        let slice;
+        // The functions we are monitoring are supposed to be called with valid null-terminated strings
+        unsafe {
+            let length = (0..).take_while(|&i| *windows_str.offset(i) != 0).count();
+            slice = std::slice::from_raw_parts(windows_str, length);
+        }
+        let rust_string = std::ffi::OsString::from_wide(slice)
+            .to_string_lossy()
+            .into_owned();
+        println!("unicode: {}", rust_string);
+        Some(rust_string)
+    }
+
+    /// Check if 'command' calls one of the blocked binaries
+    /// NOTE: The check only checks if the command contains one of the blocked binary
+    /// This is a bit loose and may produce errors
+    fn contains_blocked_binaries(command: Option<String>, blocked_binaries: &[String]) -> bool {
+        match command {
+            None => false,
+            Some(command) => blocked_binaries
+                .iter()
+                .any(|blocked_binary| command.contains(blocked_binary)),
+        }
+    }
 
     /// NOTE: This is not working on Windows.
     /// This could work similarly to the non-windows versions but in Windows binaries are stripped of their symbols.

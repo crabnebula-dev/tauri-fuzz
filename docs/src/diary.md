@@ -840,6 +840,12 @@ InvokeRequest {
   - GENERIC_WRITE: 0x40000000
 - we will use these flags eventhough this is different from what described from the doc
 
+#### Conversion from windows string to Rust string
+
+- Windows uses wide character for unicode support which are u16
+- Also windows api uses string that should be null-terminated
+- <https://stackoverflow.com/questions/73935490/how-can-i-convert-lpwstr-into-str>
+
 ### Docker on Windows
 
 - Docker daemon can be started by launching Docker desktop
@@ -1025,7 +1031,10 @@ InvokeRequest {
   - nice blogpost on process creation in Windows
     - https://fourcore.io/blogs/how-a-windows-process-is-created-part-1
   - browsing through Rust std we see that to create a child process Rust std uses
-    - `CreateProcessW` from `kernel32.dll`
+    - `CreateProcess` from `kernel32.dll`
+    - `NtCreateProcess` from `ntdll.dll`
+    - both of these functions can be used to create children processes
+    - <https://www.codeproject.com/articles/11985/hooking-the-native-api-and-controlling-process-cre>
   - To wait for a child process, Rust std uses
     - `WaitForSingleObject` from `kernel32.dll`
     - Using the debugger to go deeper in the call stack we reach `NtWaitForSingleObject`

@@ -225,19 +225,10 @@ impl FunctionListenerRuntime {
         // println!("{:#?}", symbols_in_module(&current_bin.name));
         // println!("{:#?}", exports_in_module(&current_bin.name));
         //
-        // let lib = Module::enumerate_modules()
-        //     .into_iter()
-        //     .find(|m| m.name.contains("msvcrt.dll"))
-        //     .ok_or(Error::unknown(format!(
-        //         "lib {} not found in modules",
-        //         "kernel"
-        //     )))?;
-        // println!("{:#?}", symbols_in_module(&lib.name));
-        // println!("{:#?}", exports_in_module(&lib.name));
         //
         // let lib = Module::enumerate_modules()
         //     .into_iter()
-        //     .find(|m| m.name.contains("ntdll.dll"))
+        //     .find(|m| m.name.contains("KERNEL32.DLL"))
         //     .ok_or(Error::unknown(format!(
         //         "lib {} not found in modules",
         //         "kernel"

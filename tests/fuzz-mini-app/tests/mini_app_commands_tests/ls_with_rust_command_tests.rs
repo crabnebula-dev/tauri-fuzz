@@ -9,16 +9,16 @@ use tauri_fuzz::tauri::{start_crashing_fuzz_process, start_non_crashing_fuzz_pro
 // The "hidden_*"  test will be started in a separate process and the exit status will be captured
 // by the parent process/test.
 
-#[cfg(not(target_os = "windows"))]
 #[test]
+// Control sample where our Tauri commands should not be blocked with no_policy
 fn allow_ls_with_rust_with_no_policy() {
     start_non_crashing_fuzz_process("hidden_allow_ls_with_rust_command_output_no_policy");
     start_non_crashing_fuzz_process("hidden_allow_ls_with_rust_command_status_no_policy");
     start_non_crashing_fuzz_process("hidden_allow_ls_with_rust_command_spawn_no_policy");
 }
 
-#[cfg(not(target_os = "windows"))]
 #[test]
+// Tauri commands should be blocked at entry
 fn block_ls_with_rust_api_at_entry() {
     start_crashing_fuzz_process("hidden_block_ls_with_rust_command_output_at_entry");
     start_crashing_fuzz_process("hidden_block_ls_with_rust_command_status_at_entry");
@@ -27,6 +27,7 @@ fn block_ls_with_rust_api_at_entry() {
 
 #[cfg(not(target_os = "windows"))]
 #[test]
+// Tauri commands should be blocked at exit when exiting from the Rust API with error status
 fn block_ls_with_rust_api_error_status() {
     start_crashing_fuzz_process("hidden_block_ls_with_rust_command_output_error_status");
     start_crashing_fuzz_process("hidden_block_ls_with_rust_command_status_error_status");
@@ -34,6 +35,7 @@ fn block_ls_with_rust_api_error_status() {
 }
 
 #[test]
+// Tauri commands should be blocked at exit when exiting with error status
 fn block_ls_with_error_status() {
     start_crashing_fuzz_process("hidden_block_ls_with_error_status_from_rust_command_output");
     start_crashing_fuzz_process("hidden_block_ls_with_error_status_from_rust_command_status");
@@ -41,21 +43,25 @@ fn block_ls_with_error_status() {
 }
 
 #[test]
+// Tauri commands should be allowed at exit when exiting with success status
 fn allow_ls_with_ok_status() {
     start_non_crashing_fuzz_process("hidden_allow_ls_with_ok_status_from_rust_command_output");
     start_non_crashing_fuzz_process("hidden_allow_ls_with_ok_status_from_rust_command_status");
     start_non_crashing_fuzz_process("hidden_allow_ls_with_ok_status_from_rust_command_spawn");
 }
 
+// The binary which is called in the Tauri commands and that will be blocked
 #[cfg(not(target_os = "windows"))]
 const BLOCKED_BINARY: &str = "ls";
 #[cfg(target_os = "windows")]
-const BLOCKED_BINARY: &str = "cmd";
+const BLOCKED_BINARY: &str = "dir";
 
+// Valid arguments that will be given to the binary
 #[cfg(not(target_os = "windows"))]
 const CORRECT_ARG: &str = "-la";
 #[cfg(target_os = "windows")]
 const CORRECT_ARG: &str = "";
+// Invalid arguments that will be given to the binary
 const WRONG_ARG: &str = "foo";
 
 #[test]

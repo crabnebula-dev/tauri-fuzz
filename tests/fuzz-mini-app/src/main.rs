@@ -8,7 +8,7 @@ use mini_app::basic::direct_panic;
 use mini_app::file_access::read_foo_file;
 use utils::*;
 
-const BLOCKED_BINARY: &str = "cmd";
+const BLOCKED_BINARY: &str = "dir";
 const ARG: &str = "";
 
 pub fn main() {
@@ -22,8 +22,8 @@ pub fn main() {
     fuzz_command_with_arg(
         "ls_with_rust_command_output",
         Some(mini_app::external_process::ls_with_rust_command_output as usize),
-        tauri_fuzz_policies::external_process::block_on_child_process_error_status(),
-        vec![("input", "sdfjkl")],
+        tauri_fuzz_policies::external_process::block_on_entry(vec![BLOCKED_BINARY.to_string()]),
+        vec![("input", ARG)],
         None,
     )
 
