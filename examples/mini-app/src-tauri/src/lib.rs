@@ -3,7 +3,6 @@
 
 #![allow(unused_imports)]
 pub mod tauri_commands;
-use fuzzer::tauri::{create_invoke_request, invoke_command, CommandArgs};
 use tauri::{
     test::{mock_builder, mock_context, noop_assets},
     WebviewWindow,
@@ -24,7 +23,6 @@ pub fn run() {
 
     info!("Start tracing");
 
-    // let app = mock_builder()
     tauri::Builder::default()
         .plugin(tauri_plugin_fs::init())
         .invoke_handler(tauri::generate_handler![
@@ -43,32 +41,6 @@ pub fn run() {
         })
         .run(tauri::generate_context!())
         .expect("Failed to init Tauri app");
-
-    // let webview = tauri::WebviewWindowBuilder::new(&app, "main", Default::default())
-    //     .build()
-    //     .unwrap();
-    //
-
-    // call_fs_readFile(webview);
-
-    // let mut args = CommandArgs::new();
-    // args.insert("input", "-la");
-    // let payload = create_invoke_request(None, "ls_with_rust_command", args);
-    // let res = invoke_command::<String, String>(&webview, payload);
-    // println!("{:#?}", res);
-    //
-    // let mut args = CommandArgs::new();
-    // args.insert("input", "-la");
-    // let payload = create_invoke_request(None, "ls_with_shell", args);
-    // let res = invoke_command::<String, String>(&webview, payload);
-    // println!("{:#?}", res);
-
-    // path.push("test_assets");
-    // path.push("foo.txt");
-    // args.insert("path", path.to_str().unwrap());
-    //
-    //
-    // let res = invoke_command::<String, String>(&webview, payload);
 }
 
 // fn start_graphical() {

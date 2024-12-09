@@ -3,17 +3,17 @@
 
 #![allow(dead_code)]
 #![allow(unused_imports)]
-use fuzzer::tauri::{
-    create_invoke_request, invoke_command, invoke_command_minimal, setup_context_with_plugin,
-    CommandArgs,
-};
-use fuzzer::SimpleFuzzerConfig;
 use libafl::executors::ExitKind;
 use libafl::inputs::BytesInput;
-use policies::engine::FuzzPolicy;
+use tauri_fuzz_policies::engine::FuzzPolicy;
 use std::path::PathBuf;
 use tauri::test::{mock_builder, mock_context, noop_assets, MockRuntime};
 use tauri::webview::InvokeRequest;
+use tauri_fuzz::tauri::{
+    create_invoke_request, invoke_command, invoke_command_minimal, setup_context_with_plugin,
+    CommandArgs,
+};
+use tauri_fuzz::SimpleFuzzerConfig;
 use tauri_plugin_fs::FsExt;
 
 pub fn fuzz_config() -> PathBuf {
@@ -131,7 +131,7 @@ pub fn fuzz_command_with_arg<T>(
     let options = SimpleFuzzerConfig::from_toml(fuzz_config(), command_name, fuzz_dir()).into();
     let webview = setup_mock();
     let monitored_code = command_ptr.unwrap_or(fuzz_harness::<T> as usize);
-    fuzzer::fuzz_main(
+    tauri_fuzz::fuzz_main(
         |input| fuzz_harness(&webview, command_name, &args, &tauri_plugin, input),
         &options,
         monitored_code,

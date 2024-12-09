@@ -1,0 +1,14 @@
+Start fuzzing by executing one of these commands.
+
+From `mini-app/src-tauri/` directory:
+
+```bash
+cargo-tauri-fuzz fuzz fuzz_read_foo
+```
+
+Or from `mini-app/src-tauri/fuzz/` directory:
+
+```bash
+cargo r --bin fuzz_read_foo
+```
+

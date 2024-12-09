@@ -1,8 +1,20 @@
 # Summary
 
 - [Introduction](./introduction.md)
-  <!-- - [Principle](./principle.md) -->
-  <!-- - [Guide to fuzz my Tauri app](./guide_fuzz_my_app.md) -->
+  - [tl;dr of `tauri-fuzz`](./introduction/tldr.md)
+  - [Prerequisites](./introduction/prerequisites.md)
+  - [Slides](./introduction/presentation.md)
+- [Principles](./principles.md)
+  - [Application Fuzzing](./principles/fuzzing_applications.md)
+  - [Security Policies](./principles/policies.md)
+  - [Runtime](./principles/runtime.md)
+  - [Fuzzer](./principles/fuzzer.md)
+- [User Guide](./user_guide/intro.md)
+  - [Quick Start](./user_guide/quick_start.md)
+  - [Manual Steps](./user_guide/manual_fuzzing.md)
+  - [Available Policies](./user_guide/available_policies.md)
+  - [Write your Custom Policy](./user_guide/write_custom_policy.md)
+  - [Fuzzer CLI](./user_guide/fuzzer_cli.md)
 - [Bibliography](./biblio/biblio.md)
   - [Fuzzers](./biblio/fuzzers.md)
   - [Webapp Fuzzers](./biblio/webapp_fuzzing.md)
@@ -10,9 +22,4 @@
   - [Input Generation/Mutation](./biblio/input_generation_mutation.md)
   - [Benchmarks for Fuzzers](./biblio/benchmarks.md)
   - [System Calls Interception](./biblio/syscall_interception.md)
-- [User Guide](./user_guide/intro.md)
-  - [Getting Started](./user_guide/getting_started.md)
-  - [Available Policies](./user_guide/available_policies.md)
-  - [Write your Custom Policy](./user_guide/write_custom_policy.md)
-  - [Fuzzer CLI](./user_guide/fuzzer_cli.md)
 - [Diary](./diary.md)

@@ -1,1 +1,1 @@
-../../../crates/cli/README.md
+{{#include ../../../crates/tauri-fuzz-cli/README.md}}

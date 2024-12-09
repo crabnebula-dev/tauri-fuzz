@@ -17,8 +17,6 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["std", "env-filter", "fmt", "registry"]}
 tauri = { workspace = true, features = ["wry", "tracing"] }
-policies = { workspace = true }
-fuzzer = { workspace = true, features = ["tauri"] }
 libc = "*"
 mysql = "*"
 serde = { version = "1.0", features = ["derive"] }

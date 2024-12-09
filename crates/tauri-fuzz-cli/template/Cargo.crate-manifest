@@ -1,0 +1,23 @@
+[package]
+name = "{{ crate_name }}-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2021"
+
+[workspace]
+
+[build-dependencies]
+tauri-build = "2.0"
+
+[dependencies]
+{{ crate_name }} = { path = ".." }
+tauri-fuzz-policies = { git = "ssh://git@github.com/crabnebula-dev/tauri-fuzz.git" }
+tauri-fuzz = { git = "ssh://git@github.com/crabnebula-dev/tauri-fuzz.git", features = ["tauri"] }
+tauri = { version = "2.0", features = ["test"]}
+libafl = "0.13"
+
+# Uncomment this block to add `fuzz_read_foo` as a fuzz target
+# [[bin]]
+# name = "fuzz_read_foo"
+# path = "fuzz_targets/fuzz_read_foo.rs"
+# doc = false
