@@ -2,3 +2,7 @@
 @import "reveal.js/dist/reveal.css";
 @import "reveal.js/dist/theme/white.css";
 @import "reveal.js/plugin/highlight/monokai.css";
+
+:root {
+  --r-main-font-size: 28px;
+}
