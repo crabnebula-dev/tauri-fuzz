@@ -1,21 +1,17 @@
 // Copyright 2023-2024 CrabNebula Ltd., Alexandre Dang
 // SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
-
 #![cfg_attr(
     all(not(debug_assertions), target_os = "windows"),
     windows_subsystem = "windows"
 )]
 
-use mysql::{prelude::Queryable, Pool, PooledConn};
 
 /// Create a Database with some data first
 /// ```sql
 /// -- Create the database
 /// CREATE DATABASE SchoolDatabase;
-
 /// -- Switch to the newly created database
 /// USE SchoolDatabase;
-
 /// -- Create the Students table
 /// CREATE TABLE Students (
 ///     student_id INT PRIMARY KEY AUTO_INCREMENT,
@@ -24,7 +20,6 @@ use mysql::{prelude::Queryable, Pool, PooledConn};
 ///     date_of_birth DATE,
 ///     email VARCHAR(100)
 /// );
-
 /// -- Insert data into the Students table
 /// INSERT INTO Students (first_name, last_name, date_of_birth, email) VALUES
 /// ('John', 'Doe', '2000-05-10', 'john.doe@example.com'),
@@ -34,7 +29,11 @@ use mysql::{prelude::Queryable, Pool, PooledConn};
 /// ('Daniel', 'Martinez', '2000-11-05', 'daniel.martinez@example.com');
 /// ```
 
+
+use mysql::{prelude::Queryable, Pool, PooledConn};
+
 const SQL_DB: &str = "mysql://root@localhost/SchoolDatabase";
+
 fn connect_to_db() -> Result<PooledConn, mysql::Error> {
     let pool = Pool::new(SQL_DB)?;
     pool.get_conn()
