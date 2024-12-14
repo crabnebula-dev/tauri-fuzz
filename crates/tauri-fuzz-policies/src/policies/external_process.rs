@@ -46,7 +46,7 @@ mod not_msvc {
                 .expect("Unexpected character in binary")
         };
 
-        println!("binary found: {:?}", binary);
+        println!("binary found: {binary:?}");
 
         let is_monitored_binary = blocked_binaries
             .iter()
@@ -66,10 +66,8 @@ mod not_msvc {
             .iter()
             .map(move |f| {
                 let name: String = (*f).into();
-                let description = format!(
-                    "Invocation to external binaries is blocked: {:?}]",
-                    blocked_binaries
-                );
+                let description =
+                    format!("Invocation to external binaries is blocked: {blocked_binaries:?}]");
 
                 let blocked_binaries_clone = blocked_binaries.clone();
                 FunctionPolicy {
@@ -144,7 +142,7 @@ mod not_msvc {
             .iter()
             .map(|f| {
                 let name: String = (*f).into();
-                let description = format!("External binary {} returned with error status", f);
+                let description = format!("External binary {f} returned with error status");
 
                 FunctionPolicy {
                     name: name.clone(),
@@ -186,7 +184,7 @@ mod not_msvc {
         register: usize,
         storage: &mut Option<usize>,
     ) -> Result<bool, RuleError> {
-        if register as isize == -1 {
+        if isize::try_from(register).expect("isize was expected from libc documentation") == -1 {
             // There was an error while waiting for child process
             return Ok(true);
         }
@@ -199,7 +197,9 @@ mod not_msvc {
             }
         };
         unsafe {
-            let child_exit_status = libc::WEXITSTATUS(*status_ptr as i32);
+            let child_exit_status = libc::WEXITSTATUS(
+                i32::try_from(*status_ptr).expect("i32 was expected from libc documentation"),
+            );
             Ok(child_exit_status != 0)
         }
     }
@@ -212,7 +212,7 @@ mod not_msvc {
             .map(|f| {
                 let name: String = (*f).into();
                 let name2: String = name.clone();
-                let description = format!("External binary {} returned with error status", f);
+                let description = format!("External binary {f} returned with error status");
 
                 FunctionPolicy {
                     name: name.clone(),

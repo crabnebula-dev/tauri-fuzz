@@ -84,9 +84,9 @@ commands.allow = [
 
     // Modify the scope of the fs plugin
     let scope = app.fs_scope();
-    let _ = scope.allow_file(path_to_foo().to_str().unwrap());
+    scope.allow_file(path_to_foo().to_str().unwrap());
 
-    let webview = tauri::WebviewWindowBuilder::new(&app, "main", Default::default())
+    let webview = tauri::WebviewWindowBuilder::new(&app, "main", tauri::WebviewUrl::default())
         .build()
         .unwrap();
     webview
@@ -153,7 +153,7 @@ where
     T: serde::ser::Serialize + Clone,
 {
     let mut command_args = CommandArgs::new();
-    for arg in args.iter() {
+    for arg in args {
         command_args.insert(arg.0, arg.1.clone());
     }
     let request = create_invoke_request(tauri_plugin.clone(), command_name, command_args);

@@ -5,7 +5,6 @@
     windows_subsystem = "windows"
 )]
 
-
 /// Create a Database with some data first
 /// ```sql
 /// -- Create the database
@@ -28,8 +27,6 @@
 /// ('Emily', 'Brown', '2002-03-25', 'emily.brown@example.com'),
 /// ('Daniel', 'Martinez', '2000-11-05', 'daniel.martinez@example.com');
 /// ```
-
-
 use mysql::{prelude::Queryable, Pool, PooledConn};
 
 const SQL_DB: &str = "mysql://root@localhost/SchoolDatabase";
@@ -39,6 +36,7 @@ fn connect_to_db() -> Result<PooledConn, mysql::Error> {
     pool.get_conn()
 }
 
+#[allow(clippy::module_name_repetitions)]
 #[tauri::command]
 /// Crash on input `abc`
 pub fn sql_transaction(input: &str) -> String {
@@ -65,5 +63,5 @@ pub fn sql_transaction(input: &str) -> String {
             );
         }
     }
-    format!("Hello, you wrote {}!", input)
+    format!("Hello, you wrote {input}!")
 }

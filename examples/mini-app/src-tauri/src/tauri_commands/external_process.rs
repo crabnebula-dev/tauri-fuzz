@@ -18,10 +18,7 @@ mod os_not_windows {
         info!("[ls_with_rust_command] Entering with input: {:?}", input);
         let mut ls = std::process::Command::new("ls");
         let output = ls.arg(&input).output().unwrap_or_else(|_| {
-            panic!(
-                "Failed [ls_with_rust_command_output] command with input {}",
-                input
-            )
+            panic!("Failed [ls_with_rust_command_output] command with input {input}")
         });
         String::from_utf8_lossy(&output.stdout).to_string()
     }
@@ -31,10 +28,7 @@ mod os_not_windows {
         info!("[ls_with_rust_command] Entering with input: {:?}", input);
         let mut ls = std::process::Command::new("ls");
         let status = ls.arg(&input).status().unwrap_or_else(|_| {
-            panic!(
-                "Failed [ls_with_rust_command_status] command with input {}",
-                input
-            )
+            panic!("Failed [ls_with_rust_command_status] command with input {input}")
         });
         status.code()
     }
@@ -46,16 +40,10 @@ mod os_not_windows {
             .arg(&input)
             .spawn()
             .unwrap_or_else(|_| {
-                panic!(
-                    "Failed [ls_with_rust_command_spawn] command with input {}",
-                    input
-                )
+                panic!("Failed [ls_with_rust_command_spawn] command with input {input}")
             });
         let output = ls.wait().unwrap_or_else(|_| {
-            panic!(
-                "Failed [ls_with_rust_command_spawn] command with input {}",
-                input
-            )
+            panic!("Failed [ls_with_rust_command_spawn] command with input {input}",)
         });
         output.code()
     }
@@ -72,9 +60,9 @@ mod os_not_windows {
         let mut sh = std::process::Command::new("sh");
         let output = sh
             .arg("-c")
-            .arg(format!("ls {}", input))
+            .arg(format!("ls {input}"))
             .output()
-            .unwrap_or_else(|_| panic!("Failed [ls_with_shell] command with input {}", input));
+            .unwrap_or_else(|_| panic!("Failed [ls_with_shell] command with input {input}"));
         String::from_utf8_lossy(&output.stdout).to_string()
     }
 }
@@ -89,10 +77,7 @@ mod os_windows {
         let mut ls = std::process::Command::new("cmd");
         ls.args(["/C", "dir", &input]);
         let output = ls.output().unwrap_or_else(|_| {
-            panic!(
-                "Failed [ls_with_rust_command_output] command with input {}",
-                input
-            )
+            panic!("Failed [ls_with_rust_command_output] command with input {input}")
         });
         String::from_utf8_lossy(&output.stdout).to_string()
     }
@@ -103,10 +88,7 @@ mod os_windows {
         let mut ls = std::process::Command::new("cmd");
         ls.args(["/C", "dir", &input]);
         let status = ls.status().unwrap_or_else(|_| {
-            panic!(
-                "Failed [ls_with_rust_command_status] command with input {}",
-                input
-            )
+            panic!("Failed [ls_with_rust_command_status] command with input {input}")
         });
         status.code()
     }
@@ -117,16 +99,10 @@ mod os_windows {
         let mut ls = std::process::Command::new("cmd");
         ls.args(["/C", "dir", &input]);
         let mut ls = ls.spawn().unwrap_or_else(|_| {
-            panic!(
-                "Failed [ls_with_rust_command_spawn] command with input {}",
-                input
-            )
+            panic!("Failed [ls_with_rust_command_spawn] command with input {input}")
         });
         let output = ls.wait().unwrap_or_else(|_| {
-            panic!(
-                "Failed [ls_with_rust_command_spawn] command with input {}",
-                input
-            )
+            panic!("Failed [ls_with_rust_command_spawn] command with input {input}")
         });
         output.code()
     }

@@ -2,11 +2,17 @@
 // SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
 
 #![allow(unused_variables, unused_imports)]
+#![allow(
+    clippy::semicolon_if_nothing_returned,
+    clippy::needless_pass_by_value,
+    clippy::must_use_candidate,
+    clippy::missing_panics_doc
+)]
 
 mod utils;
 use mini_app::basic::direct_panic;
 use mini_app::file_access::read_foo_file;
-use utils::*;
+use utils::fuzz_command_with_arg;
 
 const BLOCKED_BINARY: &str = "dir";
 const ARG: &str = "";

@@ -1,7 +1,7 @@
 // Copyright 2023-2024 CrabNebula Ltd., Alexandre Dang
 // SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
 
-/// We import Windows_Manifest manually
+/// We import Windows manifest manually
 fn main() {
     let target_os = std::env::var("CARGO_CFG_TARGET_OS");
     let target_env = std::env::var("CARGO_CFG_TARGET_ENV");
@@ -16,7 +16,7 @@ fn add_manifest() {
     let mut manifest = std::env::current_dir().unwrap();
     manifest.push(WINDOWS_MANIFEST_FILE);
 
-    println!("cargo:rerun-if-changed={}", WINDOWS_MANIFEST_FILE);
+    println!("cargo:rerun-if-changed={WINDOWS_MANIFEST_FILE}");
     // Embed the Windows application manifest file.
     println!("cargo:rustc-link-arg=/MANIFEST:EMBED");
     println!(

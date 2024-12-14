@@ -1,5 +1,6 @@
 // Copyright 2023-2024 CrabNebula Ltd., Alexandre Dang
 // SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+#![allow(clippy::single_match_else, clippy::semicolon_if_nothing_returned)]
 
 use clap::{ArgAction, Parser, Subcommand};
 use log::Level;
@@ -37,7 +38,7 @@ enum Commands {
     Fuzz(fuzz::Options),
 }
 
-fn main() -> anyhow::Result<()> {
+fn main() {
     let cli = Cli::parse_from(std::env::args_os().skip(1));
 
     if !cli.quiet {
@@ -55,8 +56,6 @@ fn main() -> anyhow::Result<()> {
         log::error!("{}", e);
         std::process::exit(1);
     }
-
-    Ok(())
 }
 
 fn setup_logger(cli: &Cli) -> anyhow::Result<()> {
