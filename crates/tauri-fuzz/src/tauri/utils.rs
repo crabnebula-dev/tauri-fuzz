@@ -305,7 +305,7 @@ commands.allow = [
 
         // Modify the scope of the fs plugin
         let scope = app.fs_scope();
-        scope.allow_file(path_to_foo().to_str().unwrap());
+        let _ = scope.allow_file(path_to_foo().to_str().unwrap());
 
         let webview = tauri::WebviewWindowBuilder::new(&app, "main", Default::default())
             .build()

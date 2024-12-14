@@ -746,6 +746,15 @@ InvokeRequest {
     - Edit the `LIB` environment variable
   - `fatal error LNK1120: 7 unresolved externals`
     - make sure to only include libs for x64 (in our case)
+    - create an env variable `LIB` to `C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.42.34433\lib\x64`
+  - `fatal error C1034: stdint.h: no include path set`
+    - create an env variable `INCLUDE` to `C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.42.34433\include`
+- Debugging windows github actions
+  - neko/act does not have a windows vm
+    - you can run on `act -P windows-latest=-self-hosted` if you are on Windows
+    - the issue is that you have to start from a fresh Windows environment if you want to reproduce github action issues
+  - debug with an ssh session to the github runner
+    - https://github.com/marketplace/actions/debugging-with-tmate
 
 #### `frida_gum` does not find any symbol or export in the Rust binary
 
