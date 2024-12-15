@@ -49,16 +49,4 @@ pub fn main() {
     //     None,
     // );
     //
-
-    // fuzz_command_with_arg::<()>(
-    //     "read_foo_file",
-    //     Some(read_foo_file as usize),
-    //     tauri_fuzz_policies::external_process::block_on_child_process_error_status(),
-    //     // tauri_fuzz_policies::filesystem::write_only_access(),
-    //     // tauri_fuzz_policies::no_policy(),
-    //     // vec![("path", path_to_foo())],
-    //     vec![],
-    //     // Some("fs".into()),
-    //     None,
-    // );
 }

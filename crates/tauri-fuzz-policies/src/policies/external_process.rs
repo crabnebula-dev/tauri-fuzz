@@ -213,7 +213,6 @@ mod not_msvc {
                 let name: String = (*f).into();
                 let name2: String = name.clone();
                 let description = format!("External binary {f} returned with error status");
-
                 FunctionPolicy {
                     name: name.clone(),
                     lib: LIBC.into(),
