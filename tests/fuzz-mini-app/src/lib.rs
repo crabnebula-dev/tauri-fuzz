@@ -5,6 +5,8 @@
     clippy::semicolon_if_nothing_returned,
     clippy::needless_pass_by_value,
     clippy::must_use_candidate,
-    clippy::missing_panics_doc
+    clippy::missing_panics_doc,
+    clippy::let_unit_value,
+    clippy::ignored_unit_patterns
 )]
 pub mod utils;

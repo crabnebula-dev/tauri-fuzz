@@ -7,7 +7,9 @@
     clippy::needless_pass_by_value,
     clippy::must_use_candidate,
     clippy::missing_panics_doc,
-    clippy::wildcard_imports
+    clippy::wildcard_imports,
+    clippy::let_unit_value,
+    clippy::ignored_unit_patterns
 )]
 
 mod utils;
