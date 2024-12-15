@@ -84,7 +84,7 @@ commands.allow = [
 
     // Modify the scope of the fs plugin
     let scope = app.fs_scope();
-    scope.allow_file(path_to_foo().to_str().unwrap());
+    let _ = scope.allow_file(path_to_foo().to_str().unwrap());
 
     let webview = tauri::WebviewWindowBuilder::new(&app, "main", tauri::WebviewUrl::default())
         .build()
@@ -141,11 +141,31 @@ pub fn fuzz_command_with_arg<T>(
 }
 
 pub fn fuzz_harness<T>(
-    // pub fn fuzz_harness(
     webview: &tauri::WebviewWindow<MockRuntime>,
     command_name: &str,
     args: &[(&str, T)],
-    // args: &[(&str, PathBuf)],
+    tauri_plugin: &Option<String>,
+    _input: &BytesInput,
+) -> ExitKind
+where
+    T: serde::ser::Serialize + Clone,
+{
+    let mut command_args = CommandArgs::new();
+    for arg in args {
+        command_args.insert(arg.0, arg.1.clone());
+    }
+    let request = create_invoke_request(tauri_plugin.clone(), command_name, command_args);
+    invoke_command_minimal(webview.clone(), request);
+    // // If we want to get a response
+    // let res = invoke_command::<String, String>(&webview.clone(), request);
+    // println!("{:?}", res);
+    ExitKind::Ok
+}
+
+pub async fn async_fuzz_harness<T>(
+    webview: &tauri::WebviewWindow<MockRuntime>,
+    command_name: &str,
+    args: &[(&str, T)],
     tauri_plugin: &Option<String>,
     _input: &BytesInput,
 ) -> ExitKind

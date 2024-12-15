@@ -1084,9 +1084,32 @@ InvokeRequest {
   - I believe because we improved the code to be polymorphic
     - Due to monomorphisation there should be multiple implementation of our generic function
   - We changed the way we take harness pointer, make it a function rather than a closure
+- Another issue it seems that `fs_read_file` is called out of the monitoring time of the fuzzer runtime
+  - hence calls to the filesystem are not caught
+  - why does it happen?
+    - I think it might be because `fs_read_file` is an async function
+    - tested it by making the function sync and it's definitely the culprit
 
 ## Removing LibAFL fork from the project
 
 - the project is more about having a runtime that detects anomalies during fuzzing than creating a fuzzer in itself
 - we can decouple the project from LibAFL furthermore and remove our fork of LibAFL to be sync with the upstream version
 - for convenience we still are couple with `libafl_frida` by implementing the
+
+## Handling async Tauri commands
+
+- big issue: with async Tauri commands our current way to
+  - we monitor the functions while the harness is executing
+  - the harness is responsible for calling the Tauri commands
+  - if the Tauri commands is async then the harness may terminate before the Tauri commands
+    is completed
+  - when leaving the harness our runtime stop monitoring the target functions and they end up
+    being executed outside of the monitoring time frame
+  - it's important to stop monitoring functions out of the harness or else we would
+    also block code from the fuzzer
+- one way to solve it would be to stop calling Tauri commands through the webview and calling
+  the tauri command directly like normal function where the Tauri app backend is treated as
+  a simple crate
+  - calls to async commands could be made blocking
+  - we could gain speed
+  - that would need a big overhaul of the fuzzer
