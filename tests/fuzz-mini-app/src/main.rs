@@ -24,7 +24,8 @@ pub fn main() {
 
     fuzz_command_with_arg(
         "read_file",
-        Some(tauri_plugin_fs::commands::read_file::<tauri::test::MockRuntime> as usize),
+        // Some(tauri_plugin_fs::commands::read_file::<tauri::test::MockRuntime> as usize),
+        None,
         tauri_fuzz_policies::filesystem::no_file_access(),
         vec![("path", path_to_foo())],
         Some("fs".into()),
