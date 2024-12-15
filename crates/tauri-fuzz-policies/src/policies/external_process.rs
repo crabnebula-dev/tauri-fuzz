@@ -188,8 +188,8 @@ mod not_msvc {
             // There was an error while waiting for child process
             return Ok(true);
         }
-        let status_ptr: *const usize = match storage {
-            Some(v) => *v as *const usize,
+        let status_ptr: *const i32 = match storage {
+            Some(v) => *v as *const i32,
             None => {
                 return Err(RuleError::ExpectedStorageEmpty(
                     "Status pointer was not stored for evaluation of error".to_string(),
@@ -197,9 +197,7 @@ mod not_msvc {
             }
         };
         unsafe {
-            let child_exit_status = libc::WEXITSTATUS(
-                i32::try_from(*status_ptr).expect("i32 was expected from libc documentation"),
-            );
+            let child_exit_status = libc::WEXITSTATUS(*status_ptr);
             Ok(child_exit_status != 0)
         }
     }
