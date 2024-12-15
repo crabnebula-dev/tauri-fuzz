@@ -161,25 +161,3 @@ where
     // println!("{:?}", res);
     ExitKind::Ok
 }
-
-pub async fn async_fuzz_harness<T>(
-    webview: &tauri::WebviewWindow<MockRuntime>,
-    command_name: &str,
-    args: &[(&str, T)],
-    tauri_plugin: &Option<String>,
-    _input: &BytesInput,
-) -> ExitKind
-where
-    T: serde::ser::Serialize + Clone,
-{
-    let mut command_args = CommandArgs::new();
-    for arg in args {
-        command_args.insert(arg.0, arg.1.clone());
-    }
-    let request = create_invoke_request(tauri_plugin.clone(), command_name, command_args);
-    invoke_command_minimal(webview.clone(), request);
-    // // If we want to get a response
-    // let res = invoke_command::<String, String>(&webview.clone(), request);
-    // println!("{:?}", res);
-    ExitKind::Ok
-}

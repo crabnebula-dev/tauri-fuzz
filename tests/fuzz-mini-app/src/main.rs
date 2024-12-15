@@ -39,8 +39,6 @@ pub fn main() {
     //     Some("fs".into()),
     // );
 
-
-
     // fuzz_command_with_arg(
     //     "ls_with_rust_command_output",
     //     Some(mini_app::external_process::ls_with_rust_command_output as usize),
