@@ -41,9 +41,9 @@ impl SimpleFuzzerConfig {
         solutions_dir.push(command_name);
 
         let data = std::fs::read_to_string(toml_file.to_string_lossy().as_ref())
-            .unwrap_or_else(|e| panic!("{:#?}: {:#?}", toml_file, e));
+            .unwrap_or_else(|e| panic!("{toml_file:#?}: {e:#?}"));
         let mut config: SimpleFuzzerConfig = toml::from_str(&data)
-            .unwrap_or_else(|_| panic!("Failed to deserialize {:#?}", toml_file));
+            .unwrap_or_else(|_| panic!("Failed to deserialize {toml_file:#?}"));
         config.solutions_dir = solutions_dir;
         config
     }
@@ -83,8 +83,8 @@ impl From<SimpleFuzzerConfig> for FuzzerOptions {
             detect_leaks: false,
             continue_on_error: false,
             allocation_backtraces: true,
-            max_allocation: 1073741824,
-            max_total_allocation: 4294967296,
+            max_allocation: 1_073_741_824,
+            max_total_allocation: 4_294_967_296,
             max_allocation_panics: true,
 
             // Not used in LibAFL frida

@@ -11,7 +11,7 @@ repository = { workspace = true }
 tauri-build = { workspace = true }
 
 [lib]
-crate-type = ["staticlib", "cdylib", "rlib"]
+crate-type = ["rlib"]
 
 [dependencies]
 tracing = "0.1"

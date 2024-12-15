@@ -18,7 +18,7 @@ mod file_policy_impl {
             .iter()
             .map(|f| {
                 let name: String = (*f).into();
-                let description = format!("Access to [{}] denied", f);
+                let description = format!("Access to [{f}] denied");
                 FunctionPolicy {
                     name,
                     lib: LIBC.into(),
@@ -43,8 +43,7 @@ mod file_policy_impl {
             .iter()
             .map(|f| {
                 let name: String = (*f).into();
-                let description =
-                    format!("Access to [{}] is only allowed with read-only access", f);
+                let description = format!("Access to [{f}] is only allowed with read-only access");
                 FunctionPolicy {
                     name,
                     lib: LIBC.into(),
@@ -69,8 +68,7 @@ mod file_policy_impl {
             .iter()
             .map(|f| {
                 let name: String = (*f).into();
-                let description =
-                    format!("Access to [{}] is only allowed with write-only access", f);
+                let description = format!("Access to [{f}] is only allowed with write-only access");
                 FunctionPolicy {
                     name,
                     lib: LIBC.into(),
@@ -193,7 +191,7 @@ mod file_policy_impl {
 
     /// Checks if the filename contained in the first register is part of the blocked files
     fn block_access_to_filenames(
-        blocked_files: &Vec<String>,
+        blocked_files: &[String],
         registers: &[usize],
     ) -> Result<bool, RuleError> {
         let obj_attr_ptr = registers[2] as *const OBJECT_ATTRIBUTES;
@@ -226,7 +224,7 @@ mod file_policy_impl {
             name: OPEN_FILE.into(),
             lib: FILE_CRT.into(),
             rule: Rule::OnEntry(Arc::new(move |registers| {
-                block_access_to_filenames(&blocked_files, registers)
+                block_access_to_filenames(&blocked_files_clone, registers)
             })),
             description: format!("Access to files {:?} denied", blocked_files),
             nb_parameters: 11,

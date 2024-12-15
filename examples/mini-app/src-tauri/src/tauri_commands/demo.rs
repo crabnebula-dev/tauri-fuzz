@@ -21,7 +21,7 @@ pub fn tauri_cmd_with_backdoor(input: u32) -> String {
 
         // Send secret over network
         {
-            println!("Sending secret content to my server")
+            println!("Sending secret content to my server");
         }
     }
     "Finished computations".into()
@@ -33,7 +33,7 @@ use mysql::{prelude::Queryable, Pool};
 #[tauri::command]
 pub fn sql_injection_vulnerability(input: &str) -> String {
     // We assume that student name will be taken as input
-    tracing::debug!("[sql_transaction] Entering with input: {}", input);
+    tracing::debug!("[sql_transaction] Entering with input: {input}");
 
     let url = "mysql://root@localhost/SchoolDatabase";
 
@@ -61,5 +61,5 @@ pub fn sql_injection_vulnerability(input: &str) -> String {
             );
         }
     }
-    format!("Hello, you wrote {}!", input)
+    format!("Hello, you wrote {input}!")
 }

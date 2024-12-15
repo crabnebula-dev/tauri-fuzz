@@ -1,8 +1,8 @@
 // Copyright 2023-2024 CrabNebula Ltd., Alexandre Dang
 // SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
 
-use tauri_fuzz::tauri::{start_crashing_fuzz_process, start_non_crashing_fuzz_process};
 use fuzz_mini_app::utils::fuzz_command_with_arg;
+use tauri_fuzz::tauri::{start_crashing_fuzz_process, start_non_crashing_fuzz_process};
 
 // This is a trick to test fuzzers with multi-threaded and get fuzzer output when crashing.
 // Frida-gum does not support multi-threads therefore we start fuzzing in different processes.

@@ -5,7 +5,6 @@
 #![allow(unused_imports)]
 use libafl::executors::ExitKind;
 use libafl::inputs::BytesInput;
-use tauri_fuzz_policies::engine::FuzzPolicy;
 use std::path::PathBuf;
 use tauri::test::{mock_builder, mock_context, noop_assets, MockRuntime};
 use tauri::webview::InvokeRequest;
@@ -14,6 +13,7 @@ use tauri_fuzz::tauri::{
     CommandArgs,
 };
 use tauri_fuzz::SimpleFuzzerConfig;
+use tauri_fuzz_policies::engine::FuzzPolicy;
 use tauri_plugin_fs::FsExt;
 
 pub fn fuzz_config() -> PathBuf {
@@ -84,9 +84,9 @@ commands.allow = [
 
     // Modify the scope of the fs plugin
     let scope = app.fs_scope();
-    scope.allow_file(path_to_foo().to_str().unwrap());
+    let _ = scope.allow_file(path_to_foo().to_str().unwrap());
 
-    let webview = tauri::WebviewWindowBuilder::new(&app, "main", Default::default())
+    let webview = tauri::WebviewWindowBuilder::new(&app, "main", tauri::WebviewUrl::default())
         .build()
         .unwrap();
     webview
@@ -141,11 +141,9 @@ pub fn fuzz_command_with_arg<T>(
 }
 
 pub fn fuzz_harness<T>(
-    // pub fn fuzz_harness(
     webview: &tauri::WebviewWindow<MockRuntime>,
     command_name: &str,
     args: &[(&str, T)],
-    // args: &[(&str, PathBuf)],
     tauri_plugin: &Option<String>,
     _input: &BytesInput,
 ) -> ExitKind
@@ -153,7 +151,7 @@ where
     T: serde::ser::Serialize + Clone,
 {
     let mut command_args = CommandArgs::new();
-    for arg in args.iter() {
+    for arg in args {
         command_args.insert(arg.0, arg.1.clone());
     }
     let request = create_invoke_request(tauri_plugin.clone(), command_name, command_args);

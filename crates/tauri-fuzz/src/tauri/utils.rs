@@ -12,7 +12,7 @@ use tauri::test::{MockRuntime, INVOKE_KEY};
 use tauri::webview::InvokeRequest;
 use tauri::Builder;
 use tauri::WebviewWindow;
-use tauri_utils::acl::capability::CapabilityFile::{self, *};
+use tauri_utils::acl::capability::CapabilityFile::{self, Capability};
 
 /// Minimal builder for a Tauri application using the `MockRuntime`
 /// NOTE: if your Tauri command uses a state this won't work since it does manage any state
@@ -206,7 +206,7 @@ pub fn setup_context_with_plugin<R: tauri::Runtime>(
     *runtime_authority = tauri::ipc::RuntimeAuthority::new(acl, resolved);
 }
 
-/// A wrapper around HashMap to facilitate `InvokePayload` creation.
+/// A wrapper around `HashMap` to facilitate `InvokePayload` creation.
 #[derive(Default)]
 pub struct CommandArgs {
     /// Inner type
@@ -230,9 +230,8 @@ impl CommandArgs {
         let key = key.into();
         self.inner.insert(
             key.clone(),
-            serde_json::to_value(value).unwrap_or_else(|_| {
-                panic!("Failed conversion to json value for parameter {}", key,)
-            }),
+            serde_json::to_value(value)
+                .unwrap_or_else(|_| panic!("Failed conversion to json value for parameter {key}")),
         )
     }
 }
@@ -305,7 +304,7 @@ commands.allow = [
 
         // Modify the scope of the fs plugin
         let scope = app.fs_scope();
-        scope.allow_file(path_to_foo().to_str().unwrap());
+        let _ = scope.allow_file(path_to_foo().to_str().unwrap());
 
         let webview = tauri::WebviewWindowBuilder::new(&app, "main", Default::default())
             .build()

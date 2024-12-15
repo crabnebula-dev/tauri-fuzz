@@ -34,6 +34,12 @@ pub struct FunctionPolicy {
 
 impl FunctionPolicy {
     /// Check the function policy in the specified context and if the invocation should be blocked
+    ///
+    /// # Panics
+    /// This may panic if the `Rule` was not built correctly.
+    /// For example a `Rule` on entry with a context on exit.
+    /// Or trying to access registers that does not contain a parameter or a return value of the
+    /// target function
     pub fn should_block(&mut self, context: &Context) -> bool {
         let should_block = self.rule.should_block(context);
         match should_block {
@@ -62,17 +68,17 @@ impl FunctionPolicy {
 // maybe using cloneable `Box` can improve performance such as in this example:
 // https://play.rust-lang.org/?version=stable&mode=debug&edition=2018&gist=6ca48c4cff92370c907ecf4c548ee33c
 
-/// ConditionOnParameters is a closure on the registers containing the parameters of the function.
+/// `ConditionOnParameters` is a closure on the registers containing the parameters of the function.
 /// Registers can contain a value but also a pointer depending on the type of the parameters.
 pub type ConditionOnParameters = Arc<dyn Fn(&[usize]) -> Result<bool, RuleError>>;
-/// ConditionOnReturnValue is a closure on the value contained in the return value register
+/// `ConditionOnReturnValue` is a closure on the value contained in the return value register
 /// This can contain a value but also a pointer depending on the type of the return value.
 pub type ConditionOnReturnValue = Arc<dyn Fn(usize) -> Result<bool, RuleError>>;
-/// ConditionOnParameters but with an additional argument that can be used as storage to pass
+/// `ConditionOnParameters` but with an additional argument that can be used as storage to pass
 /// information for later usage
 pub type ConditionOnParametersWithStorage =
     Arc<dyn Fn(&[usize], &mut Option<usize>) -> Result<bool, RuleError>>;
-/// ConditionOnReturnValue but with an additional argument that can be used for the analysis
+/// `ConditionOnReturnValue` but with an additional argument that can be used for the analysis
 pub type ConditionOnReturnValueWithStorage =
     Arc<dyn Fn(usize, &mut Option<usize>) -> Result<bool, RuleError>>;
 
@@ -146,13 +152,12 @@ impl Debug for Context {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             Context::EntryContext(parameters) => {
-                write!(f, "Function entry with parameters: {:?}", parameters)
+                write!(f, "Function entry with parameters: {parameters:?}")
             }
             Context::LeaveContext(return_value) => {
                 write!(
                     f,
-                    "Function exit with return value as usize: {:?}",
-                    return_value
+                    "Function exit with return value as usize: {return_value:?}"
                 )
             }
         }
