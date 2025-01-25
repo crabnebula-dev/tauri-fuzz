@@ -248,8 +248,9 @@ where
         .monitor(monitor)
         .run_client(&mut run_client)
         .cores(&options.cores)
+        // Builder method stdout_file only in Unix
+        // .stdout_file(Some(&options.stdout))
         .broker_port(options.broker_port)
-        .stdout_file(Some(&options.stdout))
         .remote_broker_addr(options.remote_broker_addr)
         // Store state after crashing, useful if we want to restart the fuzzer at a later time
         // .serialize_state(false)

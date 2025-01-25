@@ -221,10 +221,14 @@ impl FunctionListenerRuntime {
 
         // println!("{:#?}", modules_info());
         // let libs = Module::enumerate_modules();
-        // let lib = libs.get(0).unwrap();
+        // let current_bin = libs.first().unwrap();
+        // println!("{:#?}", symbols_in_module(&current_bin.name));
+        // println!("{:#?}", exports_in_module(&current_bin.name));
+        //
+        //
         // let lib = Module::enumerate_modules()
         //     .into_iter()
-        //     .find(|m| m.name.contains("ntdll.dll"))
+        //     .find(|m| m.name.contains("KERNEL32.DLL"))
         //     .ok_or(Error::unknown(format!(
         //         "lib {} not found in modules",
         //         "kernel"
@@ -236,7 +240,7 @@ impl FunctionListenerRuntime {
         let switch = Arc::new(Mutex::new(InterceptionSwitch { flag: false }));
 
         // Create function listeners from the fuzz policy received
-        for function_policy in fuzz_policy.into_iter() {
+        for function_policy in fuzz_policy {
             // Get the function lib
             let func_ptr = find_symbol_in_modules(&function_policy);
 
@@ -269,7 +273,7 @@ fn find_symbol_in_modules(policy: &FunctionPolicy) -> Option<NativePointer> {
     let lib = Module::enumerate_modules()
         .into_iter()
         .find(|m| m.path.contains(&policy.lib))
-        .unwrap_or_else(|| panic!("Failed to find library for policy {:#?}", policy));
+        .unwrap_or_else(|| panic!("Failed to find library for policy {policy:#?}"));
 
     let function_name = if policy.is_rust_function {
         // If the function is a Rust we have to find it among mangled names
@@ -351,7 +355,7 @@ fn module_details_to_string(module: &ModuleDetails) -> String {
 
 #[allow(dead_code)]
 fn module_details_owned_to_string(module: &ModuleDetailsOwned) -> String {
-    let _name = &module.name;
+    let _ = &module.name;
     let base = module.base_address;
     let size = module.size;
     let path = &module.path;
@@ -420,6 +424,6 @@ impl Debug for FunctionListenerRuntime {
                 .map(|l| l.function_name.clone())
                 .collect::<Vec<String>>(),
         );
-        dbg_me.finish()
+        dbg_me.finish_non_exhaustive()
     }
 }

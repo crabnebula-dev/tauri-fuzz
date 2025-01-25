@@ -15,7 +15,7 @@ fn add_manifest() {
     let mut manifest = std::env::current_dir().unwrap();
     manifest.push(WINDOWS_MANIFEST_FILE);
 
-    println!("cargo:rerun-if-changed={}", WINDOWS_MANIFEST_FILE);
+    println!("cargo:rerun-if-changed={WINDOWS_MANIFEST_FILE}");
     // Embed the Windows application manifest file.
     println!("cargo:rustc-link-arg=/MANIFEST:EMBED");
     println!(

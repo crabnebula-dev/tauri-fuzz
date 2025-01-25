@@ -1,11 +1,19 @@
 // Copyright 2023-2024 CrabNebula Ltd., Alexandre Dang
 // SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
 
-#![allow(unused_imports)]
+#![allow(
+    unused_imports,
+    clippy::missing_panics_doc,
+    clippy::must_use_candidate,
+    clippy::needless_pass_by_value,
+    clippy::wildcard_imports,
+    clippy::uninlined_format_args,
+    clippy::manual_assert
+)]
 pub mod tauri_commands;
 use tauri::{
     test::{mock_builder, mock_context, noop_assets},
-    WebviewWindow,
+    WebviewUrl, WebviewWindow,
 };
 pub use tauri_commands::basic;
 pub use tauri_commands::demo;
@@ -16,6 +24,7 @@ pub use tauri_commands::sql;
 use tracing::info;
 use tracing_subscriber::fmt;
 
+/// # Panics
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let format = fmt::format().pretty();
@@ -34,7 +43,7 @@ pub fn run() {
             crate::external_process::ls_with_shell,
         ])
         .setup(move |app| {
-            tauri::WebviewWindowBuilder::new(app, "main", Default::default())
+            tauri::WebviewWindowBuilder::new(app, "main", WebviewUrl::default())
                 .build()
                 .unwrap();
             Ok(())

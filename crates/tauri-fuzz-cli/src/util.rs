@@ -72,7 +72,7 @@ pub fn tauri_dir() -> anyhow::Result<PathBuf> {
         } else if is_tauri_config_file(&path) {
             return path
                 .parent()
-                .map(|p| p.to_path_buf())
+                .map(Path::to_path_buf)
                 .context("failed to get parent from path");
         }
     }
