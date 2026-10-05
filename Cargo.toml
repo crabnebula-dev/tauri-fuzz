@@ -39,6 +39,3 @@ tauri-runtime = { version = "2.0", features = [] }
 tauri-build = { version = "2.0", features = [] }
 tauri-utils = { version = "2.0", features = [] }
 tauri-plugin-fs = "2.0"
-
-
-

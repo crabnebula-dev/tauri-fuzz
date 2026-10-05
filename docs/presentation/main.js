@@ -1,9 +1,9 @@
 import Reveal from "reveal.js";
-import Markdown from "reveal.js/plugin/markdown/markdown.esm.js";
-import RevealZoom from "reveal.js/plugin/zoom/zoom.esm.js"
-import RevealNotes from "reveal.js/plugin/notes/notes.esm.js"
-import RevealSearch from "reveal.js/plugin/search/search.esm.js"
-import RevealHighlight from "reveal.js/plugin/highlight/highlight.esm.js"
+import Markdown from "reveal.js/plugin/markdown";
+import RevealZoom from "reveal.js/plugin/zoom"
+import RevealNotes from "reveal.js/plugin/notes"
+import RevealSearch from "reveal.js/plugin/search"
+import RevealHighlight from "reveal.js/plugin/highlight"
 
 let deck = new Reveal({
 				controls: true,
@@ -15,7 +15,6 @@ let deck = new Reveal({
 				// Learn about plugins: https://revealjs.com/plugins/
 				plugins: [ RevealZoom, RevealNotes, RevealSearch, RevealHighlight, Markdown ]
 });
-
 
 deck.initialize();
 

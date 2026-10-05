@@ -9,9 +9,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "reveal.js": "^5.1.0"
+    "reveal.js": "^6.0.2"
   },
   "devDependencies": {
-    "vite": "^6.0.3"
+    "vite": "^8.3.2"
   }
 }
