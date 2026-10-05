@@ -12,7 +12,7 @@ jobs:
             os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         name: Checkout repository
 
       - name: Install Rust stable
@@ -25,10 +25,10 @@ jobs:
           cache-on-failure: false
 
       - name: Install mdbook
-        run: cargo install mdbook --no-default-features --features search --vers "^0.4" --locked
+        run: (test -x $HOME/.cargo/bin/mdbook || cargo install mdbook --no-default-features --features search --vers "^0.5" --locked)
 
       - name: Install mdbook-toc and mdbook-linkcheck
-        run: cargo install mdbook-toc mdbook-linkcheck
+        run: cargo install mdbook-toc@0.15 mdbook-linkcheck@0.7 --locked
   
       - name: Build the book
         run: |
