@@ -28,7 +28,7 @@ jobs:
         run: (test -x $HOME/.cargo/bin/mdbook || cargo install mdbook --no-default-features --features search --vers "^0.5" --locked)
 
       - name: Install mdbook-toc and mdbook-linkcheck
-        run: cargo install mdbook-toc@0.15 mdbook-linkcheck@0.7 --locked
+        run: cargo install mdbook-toc@^0.15 mdbook-linkcheck@^0.7 --locked
   
       - name: Build the book
         run: |
